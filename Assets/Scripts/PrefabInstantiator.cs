@@ -9,9 +9,14 @@ public class PrefabInstantiator : MonoBehaviour
 
     private Floor floor;
 
-    void Start()
+    void Awake()
     {
         floor = floorObj.GetComponent<Floor>();
+    }
+
+    void Start()
+    {
+
     }
 
     /* PUBLIC API */
@@ -19,7 +24,8 @@ public class PrefabInstantiator : MonoBehaviour
     public GameObject CreateBlock(string blockType, Vector2 gridIndices)
     /* Create a Block.
 
-    :param string blockType: One of [ "black", "blue", "yellow", "red" ]
+    :param string blockType: One of [ "mass", "blue", "yellow", "red" ]
+    :param Vector2 gridIndices: The square in which to put the block ((0, 0) is the bottom-left).
     
     :returns GameObject block:
     */
@@ -40,14 +46,15 @@ public class PrefabInstantiator : MonoBehaviour
     private Color blockTypeToColor(string blockType)
     {
         Color color;
-        ColorUtility.TryParseHtmlString("#333333", out color);
+        ColorUtility.TryParseHtmlString("#ffffff", out color);
         
         switch (blockType)
         {
-            case "black":
+            case "mass":
+                ColorUtility.TryParseHtmlString("#555555", out color);
                 break;
             case "blue":
-                ColorUtility.TryParseHtmlString("#0055ee", out color);
+                ColorUtility.TryParseHtmlString("#0077ee", out color);
                 break;
             case "yellow":
                 ColorUtility.TryParseHtmlString("#eeee55", out color);

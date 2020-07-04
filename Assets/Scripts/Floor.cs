@@ -5,17 +5,24 @@ using UnityEngine;
 
 public class Floor : MonoBehaviour
 {
-    private int numGridSquaresWide = 6;
-    private int numGridSquaresDeep = 10;
+    public GameObject gameLogicObj;
+
+    private GameLogic gameLogic;
+
     private float gridSquareSize = 1; // 1 Unity unit
+
+    void Awake()
+    {
+        gameLogic = gameLogicObj.GetComponent<GameLogic>();
+    }
 
     void Start()
     {
         // Floor size.
         float gridSquareScale = transform.localScale.x / 10; // Plane defaults to 10 units across.
         transform.localScale = new Vector3(
-            gridSquareScale * numGridSquaresWide,
-            gridSquareScale * numGridSquaresDeep,
+            gridSquareScale * gameLogic.numGridSquaresWide,
+            gridSquareScale * gameLogic.numGridSquaresDeep,
             1
         );
 
@@ -45,8 +52,8 @@ public class Floor : MonoBehaviour
     :returns Vector2 gridIndices:
     */
     {
-        float floorWidth = numGridSquaresWide * gridSquareSize;
-        float floorDepth = numGridSquaresDeep * gridSquareSize;
+        float floorWidth = gameLogic.numGridSquaresWide * gridSquareSize;
+        float floorDepth = gameLogic.numGridSquaresDeep * gridSquareSize;
 
         float shiftedX = worldPoint.x + (floorWidth / 2);
         float shiftedY = worldPoint.z + (floorDepth / 2);
@@ -70,8 +77,8 @@ public class Floor : MonoBehaviour
         square. y doesn't matter, since z is the depth axis in world coordinates.
     */
     {
-        float shiftedXIdx = gridIndices.x - (numGridSquaresWide / 2);
-        float shiftedZIdx = gridIndices.y - (numGridSquaresDeep / 2);
+        float shiftedXIdx = gridIndices.x - (gameLogic.numGridSquaresWide / 2);
+        float shiftedZIdx = gridIndices.y - (gameLogic.numGridSquaresDeep / 2);
 
         float scaledX = shiftedXIdx * gridSquareSize;
         float scaledZ = shiftedZIdx * gridSquareSize;
@@ -105,12 +112,12 @@ public class Floor : MonoBehaviour
     void drawGridLines()
     {
         // Horizontal lines
-        foreach (int idx in Enumerable.Range(1, numGridSquaresWide - 1))
+        foreach (int idx in Enumerable.Range(1, gameLogic.numGridSquaresWide - 1))
         {
-            float x = -(numGridSquaresWide / 2) + idx;
+            float x = -(gameLogic.numGridSquaresWide / 2) + idx;
             float y = 0.01f;
-            float z_0 = -numGridSquaresDeep / 2;
-            float z_1 = numGridSquaresDeep / 2;
+            float z_0 = -gameLogic.numGridSquaresDeep / 2;
+            float z_1 = gameLogic.numGridSquaresDeep / 2;
             Vector3[] points =
             {
                 new Vector3(x, y, z_0),
@@ -119,12 +126,12 @@ public class Floor : MonoBehaviour
             drawGridLine(points);
         }
         // Vertical lines
-        foreach (int idx in Enumerable.Range(1, numGridSquaresDeep - 1))
+        foreach (int idx in Enumerable.Range(1, gameLogic.numGridSquaresDeep - 1))
         {
-            float x_0 = -numGridSquaresWide / 2;
-            float x_1 = numGridSquaresWide / 2;
+            float x_0 = -gameLogic.numGridSquaresWide / 2;
+            float x_1 = gameLogic.numGridSquaresWide / 2;
             float y = 0.01f;
-            float z = -(numGridSquaresDeep / 2) + idx;
+            float z = -(gameLogic.numGridSquaresDeep / 2) + idx;
             Vector3[] points =
             {
                 new Vector3(x_0, y, z),
