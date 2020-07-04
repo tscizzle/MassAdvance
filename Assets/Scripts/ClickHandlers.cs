@@ -38,7 +38,7 @@ public class ClickHandlers : MonoBehaviour
     private void handleClickFloor(Vector3 clickPoint)
     {
         Vector2 gridIndices = floor.getGridIndices(clickPoint);
-        string blockType = "blue";
+        string blockType = gameLogic.selectedBlockType;
         gameLogic.placeBlock(blockType, gridIndices);
     }
 }
