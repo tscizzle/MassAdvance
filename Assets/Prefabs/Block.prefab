@@ -105,3 +105,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7a42b3b3728defc384e07712bd320a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  damagedMaterial: {fileID: 2100000, guid: f9ce4b5b272e62e47b0c83a957786c1a, type: 2}
+  blockType: 
+  isDamaged: 0

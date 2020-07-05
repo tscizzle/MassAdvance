@@ -37,6 +37,10 @@ public class PrefabInstantiator : MonoBehaviour
 
         Color color = blockTypeToColor(blockType);
         blockObj.GetComponent<Renderer>().material.color = color;
+
+        // Set fields on the instance of Block
+        Block block = blockObj.GetComponent<Block>();
+        block.blockType = blockType;
         
         return blockObj;
     }
