@@ -34,40 +34,15 @@ public class PrefabInstantiator : MonoBehaviour
         position.y = Block.blockHeight / 2;
 
         GameObject blockObj = Instantiate(blockPrefab, position, Quaternion.identity);
-
-        Color color = blockTypeToColor(blockType);
-        blockObj.GetComponent<Renderer>().material.color = color;
-
-        // Set fields on the instance of Block
         Block block = blockObj.GetComponent<Block>();
+
+        Color color = block.blockTypeToColor(blockType);
+        blockObj.GetComponent<Renderer>().material.SetColor("_Color", color);
+
         block.blockType = blockType;
         
         return blockObj;
     }
 
     /* HELPERS */
-
-    private Color blockTypeToColor(string blockType)
-    {
-        Color color;
-        ColorUtility.TryParseHtmlString("#ffffff", out color);
-        
-        switch (blockType)
-        {
-            case "mass":
-                ColorUtility.TryParseHtmlString("#555555", out color);
-                break;
-            case "blue":
-                ColorUtility.TryParseHtmlString("#0077ee", out color);
-                break;
-            case "yellow":
-                ColorUtility.TryParseHtmlString("#eeee55", out color);
-                break;
-            case "red":
-                ColorUtility.TryParseHtmlString("#aa0022", out color);
-                break;
-        }
-
-        return color;
-    }
 }
