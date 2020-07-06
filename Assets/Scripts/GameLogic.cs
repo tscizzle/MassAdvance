@@ -6,6 +6,9 @@ using UnityEngine;
 
 public class GameLogic : MonoBehaviour
 {
+    // Global var that even a prefab can reference. Will be assigned our 1 instance of GameLogic.
+    public static GameLogic gameLogic;
+
     public GameObject prefabInstantiatorObj;
 
     private PrefabInstantiator prefabInstantiator;
@@ -19,6 +22,9 @@ public class GameLogic : MonoBehaviour
 
     void Awake()
     {
+        // Since there should only be 1 GameLogic instance, assign this instance to a global var.
+        gameLogic = this;
+
         prefabInstantiator = prefabInstantiatorObj.GetComponent<PrefabInstantiator>();
     }
 
@@ -99,10 +105,9 @@ public class GameLogic : MonoBehaviour
         trigger the enemy's turn, etc.
     */
     {
-        // TODO: From top left, as if reading, take a square at a time. Detect what combos it's part
-        //      of and trigger their "production".
+        executeProducePhase();
         
-        spreadMass();
+        executeMassSpreadingPhase();
     }
 
     /* HELPERS */
@@ -126,11 +131,72 @@ public class GameLogic : MonoBehaviour
         placeBlock("yellow", startingYellowSquare);
     }
 
+    private List<Vector2> getProductiveBlocks()
+    /* Get a list of all squares that have player Blocks with `produce` effects.
+    
+    The result is ordered from top-left and going down, so column by column from the left.
+    
+    :returns List<Vector2> productiveBlocks:
+    */
+    {
+        List<Vector2> unorderedProductiveBlocks = new List<Vector2>();
+
+        foreach (int xIdx in Enumerable.Range(0, numGridSquaresWide))
+        {
+            foreach (int yIdx in Enumerable.Range(0, numGridSquaresDeep))
+            {
+                Vector2 gridIndices = new Vector2(xIdx, yIdx);
+                string blockType = getBlockTypeOfSquare(gridIndices);
+
+                if (blockType == "blue")
+                {
+                    unorderedProductiveBlocks.Add(gridIndices);
+                }
+            }
+        }
+
+        List<Vector2> productiveBlocks = unorderedProductiveBlocks
+            .OrderBy(el => el.x)
+            .ThenByDescending(el => el.y)
+            .ToList();
+
+        return productiveBlocks;
+    }
+
+    private void executeProducePhase()
+    /* For all a player's Blocks on the grid, trigger their produce ability. */
+    {
+        List<Vector2> productiveBlocks = getProductiveBlocks();
+
+        int idx = 0;
+        
+        // TODO: freeze user input
+        
+        foreach (Vector2 gridIndices in productiveBlocks)
+        {
+            Block block = placedBlocks[gridIndices];
+            float delay = idx * secondsBetweenActions;
+            bool isLastAction = idx == productiveBlocks.Count - 1;
+
+            Action produceFunc = () =>
+            {
+                block.produce();
+                if (isLastAction)
+                {
+                    // TODO: unfreeze user input
+                }
+            };
+            StartCoroutine(MiscHelpers.getScheduledFunc(delay, produceFunc));
+
+            idx += 1;
+        }
+    }
+
     private List<Vector2> getNextMassTargets()
     /* Get a list of all squares that current mass blocks borders, which are the squares it expands
         to or attacks if there are player blocks there.
     
-    The result is ordered from top-left and going across, as if reading.
+    The result is ordered from top-left and going down, so column by column from the left.
     
     :returns List<Vector2> nextTargets:
     */
@@ -205,7 +271,7 @@ public class GameLogic : MonoBehaviour
         return didFindMass;
     }
 
-    private void spreadMass()
+    private void executeMassSpreadingPhase()
     /* Play the enemy's turn, where the mass spreads to empty squares and attacks the player's
         blocks
     */

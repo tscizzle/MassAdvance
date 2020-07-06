@@ -15,6 +15,14 @@ public class Block : MonoBehaviour
     public string blockType;
     public bool isDamaged = false;
 
+    private GameLogic gameLogic;    
+    private Animator thisAnimator;
+
+    void Awake()
+    {
+        thisAnimator = GetComponent<Animator>();
+    }
+
     void Start()
     {
 
@@ -26,6 +34,20 @@ public class Block : MonoBehaviour
     }
 
     /* PUBLIC API */
+
+    public void produce()
+    /* Depending on the blockType, perform any production effects. */
+    {
+        if (blockType == "blue")
+        {
+            GetComponent<Animator>().SetTrigger("produce");
+            GameLogic.gameLogic.currentIum += 1;
+        } else if (blockType == "yellow")
+        {
+            GetComponent<Animator>().SetTrigger("produce");
+            // TODO: put draw here when that's a thing
+        }
+    }
 
     public void damageBlock()
     {
