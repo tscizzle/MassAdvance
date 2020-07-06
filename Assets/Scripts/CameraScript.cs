@@ -76,7 +76,7 @@ public class CameraScript : MonoBehaviour
     private void handleClickFloor(Vector3 clickPoint)
     {
         Vector2 gridIndices = floor.getGridIndices(clickPoint);
-        gameLogic.placeBlock(selectedBlockType, gridIndices);
+        gameLogic.attemptToPlaceBlock(selectedBlockType, gridIndices);
     }
 
     private void setSelectedBlockType()

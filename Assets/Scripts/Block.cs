@@ -7,6 +7,10 @@ public class Block : MonoBehaviour
     public Material damagedMaterial;
 
     public static float blockHeight = 0.5f;
+    public static string massHex = "#555555";
+    public static string blueHex = "#0077ee";
+    public static string yellowHex = "#eeee55";
+    public static string redHex = "#aa0022";
 
     public string blockType;
     public bool isDamaged = false;
@@ -41,16 +45,16 @@ public class Block : MonoBehaviour
         switch (blockType)
         {
             case "mass":
-                ColorUtility.TryParseHtmlString("#555555", out color);
+                ColorUtility.TryParseHtmlString(massHex, out color);
                 break;
             case "blue":
-                ColorUtility.TryParseHtmlString("#0077ee", out color);
+                ColorUtility.TryParseHtmlString(blueHex, out color);
                 break;
             case "yellow":
-                ColorUtility.TryParseHtmlString("#eeee55", out color);
+                ColorUtility.TryParseHtmlString(yellowHex, out color);
                 break;
             case "red":
-                ColorUtility.TryParseHtmlString("#aa0022", out color);
+                ColorUtility.TryParseHtmlString(redHex, out color);
                 break;
         }
 

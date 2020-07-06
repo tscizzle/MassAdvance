@@ -14,6 +14,8 @@ public class GameLogic : MonoBehaviour
     public int numGridSquaresWide = 6;
     public int numGridSquaresDeep = 10;
     public Dictionary<Vector2, Block> placedBlocks = new Dictionary<Vector2, Block>();
+    public int currentIum = 5;
+    private int blockIumCost = 2;
 
     void Awake()
     {
@@ -31,6 +33,21 @@ public class GameLogic : MonoBehaviour
     }
 
     /* PUBLIC API */
+
+    public void attemptToPlaceBlock(string blockType, Vector2 gridIndices)
+    /* Attempty to put a block into play in the grid, but may not succeed due to constraints like
+        ium and placement restrictions.
+    
+    :param string blockType: One of [ "mass", "blue", "yellow", "red" ]
+    :param Vector2 gridIndices: The square in which to put the block ((0, 0) is the bottom-left).
+    */
+    {
+        if (blockIumCost <= currentIum)
+        {
+            currentIum -= blockIumCost;
+            placeBlock(blockType, gridIndices);
+        }
+    }
 
     public void placeBlock(string blockType, Vector2 gridIndices)
     /* Put a block into play in the grid.
