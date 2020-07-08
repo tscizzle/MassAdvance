@@ -31,14 +31,10 @@ public class PrefabInstantiator : MonoBehaviour
     */
     {
         Vector3 position = floor.getGridSquareCenter(gridIndices);
-        position.y = Block.blockHeight / 2;
 
         GameObject blockObj = Instantiate(blockPrefab, position, Quaternion.identity);
+        
         Block block = blockObj.GetComponent<Block>();
-
-        Color color = block.blockTypeToColor(blockType);
-        blockObj.GetComponent<Renderer>().material.SetColor("_Color", color);
-
         block.blockType = blockType;
         
         return blockObj;

@@ -9,7 +9,7 @@ public class Floor : MonoBehaviour
 
     private GameLogic gameLogic;
 
-    private float gridSquareSize = 1; // 1 Unity unit
+    private float gridSquareSize = 1; // in Unity units
 
     void Awake()
     {

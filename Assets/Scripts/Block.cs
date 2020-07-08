@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,26 +7,32 @@ public class Block : MonoBehaviour
 {
     public Material damagedMaterial;
 
-    public static float blockHeight = 0.5f;
     public static string massHex = "#555555";
     public static string blueHex = "#0077ee";
     public static string yellowHex = "#eeee55";
     public static string redHex = "#aa0022";
 
+    public float blockHeight = 0.5f;
     public string blockType;
     public bool isDamaged = false;
 
-    private GameLogic gameLogic;    
-    private Animator thisAnimator;
+    private GameObject pointer;
 
     void Awake()
     {
-        thisAnimator = GetComponent<Animator>();
+        pointer = transform.Find("Pointer").gameObject;
     }
 
     void Start()
     {
+        Vector3 scale = transform.localScale;
+        transform.localScale = new Vector3(scale.x, blockHeight, scale.z);
 
+        Vector3 position = transform.position;
+        transform.position = new Vector3(position.x, blockHeight / 2, position.z);
+
+        Color color = blockTypeToColor(blockType);
+        GetComponent<Renderer>().material.SetColor("_Color", color);
     }
 
     void Update()
@@ -38,15 +45,29 @@ public class Block : MonoBehaviour
     public void produce()
     /* Depending on the blockType, perform any production effects. */
     {
+        bool isProductive = false;
+
         if (blockType == "blue")
         {
-            GetComponent<Animator>().SetTrigger("produce");
-            GameLogic.gameLogic.currentIum += 1;
+            isProductive = true;
+            GameLogic.gl.currentIum += 1;
         } else if (blockType == "yellow")
         {
-            GetComponent<Animator>().SetTrigger("produce");
+            isProductive = true;
             // TODO: put draw here when that's a thing
         }
+
+        if (isProductive)
+        {
+            displayPointer();
+        }
+    }
+
+    public void displayPointer()
+    {
+        // Show the pointer over the Block, and hide it after a delay.
+        pointer.SetActive(true);
+        MiscHelpers.mh.runAsync(() => pointer.SetActive(false), GameLogic.gl.secondsBetweenActions);
     }
 
     public void damageBlock()
@@ -82,4 +103,6 @@ public class Block : MonoBehaviour
 
         return color;
     }
+
+    /* HELPERS */
 }

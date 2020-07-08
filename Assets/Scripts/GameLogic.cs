@@ -7,23 +7,27 @@ using UnityEngine;
 public class GameLogic : MonoBehaviour
 {
     // Global var that even a prefab can reference. Will be assigned our 1 instance of GameLogic.
-    public static GameLogic gameLogic;
+    public static GameLogic gl;
 
     public GameObject prefabInstantiatorObj;
 
     private PrefabInstantiator prefabInstantiator;
     
-    float secondsBetweenActions = 0.1f;
+    [System.NonSerialized]
+    public float secondsBetweenActions = 0.3f;
+    [System.NonSerialized]
     public int numGridSquaresWide = 6;
+    [System.NonSerialized]
     public int numGridSquaresDeep = 10;
     public Dictionary<Vector2, Block> placedBlocks = new Dictionary<Vector2, Block>();
+    [System.NonSerialized]
     public int currentIum = 5;
     private int blockIumCost = 2;
 
     void Awake()
     {
         // Since there should only be 1 GameLogic instance, assign this instance to a global var.
-        gameLogic = this;
+        gl = this;
 
         prefabInstantiator = prefabInstantiatorObj.GetComponent<PrefabInstantiator>();
     }
@@ -67,6 +71,8 @@ public class GameLogic : MonoBehaviour
         Block block = blockObj.GetComponent<Block>();
         
         placedBlocks[gridIndices] = block;
+
+        block.displayPointer();
     }
 
     public void attackBlock(Vector2 gridIndices)
@@ -82,6 +88,7 @@ public class GameLogic : MonoBehaviour
         } else
         {
             block.damageBlock();
+            block.displayPointer();
         }
     }
 
@@ -105,9 +112,10 @@ public class GameLogic : MonoBehaviour
         trigger the enemy's turn, etc.
     */
     {
-        executeProducePhase();
-        
-        executeMassSpreadingPhase();
+        // TODO: freeze user input
+        float totalDelay = executeProducePhase();
+        MiscHelpers.mh.runAsync(executeMassSpreadingPhase, totalDelay);
+        // TODO: unfreeze user input after above phases are finished (careful, they're async)
     }
 
     /* HELPERS */
@@ -163,33 +171,25 @@ public class GameLogic : MonoBehaviour
         return productiveBlocks;
     }
 
-    private void executeProducePhase()
+    private float executeProducePhase()
     /* For all a player's Blocks on the grid, trigger their produce ability. */
     {
         List<Vector2> productiveBlocks = getProductiveBlocks();
 
         int idx = 0;
         
-        // TODO: freeze user input
-        
         foreach (Vector2 gridIndices in productiveBlocks)
         {
             Block block = placedBlocks[gridIndices];
             float delay = idx * secondsBetweenActions;
-            bool isLastAction = idx == productiveBlocks.Count - 1;
-
-            Action produceFunc = () =>
-            {
-                block.produce();
-                if (isLastAction)
-                {
-                    // TODO: unfreeze user input
-                }
-            };
-            StartCoroutine(MiscHelpers.getScheduledFunc(delay, produceFunc));
+            MiscHelpers.mh.runAsync(block.produce, delay);
 
             idx += 1;
         }
+
+        float totalDelay = idx * secondsBetweenActions;
+
+        return totalDelay;
     }
 
     private List<Vector2> getNextMassTargets()
@@ -280,38 +280,19 @@ public class GameLogic : MonoBehaviour
 
         int idx = 0;
         
-        // TODO: freeze user input
-        
         foreach (Vector2 gridIndices in nextTargets)
         {
             string blockType = getBlockTypeOfSquare(gridIndices);
             float delay = idx * secondsBetweenActions;
-            bool isLastAction = idx == nextTargets.Count - 1;
             
             // If nothing is there, expand the mass into it.
             // Otherwise, attack the player block that's there.
             if (blockType == null)
             {
-                Action placeBlockFunc = () =>
-                {
-                    placeBlock("mass", gridIndices);
-                    if (isLastAction)
-                    {
-                        // TODO: unfreeze user input
-                    }
-                };
-                StartCoroutine(MiscHelpers.getScheduledFunc(delay, placeBlockFunc));
+                MiscHelpers.mh.runAsync(() => placeBlock("mass", gridIndices), delay);
             } else
             {
-                Action attackBlockFunc = () =>
-                {
-                    attackBlock(gridIndices);
-                    if (isLastAction)
-                    {
-                        // TODO: unfreeze user input
-                    }
-                };
-                StartCoroutine(MiscHelpers.getScheduledFunc(delay, attackBlockFunc));
+                MiscHelpers.mh.runAsync(() => attackBlock(gridIndices), delay);
             }
 
             idx += 1;
