@@ -13,8 +13,10 @@ public class GameLogic : MonoBehaviour
 
     private PrefabInstantiator prefabInstantiator;
     
+    private float secondsBetweenActions_fast = 0.1f;
+    private float secondsBetweenActions_slow = 0.6f;
     [System.NonSerialized]
-    public float secondsBetweenActions = 0.3f;
+    public float secondsBetweenActions;
     [System.NonSerialized]
     public int numGridSquaresWide = 6;
     [System.NonSerialized]
@@ -23,6 +25,9 @@ public class GameLogic : MonoBehaviour
     [System.NonSerialized]
     public int currentIum = 5;
     private int blockIumCost = 2;
+    [System.NonSerialized]
+    public int turnsToSurvive = 20;
+    public int turnsTaken = 0;
 
     void Awake()
     {
@@ -30,6 +35,8 @@ public class GameLogic : MonoBehaviour
         gl = this;
 
         prefabInstantiator = prefabInstantiatorObj.GetComponent<PrefabInstantiator>();
+
+        secondsBetweenActions = secondsBetweenActions_slow;
     }
 
     void Start()
@@ -116,6 +123,19 @@ public class GameLogic : MonoBehaviour
         float totalDelay = executeProducePhase();
         MiscHelpers.mh.runAsync(executeMassSpreadingPhase, totalDelay);
         // TODO: unfreeze user input after above phases are finished (careful, they're async)
+        turnsTaken += 1;
+    }
+
+    public void speedUpGame()
+    /* Speeds up the game by lowering secondsBetweenActions */
+    {
+        secondsBetweenActions = secondsBetweenActions_fast;
+    }
+
+    public void slowDownGame()
+    /* Slows down the game by raising secondsBetweenActions */
+    {
+        secondsBetweenActions = secondsBetweenActions_slow;
     }
 
     /* HELPERS */

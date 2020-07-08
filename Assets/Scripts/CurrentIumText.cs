@@ -5,15 +5,6 @@ using UnityEngine.UI;
 
 public class CurrentIumText : MonoBehaviour
 {
-    public GameObject gameLogicObj;
-
-    private GameLogic gameLogic;
-
-    void Awake()
-    {
-        gameLogic = gameLogicObj.GetComponent<GameLogic>();
-    }
-
     void Start()
     {
         ColorUtility.TryParseHtmlString(Block.blueHex, out Color color);
@@ -22,6 +13,6 @@ public class CurrentIumText : MonoBehaviour
 
     void Update()
     {
-        GetComponent<Text>().text = $"{gameLogic.currentIum} Ium";
+        GetComponent<Text>().text = $"{GameLogic.gl.currentIum} Ium";
     }
 }
