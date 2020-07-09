@@ -50,7 +50,7 @@ public class Block : MonoBehaviour
         if (blockType == "blue")
         {
             isProductive = true;
-            GameLogic.gl.currentIum += 1;
+            GameLogic.G.currentIum += 1;
         } else if (blockType == "yellow")
         {
             isProductive = true;
@@ -59,18 +59,20 @@ public class Block : MonoBehaviour
 
         if (isProductive)
         {
-            displayPointer();
+            StartCoroutine(displayPointer());
         }
     }
 
-    public void displayPointer()
+    public IEnumerator displayPointer()
+    /* Show a pointer above this Block briefly, for example after that block's production phase. */
     {
-        // Show the pointer over the Block, and hide it after a delay.
         pointer.SetActive(true);
-        MiscHelpers.mh.runAsync(() => pointer.SetActive(false), GameLogic.gl.secondsBetweenActions);
+        yield return new WaitForSeconds(GameLogic.G.secondsBetweenActions);
+        pointer.SetActive(false);
     }
 
     public void damageBlock()
+    /* Change this Block from healthy to damaged. */
     {
         isDamaged = true;
         
@@ -81,6 +83,7 @@ public class Block : MonoBehaviour
     }
 
     public Color blockTypeToColor(string blockType)
+    /* Return a color for the given blockType. */
     {
         Color color;
         ColorUtility.TryParseHtmlString("#ffffff", out color);

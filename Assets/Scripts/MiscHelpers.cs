@@ -5,38 +5,21 @@ using UnityEngine;
 
 public class MiscHelpers : MonoBehaviour
 {
-    public static MiscHelpers mh;
+    // Global var that even a prefab can reference. Will be assigned our 1 instance of MiscHelpers.
+    public static MiscHelpers M;
+
+    void Awake()
+    {
+        // Since there should only be 1 MiscHelpers instance, assign this instance to a global var.
+        M = this;
+    }
 
     void Start()
     {
-        mh = this;
+
     }
 
     /* PUBLIC API */
 
-    public void runAsync(Action funcToCall, float secondsDelay)
-    /* Delay the execution of some code by some amount of time.
-    
-    :param float time: Number of seconds to wait.
-    :param func func: Function to call (no arguments, no return value) after `time` seconds.
-    */
-    {
-        StartCoroutine(asyncHelper(funcToCall, secondsDelay));
-    }
-
     /* HELPERS */
-
-    private static IEnumerator asyncHelper(Action funcToCall, float secondsDelay)
-    /* Helper for runAsync so it can call StartCoroutine on the IEnumerator this returns.
-    
-    :param float time: Number of seconds to wait.
-    :param func func: Function to call (no arguments, no return value) after `time` seconds.
-
-    :returns IEnumerator:
-    */
-    {
-        yield return new WaitForSeconds(secondsDelay);
- 
-        funcToCall();
-    }
 }

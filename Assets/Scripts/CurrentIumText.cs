@@ -13,6 +13,6 @@ public class CurrentIumText : MonoBehaviour
 
     void Update()
     {
-        GetComponent<Text>().text = $"{GameLogic.gl.currentIum} Ium";
+        GetComponent<Text>().text = $"{GameLogic.G.currentIum} Ium";
     }
 }

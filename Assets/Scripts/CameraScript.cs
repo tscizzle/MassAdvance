@@ -79,17 +79,17 @@ public class CameraScript : MonoBehaviour
     private void handleClickFloor(Vector3 clickPoint)
     {
         Vector2 gridIndices = floor.getGridIndices(clickPoint);
-        GameLogic.gl.attemptToPlaceBlock(selectedBlockType, gridIndices);
+        GameLogic.G.attemptToPlaceBlock(selectedBlockType, gridIndices);
     }
 
     private void handleRightClick()
     {
-        GameLogic.gl.speedUpGame();
+        GameLogic.G.speedUpGame();
     }
 
     private void handleRightUnclick()
     {
-        GameLogic.gl.slowDownGame();
+        GameLogic.G.slowDownGame();
     }
 
     private void setSelectedBlockType()

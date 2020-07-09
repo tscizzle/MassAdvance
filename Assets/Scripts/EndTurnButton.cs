@@ -22,6 +22,6 @@ public class EndTurnButton : MonoBehaviour
 
     public void clickEndTurn()
     {
-        gameLogic.endTurn();
+        StartCoroutine(gameLogic.endTurn());
     }
 }

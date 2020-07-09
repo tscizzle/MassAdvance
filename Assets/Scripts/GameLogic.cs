@@ -7,41 +7,48 @@ using UnityEngine;
 public class GameLogic : MonoBehaviour
 {
     // Global var that even a prefab can reference. Will be assigned our 1 instance of GameLogic.
-    public static GameLogic gl;
-
-    public GameObject prefabInstantiatorObj;
-
-    private PrefabInstantiator prefabInstantiator;
+    public static GameLogic G;
     
-    private float secondsBetweenActions_fast = 0.1f;
-    private float secondsBetweenActions_slow = 0.6f;
-    [System.NonSerialized]
+    // User interaction parameters.
+    private float secondsBetweenActions_fast;
+    private float secondsBetweenActions_slow;
     public float secondsBetweenActions;
-    [System.NonSerialized]
-    public int numGridSquaresWide = 6;
-    [System.NonSerialized]
-    public int numGridSquaresDeep = 10;
+    // Gameplay parameters.
+    public int numGridSquaresWide;
+    public int numGridSquaresDeep;
+    private int blockIumCost;
+    // Game state.
     public Dictionary<Vector2, Block> placedBlocks = new Dictionary<Vector2, Block>();
-    [System.NonSerialized]
-    public int currentIum = 5;
-    private int blockIumCost = 2;
-    [System.NonSerialized]
-    public int turnsToSurvive = 20;
-    public int turnsTaken = 0;
+    public int currentIum;
+    public int turnsToSurvive;
+    public int turnsTaken;
+    public Dictionary<string, Card> cardsById = new Dictionary<string, Card>();
+    public List<string> wholeDeck = new List<string>();
+    public List<string> currentHand = new List<string>();
+    public List<string> discardPile = new List<string>();
 
     void Awake()
     {
         // Since there should only be 1 GameLogic instance, assign this instance to a global var.
-        gl = this;
+        G = this;
 
-        prefabInstantiator = prefabInstantiatorObj.GetComponent<PrefabInstantiator>();
-
+        // Initialize variables.
+        secondsBetweenActions_fast = 0.1f;
+        secondsBetweenActions_slow = 0.6f;
         secondsBetweenActions = secondsBetweenActions_slow;
+        numGridSquaresWide = 6;
+        numGridSquaresDeep = 10;
+        currentIum = 5;
+        blockIumCost = 2;
+        turnsToSurvive = 20;
+        turnsTaken = 0;
     }
 
-    void Start()
+    IEnumerator Start()
     {
-        placeStartingBlocks();
+        // TODO: freeze user input
+
+        yield return StartCoroutine(placeStartingBlocks());
     }
 
     void Update()
@@ -73,13 +80,13 @@ public class GameLogic : MonoBehaviour
     :param Vector2 gridIndices: The square in which to put the block ((0, 0) is the bottom-left).
     */
     {
-        GameObject blockObj = prefabInstantiator.CreateBlock(blockType, gridIndices);
+        GameObject blockObj = PrefabInstantiator.P.CreateBlock(blockType, gridIndices);
         
         Block block = blockObj.GetComponent<Block>();
         
         placedBlocks[gridIndices] = block;
 
-        block.displayPointer();
+        StartCoroutine(block.displayPointer());
     }
 
     public void attackBlock(Vector2 gridIndices)
@@ -95,7 +102,7 @@ public class GameLogic : MonoBehaviour
         } else
         {
             block.damageBlock();
-            block.displayPointer();
+            StartCoroutine(block.displayPointer());
         }
     }
 
@@ -106,7 +113,8 @@ public class GameLogic : MonoBehaviour
     */
     {
         Block block = placedBlocks[gridIndices];
-        // TODO: collect any onDestroy effects and run them.
+
+        // TODO: run any onDestroy effects of this Block.
         
         GameObject blockObj = block.gameObject;
         Destroy(blockObj);
@@ -114,15 +122,19 @@ public class GameLogic : MonoBehaviour
         placedBlocks.Remove(gridIndices);
     }
 
-    public void endTurn()
+    public IEnumerator endTurn()
     /* Do the steps that should occur when player's turn ends, like evaluate combos and produce,
         trigger the enemy's turn, etc.
     */
     {
         // TODO: freeze user input
-        float totalDelay = executeProducePhase();
-        MiscHelpers.mh.runAsync(executeMassSpreadingPhase, totalDelay);
+
+        yield return executeProducePhase();
+        
+        yield return executeMassSpreadingPhase();
+        
         // TODO: unfreeze user input after above phases are finished (careful, they're async)
+        
         turnsTaken += 1;
     }
 
@@ -140,7 +152,7 @@ public class GameLogic : MonoBehaviour
 
     /* HELPERS */
 
-    private void placeStartingBlocks()
+    private IEnumerator placeStartingBlocks()
     /* Place the Blocks that start out on the grid at the beginning of a round. */
     {
         Vector2[] startingMassSquares =
@@ -151,12 +163,15 @@ public class GameLogic : MonoBehaviour
         foreach (Vector2 gridIndices in startingMassSquares)
         {
             placeBlock("mass", gridIndices);
+            yield return new WaitForSeconds(secondsBetweenActions);
         }
 
         Vector2 startingBlueSquare = new Vector2(0, numGridSquaresDeep - 2);
         placeBlock("blue", startingBlueSquare);
+        yield return new WaitForSeconds(secondsBetweenActions);
         Vector2 startingYellowSquare = new Vector2(numGridSquaresWide - 1, numGridSquaresDeep - 2);
         placeBlock("yellow", startingYellowSquare);
+        yield return new WaitForSeconds(secondsBetweenActions);
     }
 
     private List<Vector2> getProductiveBlocks()
@@ -191,25 +206,17 @@ public class GameLogic : MonoBehaviour
         return productiveBlocks;
     }
 
-    private float executeProducePhase()
+    private IEnumerator executeProducePhase()
     /* For all a player's Blocks on the grid, trigger their produce ability. */
     {
         List<Vector2> productiveBlocks = getProductiveBlocks();
 
-        int idx = 0;
-        
         foreach (Vector2 gridIndices in productiveBlocks)
         {
             Block block = placedBlocks[gridIndices];
-            float delay = idx * secondsBetweenActions;
-            MiscHelpers.mh.runAsync(block.produce, delay);
-
-            idx += 1;
+            block.produce();
+            yield return new WaitForSeconds(secondsBetweenActions);
         }
-
-        float totalDelay = idx * secondsBetweenActions;
-
-        return totalDelay;
     }
 
     private List<Vector2> getNextMassTargets()
@@ -291,31 +298,27 @@ public class GameLogic : MonoBehaviour
         return didFindMass;
     }
 
-    private void executeMassSpreadingPhase()
+    private IEnumerator executeMassSpreadingPhase()
     /* Play the enemy's turn, where the mass spreads to empty squares and attacks the player's
         blocks
     */
     {
         List<Vector2> nextTargets = getNextMassTargets();
-
-        int idx = 0;
         
         foreach (Vector2 gridIndices in nextTargets)
         {
             string blockType = getBlockTypeOfSquare(gridIndices);
-            float delay = idx * secondsBetweenActions;
             
             // If nothing is there, expand the mass into it.
             // Otherwise, attack the player block that's there.
             if (blockType == null)
             {
-                MiscHelpers.mh.runAsync(() => placeBlock("mass", gridIndices), delay);
+                placeBlock("mass", gridIndices);
             } else
             {
-                MiscHelpers.mh.runAsync(() => attackBlock(gridIndices), delay);
+                attackBlock(gridIndices);
             }
-
-            idx += 1;
+            yield return new WaitForSeconds(secondsBetweenActions);
         }
     }
 }

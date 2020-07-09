@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class PrefabInstantiator : MonoBehaviour
 {
+    // Global var that even a prefab can reference. Will be assigned our 1 instance of MiscHelpers.
+    public static PrefabInstantiator P;
+
     public GameObject blockPrefab;
     public GameObject floorObj;
 
@@ -11,6 +14,9 @@ public class PrefabInstantiator : MonoBehaviour
 
     void Awake()
     {
+        // Since there should only be 1 PrefabInstantiator instance, assign this instance to a global var.
+        P = this;
+
         floor = floorObj.GetComponent<Floor>();
     }
 
@@ -38,6 +44,11 @@ public class PrefabInstantiator : MonoBehaviour
         block.blockType = blockType;
         
         return blockObj;
+    }
+
+    public GameObject CreateCard(string cardId)
+    {
+        return new GameObject();
     }
 
     /* HELPERS */
