@@ -9,6 +9,7 @@ public class PrefabInstantiator : MonoBehaviour
 
     public GameObject blockPrefab;
     public GameObject floorObj;
+    public GameObject pointerPrefab;
 
     private Floor floor;
 
@@ -36,19 +37,32 @@ public class PrefabInstantiator : MonoBehaviour
     :returns GameObject block:
     */
     {
-        Vector3 position = floor.getGridSquareCenter(gridIndices);
+        Vector3 position = Floor.getGridSquareCenter(gridIndices);
 
         GameObject blockObj = Instantiate(blockPrefab, position, Quaternion.identity);
         
         Block block = blockObj.GetComponent<Block>();
         block.blockType = blockType;
+        block.gridIndices = gridIndices;
         
         return blockObj;
     }
 
     public GameObject CreateCard(string cardId)
+    /* TODO: do */
     {
         return new GameObject();
+    }
+
+    public GameObject CreatePointer(Vector2 gridIndices)
+    /* TODO: do */
+    {
+        Vector3 position = Floor.getGridSquareCenter(gridIndices);
+        position.y = 1;
+
+        GameObject pointerObj = Instantiate(pointerPrefab, position, Quaternion.identity);
+
+        return pointerObj;
     }
 
     /* HELPERS */

@@ -5,24 +5,15 @@ using UnityEngine;
 
 public class Floor : MonoBehaviour
 {
-    public GameObject gameLogicObj;
-
-    private GameLogic gameLogic;
-
-    private float gridSquareSize = 1; // in Unity units
-
-    void Awake()
-    {
-        gameLogic = gameLogicObj.GetComponent<GameLogic>();
-    }
+    private static float gridSquareSize = 1; // in Unity units
 
     void Start()
     {
         // Floor size.
         float gridSquareScale = transform.localScale.x / 10; // Plane defaults to 10 units across.
         transform.localScale = new Vector3(
-            gridSquareScale * gameLogic.numGridSquaresWide,
-            gridSquareScale * gameLogic.numGridSquaresDeep,
+            gridSquareScale * GameLogic.numGridSquaresWide,
+            gridSquareScale * GameLogic.numGridSquaresDeep,
             1
         );
 
@@ -52,8 +43,8 @@ public class Floor : MonoBehaviour
     :returns Vector2 gridIndices:
     */
     {
-        float floorWidth = gameLogic.numGridSquaresWide * gridSquareSize;
-        float floorDepth = gameLogic.numGridSquaresDeep * gridSquareSize;
+        float floorWidth = GameLogic.numGridSquaresWide * gridSquareSize;
+        float floorDepth = GameLogic.numGridSquaresDeep * gridSquareSize;
 
         float shiftedX = worldPoint.x + (floorWidth / 2);
         float shiftedY = worldPoint.z + (floorDepth / 2);
@@ -66,7 +57,7 @@ public class Floor : MonoBehaviour
         return gridIndices;
     }
 
-    public Vector3 getGridSquareCenter(Vector2 gridIndices)
+    public static Vector3 getGridSquareCenter(Vector2 gridIndices)
     /* Take grid indices and return the center of the corresponding grid square in Unity
         coordinates.
     
@@ -77,8 +68,8 @@ public class Floor : MonoBehaviour
         square. y doesn't matter, since z is the depth axis in world coordinates.
     */
     {
-        float shiftedXIdx = gridIndices.x - (gameLogic.numGridSquaresWide / 2);
-        float shiftedZIdx = gridIndices.y - (gameLogic.numGridSquaresDeep / 2);
+        float shiftedXIdx = gridIndices.x - (GameLogic.numGridSquaresWide / 2);
+        float shiftedZIdx = gridIndices.y - (GameLogic.numGridSquaresDeep / 2);
 
         float scaledX = shiftedXIdx * gridSquareSize;
         float scaledZ = shiftedZIdx * gridSquareSize;
@@ -112,12 +103,12 @@ public class Floor : MonoBehaviour
     void drawGridLines()
     {
         // Horizontal lines
-        foreach (int idx in Enumerable.Range(1, gameLogic.numGridSquaresWide - 1))
+        foreach (int idx in Enumerable.Range(1, GameLogic.numGridSquaresWide - 1))
         {
-            float x = -(gameLogic.numGridSquaresWide / 2) + idx;
+            float x = -(GameLogic.numGridSquaresWide / 2) + idx;
             float y = 0.01f;
-            float z_0 = -gameLogic.numGridSquaresDeep / 2;
-            float z_1 = gameLogic.numGridSquaresDeep / 2;
+            float z_0 = -GameLogic.numGridSquaresDeep / 2;
+            float z_1 = GameLogic.numGridSquaresDeep / 2;
             Vector3[] points =
             {
                 new Vector3(x, y, z_0),
@@ -126,12 +117,12 @@ public class Floor : MonoBehaviour
             drawGridLine(points);
         }
         // Vertical lines
-        foreach (int idx in Enumerable.Range(1, gameLogic.numGridSquaresDeep - 1))
+        foreach (int idx in Enumerable.Range(1, GameLogic.numGridSquaresDeep - 1))
         {
-            float x_0 = -gameLogic.numGridSquaresWide / 2;
-            float x_1 = gameLogic.numGridSquaresWide / 2;
+            float x_0 = -GameLogic.numGridSquaresWide / 2;
+            float x_1 = GameLogic.numGridSquaresWide / 2;
             float y = 0.01f;
-            float z = -(gameLogic.numGridSquaresDeep / 2) + idx;
+            float z = -(GameLogic.numGridSquaresDeep / 2) + idx;
             Vector3[] points =
             {
                 new Vector3(x_0, y, z),

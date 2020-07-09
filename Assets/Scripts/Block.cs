@@ -11,17 +11,13 @@ public class Block : MonoBehaviour
     public static string blueHex = "#0077ee";
     public static string yellowHex = "#eeee55";
     public static string redHex = "#aa0022";
+    public static float blockHeight = 0.5f;
 
-    public float blockHeight = 0.5f;
+    // Parameters.
     public string blockType;
+    public Vector2 gridIndices;
+    // State.
     public bool isDamaged = false;
-
-    private GameObject pointer;
-
-    void Awake()
-    {
-        pointer = transform.Find("Pointer").gameObject;
-    }
 
     void Start()
     {
@@ -59,16 +55,8 @@ public class Block : MonoBehaviour
 
         if (isProductive)
         {
-            StartCoroutine(displayPointer());
+            StartCoroutine(Pointer.displayPointer(gridIndices));
         }
-    }
-
-    public IEnumerator displayPointer()
-    /* Show a pointer above this Block briefly, for example after that block's production phase. */
-    {
-        pointer.SetActive(true);
-        yield return new WaitForSeconds(GameLogic.G.secondsBetweenActions);
-        pointer.SetActive(false);
     }
 
     public void damageBlock()

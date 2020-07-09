@@ -14,9 +14,9 @@ public class GameLogic : MonoBehaviour
     private float secondsBetweenActions_slow;
     public float secondsBetweenActions;
     // Gameplay parameters.
-    public int numGridSquaresWide;
-    public int numGridSquaresDeep;
-    private int blockIumCost;
+    public static int numGridSquaresWide;
+    public static int numGridSquaresDeep;
+    private static int blockIumCost;
     // Game state.
     public Dictionary<Vector2, Block> placedBlocks = new Dictionary<Vector2, Block>();
     public int currentIum;
@@ -86,7 +86,7 @@ public class GameLogic : MonoBehaviour
         
         placedBlocks[gridIndices] = block;
 
-        StartCoroutine(block.displayPointer());
+        StartCoroutine(Pointer.displayPointer(gridIndices));
     }
 
     public void attackBlock(Vector2 gridIndices)
@@ -99,10 +99,11 @@ public class GameLogic : MonoBehaviour
         if (block.isDamaged)
         {
             destroyBlock(gridIndices);
+            StartCoroutine(Pointer.displayPointer(gridIndices));
         } else
         {
             block.damageBlock();
-            StartCoroutine(block.displayPointer());
+            StartCoroutine(Pointer.displayPointer(gridIndices));
         }
     }
 
