@@ -23,7 +23,7 @@ public class Card : MonoBehaviour
         cardName = GameLogic.G.cardsById[cardId].cardName;
         
         Color color = cardNameToColor[cardName];
-        GetComponent<Image>().color = color;
+        GetComponentInChildren<Image>().color = color;
     }
 
     void Update()
