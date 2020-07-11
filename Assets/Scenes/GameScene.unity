@@ -291,7 +291,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 0 Ium
+  m_Text: X ium
 --- !u!222 &489642448
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -346,8 +346,8 @@ MonoBehaviour:
   currentIum: 0
   turnsToSurvive: 0
   turnsTaken: 0
-  wholeDeck: []
-  currentHand: []
+  drawPile: []
+  hand: []
   discardPile: []
 --- !u!4 &622778171
 Transform:
@@ -563,7 +563,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   floorObj: {fileID: 2054177979}
-  selectedBlockType: blue
+  selectedBlockType: 1
 --- !u!1 &980466528
 GameObject:
   m_ObjectHideFlags: 0
@@ -740,8 +740,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   blockPrefab: {fileID: 7532674428974870938, guid: 9be1918362c994ad4ade3b53101fc1c2,
     type: 3}
-  floorObj: {fileID: 2054177979}
   pointerPrefab: {fileID: 2546780840405447781, guid: 7b684558c63763a2f9cfda80af17baf9,
+    type: 3}
+  cardPrefab: {fileID: 2480274681150162899, guid: c75e1664f28be246c858e079930e4bb2,
     type: 3}
 --- !u!4 &1431573956
 Transform:
@@ -828,7 +829,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Turn X/Y
+  m_Text: Turn Y/Z
 --- !u!222 &1642039142
 CanvasRenderer:
   m_ObjectHideFlags: 0

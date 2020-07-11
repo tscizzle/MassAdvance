@@ -5,17 +5,18 @@ using UnityEngine;
 
 public class MiscHelpers : MonoBehaviour
 {
-    // Global var that even a prefab can reference. Will be assigned our 1 instance of MiscHelpers.
-    public static MiscHelpers M;
-
-    void Awake()
-    {
-        // Since there should only be 1 MiscHelpers instance, assign this instance to a global var.
-        M = this;
-    }
+    private static System.Random rng = new System.Random();
 
     void Start()
     {
 
+    }
+
+    /* PUBLIC API */
+
+    public static string getRandomId()
+    {
+        string randomId = rng.Next(10000000, 99999999).ToString();
+        return randomId;
     }
 }

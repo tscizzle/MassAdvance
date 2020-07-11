@@ -7,12 +7,11 @@ public class CurrentIumText : MonoBehaviour
 {
     void Start()
     {
-        ColorUtility.TryParseHtmlString(Block.blueHex, out Color color);
-        GetComponent<Text>().color = color;
+        GetComponent<Text>().color = Block.blueColor;
     }
 
     void Update()
     {
-        GetComponent<Text>().text = $"{GameLogic.G.currentIum} Ium";
+        GetComponent<Text>().text = $"{GameLogic.G.currentIum} ium";
     }
 }

@@ -13,7 +13,7 @@ public class CameraScript : MonoBehaviour
     private float scrollZLowerLimit = -6;
 
     // Temporary while there's not a cards-based way to choose blocks to place
-    public string selectedBlockType = "blue";
+    public BlockType selectedBlockType = BlockType.BLUE;
 
     void Awake()
     {
@@ -96,13 +96,13 @@ public class CameraScript : MonoBehaviour
     {
         if (Input.GetKey(KeyCode.A))
         {
-            selectedBlockType = "blue";
+            selectedBlockType = BlockType.BLUE;
         } else if (Input.GetKey(KeyCode.S))
         {
-            selectedBlockType = "yellow";
+            selectedBlockType = BlockType.YELLOW;
         } else if (Input.GetKey(KeyCode.D))
         {
-            selectedBlockType = "red";
+            selectedBlockType = BlockType.RED;
         }
     }
 }

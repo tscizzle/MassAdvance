@@ -8,33 +8,31 @@ public class PrefabInstantiator : MonoBehaviour
     public static PrefabInstantiator P;
 
     public GameObject blockPrefab;
-    public GameObject floorObj;
     public GameObject pointerPrefab;
+    public GameObject cardPrefab;
 
-    private Floor floor;
+    private Canvas canvas;
 
     void Awake()
     {
         // Since there should only be 1 PrefabInstantiator instance, assign this instance to a global var.
         P = this;
-
-        floor = floorObj.GetComponent<Floor>();
     }
 
     void Start()
     {
-
+        canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
     }
 
     /* PUBLIC API */
 
-    public GameObject CreateBlock(string blockType, Vector2 gridIndices)
+    public GameObject CreateBlock(BlockType blockType, Vector2 gridIndices)
     /* Create a Block.
 
     :param string blockType: One of [ "mass", "blue", "yellow", "red" ]
     :param Vector2 gridIndices: The square in which to put the block ((0, 0) is the bottom-left).
     
-    :returns GameObject block:
+    :returns GameObject blockObj:
     */
     {
         Vector3 position = Floor.getGridSquareCenter(gridIndices);
@@ -49,13 +47,29 @@ public class PrefabInstantiator : MonoBehaviour
     }
 
     public GameObject CreateCard(string cardId)
-    /* TODO: do */
+    /* Create a Card.
+
+    :param string cardId: String identifying the Card to create.
+
+    :returns GameObject cardObj:
+    */
     {
-        return new GameObject();
+        GameObject cardObj = Instantiate(cardPrefab, Vector3.zero, Quaternion.identity);
+        cardObj.transform.SetParent(canvas.transform, worldPositionStays: false);
+
+        Card card = cardObj.GetComponent<Card>();
+        card.cardId = cardId;
+
+        return cardObj;
     }
 
     public GameObject CreatePointer(Vector2 gridIndices)
-    /* TODO: do */
+    /* Create a Pointer.
+
+    :param Vector2 gridIndices: The square over which to point the pointer ((0, 0) is the bottom-left).
+
+    :returns GameObject pointerObj:
+    */
     {
         Vector3 position = Floor.getGridSquareCenter(gridIndices);
         position.y = 1;
@@ -64,6 +78,4 @@ public class PrefabInstantiator : MonoBehaviour
 
         return pointerObj;
     }
-
-    /* HELPERS */
 }

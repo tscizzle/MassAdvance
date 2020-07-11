@@ -22,9 +22,9 @@ public class GameLogic : MonoBehaviour
     public int currentIum;
     public int turnsToSurvive;
     public int turnsTaken;
-    public Dictionary<string, Card> cardsById = new Dictionary<string, Card>();
-    public List<string> wholeDeck = new List<string>();
-    public List<string> currentHand = new List<string>();
+    public Dictionary<string, CardInfo> cardsById = new Dictionary<string, CardInfo>();
+    public List<string> drawPile = new List<string>();
+    public List<string> hand = new List<string>();
     public List<string> discardPile = new List<string>();
 
     void Awake()
@@ -46,9 +46,13 @@ public class GameLogic : MonoBehaviour
 
     IEnumerator Start()
     {
+        initializeCards();
+
         // TODO: freeze user input
 
         yield return StartCoroutine(placeStartingBlocks());
+
+        // TODO: unfreeze user input
     }
 
     void Update()
@@ -58,11 +62,11 @@ public class GameLogic : MonoBehaviour
 
     /* PUBLIC API */
 
-    public void attemptToPlaceBlock(string blockType, Vector2 gridIndices)
+    public void attemptToPlaceBlock(BlockType blockType, Vector2 gridIndices)
     /* Attempty to put a block into play in the grid, but may not succeed due to constraints like
         ium and placement restrictions.
     
-    :param string blockType: One of [ "mass", "blue", "yellow", "red" ]
+    :param BlockType blockType: enum defined in Block.cs
     :param Vector2 gridIndices: The square in which to put the block ((0, 0) is the bottom-left).
     */
     {
@@ -73,10 +77,10 @@ public class GameLogic : MonoBehaviour
         }
     }
 
-    public void placeBlock(string blockType, Vector2 gridIndices)
+    public void placeBlock(BlockType blockType, Vector2 gridIndices)
     /* Put a block into play in the grid.
     
-    :param string blockType: One of [ "mass", "blue", "yellow", "red" ]
+    :param BlockType blockType: enum defined in Block.cs
     :param Vector2 gridIndices: The square in which to put the block ((0, 0) is the bottom-left).
     */
     {
@@ -151,7 +155,57 @@ public class GameLogic : MonoBehaviour
         secondsBetweenActions = secondsBetweenActions_slow;
     }
 
+    public void gainIum(int ium)
+    /* Gain ium equal to the amount passed in.
+    
+    :param int ium: Amount of ium to gain.
+    */
+    {
+        currentIum += ium;
+    }
+
+    public void drawCard()
+    /* Pick up a card from drawPile to currentHand. */
+    {
+        if (drawPile.Count == 0)
+        {
+            drawPile = discardPile.OrderBy(_ => UnityEngine.Random.value).ToList();
+            discardPile.Clear();
+        }
+
+        string drawnCardId = drawPile[drawPile.Count - 1];
+        drawPile.RemoveAt(drawPile.Count - 1);
+        hand.Add(drawnCardId);
+
+        GameObject cardObj = PrefabInstantiator.P.CreateCard(drawnCardId);
+        
+        Card card = cardObj.GetComponent<Card>();
+        CardInfo cardInfo = cardsById[drawnCardId];
+        cardInfo.card = card;
+    }
+
     /* HELPERS */
+
+    private void initializeCards()
+    /* Shuffle the player's cards and put them in the draw pile. */
+    {
+        BlockType[] playerBlockTypes = new[] { BlockType.BLUE, BlockType.YELLOW, BlockType.RED };
+        foreach (BlockType blockType in playerBlockTypes)
+        {
+            foreach (int idx in Enumerable.Range(0, 100))
+            {
+                string cardName = $"single_block_{blockType}";
+                string cardId = MiscHelpers.getRandomId();
+
+                cardsById[cardId] = new CardInfo(cardName, cardId);
+            }
+        }
+        List<CardInfo> shuffledDeck = cardsById.Values.OrderBy(_ => UnityEngine.Random.value).ToList();
+        foreach (CardInfo cardInfo in shuffledDeck)
+        {
+            drawPile.Add(cardInfo.cardId);
+        }
+    }
 
     private IEnumerator placeStartingBlocks()
     /* Place the Blocks that start out on the grid at the beginning of a round. */
@@ -163,17 +217,19 @@ public class GameLogic : MonoBehaviour
         };
         foreach (Vector2 gridIndices in startingMassSquares)
         {
-            placeBlock("mass", gridIndices);
+            placeBlock(BlockType.MASS, gridIndices);
             yield return new WaitForSeconds(secondsBetweenActions);
         }
 
         Vector2 startingBlueSquare = new Vector2(0, numGridSquaresDeep - 2);
-        placeBlock("blue", startingBlueSquare);
+        placeBlock(BlockType.BLUE, startingBlueSquare);
         yield return new WaitForSeconds(secondsBetweenActions);
         Vector2 startingYellowSquare = new Vector2(numGridSquaresWide - 1, numGridSquaresDeep - 2);
-        placeBlock("yellow", startingYellowSquare);
+        placeBlock(BlockType.YELLOW, startingYellowSquare);
         yield return new WaitForSeconds(secondsBetweenActions);
     }
+
+
 
     private List<Vector2> getProductiveBlocks()
     /* Get a list of all squares that have player Blocks with `produce` effects.
@@ -190,9 +246,9 @@ public class GameLogic : MonoBehaviour
             foreach (int yIdx in Enumerable.Range(0, numGridSquaresDeep))
             {
                 Vector2 gridIndices = new Vector2(xIdx, yIdx);
-                string blockType = getBlockTypeOfSquare(gridIndices);
+                BlockType? blockType = getBlockTypeOfSquare(gridIndices);
 
-                if (blockType == "blue")
+                if (blockType == BlockType.BLUE || blockType == BlockType.YELLOW)
                 {
                     unorderedProductiveBlocks.Add(gridIndices);
                 }
@@ -236,9 +292,9 @@ public class GameLogic : MonoBehaviour
             foreach (int yIdx in Enumerable.Range(0, numGridSquaresDeep))
             {
                 Vector2 gridIndices = new Vector2(xIdx, yIdx);
-                string blockType = getBlockTypeOfSquare(gridIndices);
+                BlockType? blockType = getBlockTypeOfSquare(gridIndices);
 
-                bool isSquareMass = blockType == "mass";
+                bool isSquareMass = blockType == BlockType.MASS;
                 bool isSquareNeighboredByMass = isNeighboredByMass(gridIndices);
 
                 if (!isSquareMass && isSquareNeighboredByMass)
@@ -256,16 +312,18 @@ public class GameLogic : MonoBehaviour
         return nextTargets;
     }
 
-    private string getBlockTypeOfSquare(Vector2 gridIndices)
+    private BlockType? getBlockTypeOfSquare(Vector2 gridIndices)
     /* Get the blockType of a place in the grid.
     
     :param Vector2 gridIndices: Position of square we want the block type of.
 
-    :returns string blockType: One of ["mass", "blue", "yellow", "red"]
+    :returns BlockType blockType: enum defined in Block.cs
     */
     {
         bool isSquareOccupied = placedBlocks.ContainsKey(gridIndices);
-        string blockType = isSquareOccupied ? placedBlocks[gridIndices].blockType : null;
+        BlockType? blockType = isSquareOccupied
+            ? placedBlocks[gridIndices].blockType
+            : (BlockType?)null;
         return blockType;
     }
 
@@ -290,7 +348,7 @@ public class GameLogic : MonoBehaviour
         };
         foreach (Vector2 neighbor in neighbors)
         {
-            if (getBlockTypeOfSquare(neighbor) == "mass")
+            if (getBlockTypeOfSquare(neighbor) == BlockType.MASS)
             {
                 didFindMass = true;
             }
@@ -308,13 +366,13 @@ public class GameLogic : MonoBehaviour
         
         foreach (Vector2 gridIndices in nextTargets)
         {
-            string blockType = getBlockTypeOfSquare(gridIndices);
+            BlockType? blockType = getBlockTypeOfSquare(gridIndices);
             
             // If nothing is there, expand the mass into it.
             // Otherwise, attack the player block that's there.
             if (blockType == null)
             {
-                placeBlock("mass", gridIndices);
+                placeBlock(BlockType.MASS, gridIndices);
             } else
             {
                 attackBlock(gridIndices);
@@ -323,3 +381,17 @@ public class GameLogic : MonoBehaviour
         }
     }
 }
+
+public struct CardInfo
+{
+    public CardInfo(string cardName_arg, string cardId_arg)
+    {
+        cardName = cardName_arg;
+        cardId = cardId_arg;
+        card = null;
+    }
+
+    public string cardName { get; }
+    public string cardId { get; }
+    public Card card;
+};
