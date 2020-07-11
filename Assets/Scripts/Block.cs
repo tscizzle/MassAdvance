@@ -7,15 +7,17 @@ public class Block : MonoBehaviour
 {
     public Material damagedMaterial;
 
-    private static string massHex = "#555555";
-    public static Color massColor;
-    private static string blueHex = "#0077ee";
-    public static Color blueColor;
-    private static string yellowHex = "#eeee55";
-    public static Color yellowColor;
-    private static string redHex = "#aa0022";
-    public static Color redColor;
-    private Dictionary<BlockType, Color> blockTypeToColor;
+    public static Color massColor = new Color(85/255f, 85/255f, 85/255f);
+    public static Color blueColor = new Color(0, 119/255f, 238/255f);
+    public static Color yellowColor = new Color(238/255f, 238/255f, 85/255f);
+    public static Color redColor = new Color(170/255f, 0, 34/255f);
+    private Dictionary<BlockType, Color> blockTypeToColor = new Dictionary<BlockType, Color>
+    {
+        { BlockType.MASS, massColor },
+        { BlockType.BLUE, blueColor },
+        { BlockType.YELLOW, yellowColor },
+        { BlockType.RED, redColor },
+    };
     public static float blockHeight = 0.5f;
 
     // Parameters.
@@ -23,22 +25,6 @@ public class Block : MonoBehaviour
     public Vector2 gridIndices;
     // State.
     public bool isDamaged = false;
-
-    void Awake()
-    {
-        ColorUtility.TryParseHtmlString(massHex, out massColor);
-        ColorUtility.TryParseHtmlString(blueHex, out blueColor);
-        ColorUtility.TryParseHtmlString(yellowHex, out yellowColor);
-        ColorUtility.TryParseHtmlString(redHex, out redColor);
-        
-        blockTypeToColor = new Dictionary<BlockType, Color>
-        {
-            { BlockType.MASS, massColor },
-            { BlockType.BLUE, blueColor },
-            { BlockType.YELLOW, yellowColor },
-            { BlockType.RED, redColor },
-        };
-    }
 
     void Start()
     {
