@@ -5,15 +5,38 @@ using UnityEngine.UI;
 
 public class Card : MonoBehaviour
 {
-    private static Dictionary<string, Color> cardNameToColor;
+    private static string blueCardHex = "#33aafa";
+    public static Color blueCardColor;
+    private static string yellowCardHex = "#fafa88";
+    public static Color yellowCardColor;
+    private static string redCardHex = "#ee4466";
+    public static Color redCardColor;
+    private static Dictionary<string, Color> cardNameToIconColor;
+    private static Dictionary<string, Color> cardNameToBackgroundColor;
 
     // Parameters.
     public string cardId;
     public string cardName;
 
+    void Awake()
+    {
+        ColorUtility.TryParseHtmlString(blueCardHex, out blueCardColor);
+        ColorUtility.TryParseHtmlString(yellowCardHex, out yellowCardColor);
+        ColorUtility.TryParseHtmlString(redCardHex, out redCardColor);
+
+        cardNameToBackgroundColor = new Dictionary<string, Color>
+        {
+            { getSingleBlockCardName(BlockType.BLUE), blueCardColor },
+            { getSingleBlockCardName(BlockType.YELLOW), yellowCardColor },
+            { getSingleBlockCardName(BlockType.RED), redCardColor },
+        };
+    }
+
     void Start()
     {
-        cardNameToColor = new Dictionary<string, Color>
+        // Block colors need to be defined before this. Happens in Block.cs's Awake, so this is in
+        // Start.
+        cardNameToIconColor = new Dictionary<string, Color>
         {
             { getSingleBlockCardName(BlockType.BLUE), Block.blueColor },
             { getSingleBlockCardName(BlockType.YELLOW), Block.yellowColor },
@@ -22,8 +45,13 @@ public class Card : MonoBehaviour
 
         cardName = GameLogic.G.cardsById[cardId].cardName;
         
-        Color color = cardNameToColor[cardName];
-        GetComponentInChildren<Image>().color = color;
+        Color iconColor = cardNameToIconColor[cardName];
+        GameObject iconObj = transform.Find("Icon").gameObject;
+        iconObj.GetComponent<Image>().color = iconColor;
+        
+        Color backgroundColor = cardNameToBackgroundColor[cardName];
+        GameObject backgroundObj = transform.Find("Background").gameObject;
+        backgroundObj.GetComponent<Image>().color = backgroundColor;
     }
 
     void Update()
@@ -43,9 +71,9 @@ public class Card : MonoBehaviour
         // TODO: make a card slightly larger and in front, based on mouse position
     }
 
-    /* PUBLIC API */
+    /* HELPERS */
 
-    public static string getSingleBlockCardName(BlockType blockType)
+    private static string getSingleBlockCardName(BlockType blockType)
     /* Given a BlockType, give the cardName of the card that places a single block of that type. */
     {
         return $"single_block_{blockType}";
