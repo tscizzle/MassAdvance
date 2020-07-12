@@ -12,9 +12,6 @@ public class CameraScript : MonoBehaviour
     private float scrollZUpperLimit = -3;
     private float scrollZLowerLimit = -6;
 
-    // Temporary while there's not a cards-based way to choose blocks to place
-    public BlockType selectedBlockType = BlockType.BLUE;
-
     void Awake()
     {
         floor = floorObj.GetComponent<Floor>();
@@ -27,9 +24,6 @@ public class CameraScript : MonoBehaviour
 
     void Update()
     {
-        // Temporary while there's not a real way to place blocks
-        setSelectedBlockType();
-
         mouseScroll();
 
         mouseClick();
@@ -79,7 +73,7 @@ public class CameraScript : MonoBehaviour
     private void handleClickFloor(Vector3 clickPoint)
     {
         Vector2 gridIndices = floor.getGridIndices(clickPoint);
-        GameLogic.G.attemptToPlaceBlock(selectedBlockType, gridIndices);
+        GameLogic.G.attemptToPlaceBlock(gridIndices);
     }
 
     private void handleRightClick()
@@ -90,19 +84,5 @@ public class CameraScript : MonoBehaviour
     private void handleRightUnclick()
     {
         GameLogic.G.slowDownGame();
-    }
-
-    private void setSelectedBlockType()
-    {
-        if (Input.GetKey(KeyCode.A))
-        {
-            selectedBlockType = BlockType.BLUE;
-        } else if (Input.GetKey(KeyCode.S))
-        {
-            selectedBlockType = BlockType.YELLOW;
-        } else if (Input.GetKey(KeyCode.D))
-        {
-            selectedBlockType = BlockType.RED;
-        }
     }
 }

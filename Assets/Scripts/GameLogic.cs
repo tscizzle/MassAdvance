@@ -17,15 +17,18 @@ public class GameLogic : MonoBehaviour
     public static int numGridSquaresWide;
     public static int numGridSquaresDeep;
     private static int blockIumCost;
+    public int turnsToSurvive;
+    private int startingIum;
+    private int startingHandSize;
     // Game state.
     public Dictionary<Vector2, Block> placedBlocks = new Dictionary<Vector2, Block>();
     public int currentIum;
-    public int turnsToSurvive;
     public int turnsTaken;
     public Dictionary<string, CardInfo> cardsById = new Dictionary<string, CardInfo>();
     public List<string> drawPile = new List<string>();
     public List<string> hand = new List<string>();
     public List<string> discardPile = new List<string>();
+    public string selectedCardId = null;
 
     void Awake()
     {
@@ -38,9 +41,11 @@ public class GameLogic : MonoBehaviour
         secondsBetweenActions = secondsBetweenActions_slow;
         numGridSquaresWide = 6;
         numGridSquaresDeep = 10;
-        currentIum = 5;
         blockIumCost = 2;
         turnsToSurvive = 20;
+        startingIum = 10;
+        startingHandSize = 5;
+        currentIum = 0;
         turnsTaken = 0;
     }
 
@@ -48,10 +53,15 @@ public class GameLogic : MonoBehaviour
     {
         initializeCards();
 
+        // Start with ium and a hand.
+        gainIum(startingIum);
+        foreach (int _ in Enumerable.Range(0, startingHandSize))
+        {
+            drawCard();
+        }
+
         // TODO: freeze user input
-
         yield return StartCoroutine(placeStartingBlocks());
-
         // TODO: unfreeze user input
     }
 
@@ -62,18 +72,27 @@ public class GameLogic : MonoBehaviour
 
     /* PUBLIC API */
 
-    public void attemptToPlaceBlock(BlockType blockType, Vector2 gridIndices)
+    public void attemptToPlaceBlock(Vector2 gridIndices)
     /* Attempty to put a block into play in the grid, but may not succeed due to constraints like
         ium and placement restrictions.
     
-    :param BlockType blockType: enum defined in Block.cs
     :param Vector2 gridIndices: The square in which to put the block ((0, 0) is the bottom-left).
     */
     {
-        if (blockIumCost <= currentIum)
+        if (selectedCardId != null)
         {
-            currentIum -= blockIumCost;
-            placeBlock(blockType, gridIndices);
+            CardInfo selectedCard = cardsById[selectedCardId];
+            string cardName = selectedCard.cardName;
+            bool isSelectedCardABlock = Card.cardNameToBlockType.ContainsKey(cardName);
+            bool canAffordBlock = currentIum >= blockIumCost;
+            if (isSelectedCardABlock && canAffordBlock)
+            {
+                BlockType blockType = Card.cardNameToBlockType[cardName];
+                currentIum -= blockIumCost;
+                placeBlock(blockType, gridIndices);
+                discardCard(selectedCardId);
+                selectedCardId = null;
+            }
         }
     }
 
@@ -133,11 +152,9 @@ public class GameLogic : MonoBehaviour
     */
     {
         // TODO: freeze user input
-
         yield return executeProducePhase();
         
         yield return executeMassSpreadingPhase();
-        
         // TODO: unfreeze user input after above phases are finished (careful, they're async)
         
         turnsTaken += 1;
@@ -165,7 +182,7 @@ public class GameLogic : MonoBehaviour
     }
 
     public void drawCard()
-    /* Pick up a card from drawPile to currentHand. */
+    /* Pick up a Card from drawPile to currentHand. */
     {
         if (drawPile.Count == 0)
         {
@@ -182,6 +199,24 @@ public class GameLogic : MonoBehaviour
         Card card = cardObj.GetComponent<Card>();
         CardInfo cardInfo = cardsById[drawnCardId];
         cardInfo.card = card;
+        cardsById[drawnCardId] = cardInfo;
+    }
+
+    public void discardCard(string cardId)
+    /* Put a Card from the hand to the discard pile
+    
+    :param string cardId: id of the Card in the hand to discard
+    */
+    {
+        hand.Remove(cardId);
+
+        CardInfo cardInfo = cardsById[cardId];
+        GameObject cardObj = cardInfo.card.gameObject;
+        Destroy(cardObj);
+        cardInfo.card = null;
+        cardsById[cardId] = cardInfo;
+
+        discardPile.Add(cardId);
     }
 
     /* HELPERS */

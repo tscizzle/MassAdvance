@@ -344,12 +344,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   secondsBetweenActions: 0
-  currentIum: 0
   turnsToSurvive: 0
+  currentIum: 0
   turnsTaken: 0
   drawPile: []
   hand: []
   discardPile: []
+  selectedCardId: 
 --- !u!4 &622778171
 Transform:
   m_ObjectHideFlags: 0
@@ -362,7 +363,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &622778172
 MonoBehaviour:
@@ -564,7 +565,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   floorObj: {fileID: 2054177979}
-  selectedBlockType: 1
 --- !u!1 &980466528
 GameObject:
   m_ObjectHideFlags: 0
@@ -757,7 +757,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1604487979
 GameObject:

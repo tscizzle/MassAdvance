@@ -3,12 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
-public class Card : MonoBehaviour
+public class Card : MonoBehaviour, IPointerClickHandler
 {
     public static Color blueCardColor = new Color(51/255f, 170/255f, 250/255f);
     public static Color yellowCardColor = new Color(250/255f, 250/255f, 136/255f);
     public static Color redCardColor = new Color(238/255f, 68/255f, 102/255f);
+    public static Dictionary<string, BlockType> cardNameToBlockType = new Dictionary<string, BlockType>
+    {
+        { getSingleBlockCardName(BlockType.BLUE), BlockType.BLUE },
+        { getSingleBlockCardName(BlockType.YELLOW), BlockType.YELLOW },
+        { getSingleBlockCardName(BlockType.RED), BlockType.RED },
+    };
     private static Dictionary<string, Color> cardNameToIconColor = new Dictionary<string, Color>
     {
         { getSingleBlockCardName(BlockType.BLUE), Block.blueColor },
@@ -74,7 +81,8 @@ public class Card : MonoBehaviour
         // to the front.
         Vector2 mousePos = Input.mousePosition;
         bool isMouseInHandArea = (
-            0 <= mousePos.x
+            handSize > 0
+            && 0 <= mousePos.x
             && mousePos.x <= cardWidth
             && bottomBound <= mousePos.y
             && mousePos.y <= topBound
@@ -94,6 +102,17 @@ public class Card : MonoBehaviour
 
         // Order the cards, front-to-back-wise.
         setAllCardsDepth(hoveredCardId);
+    }
+
+    /* PUBLIC API */
+
+    public void OnPointerClick(PointerEventData eventData)
+    /* Override this function of IPointerClickHandler. Triggers when this Card is clicked.
+    
+    :param PointerEventData eventData: This interface is defined by Unity.
+    */
+    {
+        GameLogic.G.selectedCardId = cardId;
     }
 
     /* HELPERS */
