@@ -12,6 +12,7 @@ public class PrefabInstantiator : MonoBehaviour
     public GameObject cardPrefab;
 
     private Canvas canvas;
+    private GameObject hand;
 
     void Awake()
     {
@@ -22,6 +23,7 @@ public class PrefabInstantiator : MonoBehaviour
     void Start()
     {
         canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
+        hand = canvas.transform.Find("Hand").gameObject;
     }
 
     /* PUBLIC API */
@@ -54,8 +56,9 @@ public class PrefabInstantiator : MonoBehaviour
     :returns GameObject cardObj:
     */
     {
+        Vector3 position = new Vector3(0, -Screen.height, 0);
         GameObject cardObj = Instantiate(cardPrefab, Vector3.zero, Quaternion.identity);
-        cardObj.transform.SetParent(canvas.transform, worldPositionStays: false);
+        cardObj.transform.SetParent(hand.transform, worldPositionStays: false);
 
         Card card = cardObj.GetComponent<Card>();
         card.cardId = cardId;

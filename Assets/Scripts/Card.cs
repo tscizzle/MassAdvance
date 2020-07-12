@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -25,6 +26,7 @@ public class Card : MonoBehaviour
 
     private GameObject backgroundObj;
     private GameObject iconObj;
+    private GameObject handObj;
 
     // Parameters.
     public string cardId;
@@ -40,19 +42,20 @@ public class Card : MonoBehaviour
     {
         cardName = GameLogic.G.cardsById[cardId].cardName;
 
-        iconObj = transform.Find("Icon").gameObject;
         backgroundObj = transform.Find("Background").gameObject;
-        
-        Color iconColor = cardNameToIconColor[cardName];
-        iconObj.GetComponent<Image>().color = iconColor;
+        iconObj = transform.Find("Icon").gameObject;
+        handObj = GameObject.Find("Hand");
         
         Color backgroundColor = cardNameToBackgroundColor[cardName];
         backgroundObj.GetComponent<Image>().color = backgroundColor;
+        
+        Color iconColor = cardNameToIconColor[cardName];
+        iconObj.GetComponent<Image>().color = iconColor;
     }
 
     void Update()
     {
-        // Place this card in the correct vertical position along the left-side of the screen.
+        // Place this Card in the correct vertical position along the left-side of the screen.
         // For 1 card put it at 1/2. For 2 cards put them at 1/3 and 2/3. Etc.
         int handSize = GameLogic.G.hand.Count;
         int idxInHand = GameLogic.G.hand.IndexOf(cardId);
@@ -64,9 +67,8 @@ public class Card : MonoBehaviour
         float cardY = topBound - distFromTop;
         transform.position = new Vector3(0, cardY, 0);
         
-        // Default to this card not being highlighted (regular size, regular depth).
+        // Default to this Card not being highlighted (regular size, regular depth).
         setCardSize(1);
-        GUI.depth = -(idxInHand + 1);
 
         // Highlight this card if the mouse is hovered near it, by enlarging the card and moving it
         // to the front.
@@ -77,18 +79,21 @@ public class Card : MonoBehaviour
             && bottomBound <= mousePos.y
             && mousePos.y <= topBound
         );
+        string hoveredCardId = null;
         if (isMouseInHandArea)
         {
             float mouseDistFromTop = topBound - mousePos.y;
             float areaPerCard = totalDist / handSize;
             int hoveredIdx = (int)Mathf.Floor(mouseDistFromTop / areaPerCard);
-            string hoveredCardId = GameLogic.G.hand[hoveredIdx];
+            hoveredCardId = GameLogic.G.hand[hoveredIdx];
             if (cardId == hoveredCardId)
             {
                 setCardSize(1.3f);
-                GUI.depth = 0;
             }
         }
+
+        // Order the cards, front-to-back-wise.
+        setAllCardsDepth(hoveredCardId);
     }
 
     /* HELPERS */
@@ -114,5 +119,48 @@ public class Card : MonoBehaviour
         Vector2 iconSize = backgroundSize * 0.67f;
         iconSize.y = iconSize.x; // Make the icon a square.
         iconObj.GetComponent<RectTransform>().sizeDelta = iconSize;
+    }
+
+    private void setAllCardsDepth(string hoveredCardId)
+    /* Set the order of Cards in the Hierarchy so they appear correctly front-to-back-wise.
+    
+    Note that if another Card's Update already ran and did this, nothing needs to happen here.
+
+    :param string hoveredCardId: id of Card that should be highlighted because the mouse is near it,
+        meaning it is "taken out" of order and placed at the end of the siblings in the Hierarchy.
+    */
+    {
+        // Desired order of Cards in the GameObject Hierarchy.
+        List<string> desiredHierarchyOrder = new List<string>(GameLogic.G.hand);
+        if (hoveredCardId != null)
+        {
+            desiredHierarchyOrder.Remove(hoveredCardId);
+            desiredHierarchyOrder.Add(hoveredCardId);
+        }
+
+        // Order of Cards in the GameObject Hierarchy right now.
+        List<string> currentHierarchyOrder = new List<string>();
+        Dictionary<string, Transform> cardIdToTransformMap = new Dictionary<string, Transform>();
+        foreach (Transform cardTransform in handObj.transform)
+        {
+            GameObject childObj = cardTransform.gameObject;
+            Card childCard = childObj.GetComponent<Card>();
+            string childId = childCard.cardId;
+            currentHierarchyOrder.Add(childId);
+            cardIdToTransformMap[childId] = cardTransform;
+        }
+
+        // If the Cards are where they need to be, don't move anything.
+        // Otherwise, in order, place each Card at the end, so they end up in the correct order.
+        if (desiredHierarchyOrder.SequenceEqual(currentHierarchyOrder))
+        {
+            return;
+        } else
+        {
+            foreach (string childId in desiredHierarchyOrder)
+            {
+                cardIdToTransformMap[childId].SetAsLastSibling();
+            }
+        }
     }
 }
