@@ -199,8 +199,6 @@ public class Card : MonoBehaviour, IPointerClickHandler
 
         // If the Cards are where they need to be, don't move anything.
         // Otherwise, in order, place each Card at the end, so they end up in the correct order.
-        Debug.Log(desiredHierarchyOrder.ToString());
-        Debug.Log(currentHierarchyOrder.ToString());
         if (desiredHierarchyOrder.SequenceEqual(currentHierarchyOrder))
         {
             return;
