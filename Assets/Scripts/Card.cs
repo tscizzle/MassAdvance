@@ -33,6 +33,8 @@ public class Card : MonoBehaviour, IPointerClickHandler
     private static float cardAreaBottomBound;
     private static float cardAreaTopBound;
     private static float cardAreaRightBound;
+    private static float movementHalftime;
+    private static float movementMinSpeed;
 
     private GameObject backgroundObj;
     private GameObject iconObj;
@@ -43,6 +45,9 @@ public class Card : MonoBehaviour, IPointerClickHandler
     public string cardId;
     public string cardName;
 
+    // State.
+    private Vector3 cardPosition;
+
     void Awake()
     {
         backgroundObj = transform.Find("Background").gameObject;
@@ -50,11 +55,13 @@ public class Card : MonoBehaviour, IPointerClickHandler
         handObj = GameObject.Find("Hand");
         canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
 
-        cardHeight = 100;
-        cardWidth = 75;
+        cardHeight = 50;
+        cardWidth = 35;
         cardAreaBottomBound = 0;
         cardAreaTopBound = Screen.height * 0.75f;
         cardAreaRightBound = cardWidth * canvas.scaleFactor;
+        movementHalftime = 0.05f;
+        movementMinSpeed = 0.01f;
     }
 
     void Start()
@@ -71,14 +78,16 @@ public class Card : MonoBehaviour, IPointerClickHandler
     void Update()
     {
         // Place this Card in the correct vertical position along the left-side of the screen.
-        // For 1 card put it at 1/2. For 2 cards put them at 1/3 and 2/3. Etc.
+        // For 1 Card put it at 1/2. For 2 Cards put them at 1/3 and 2/3. Etc.
+        // Note however, we move the Card there non-instantaneously, using moveTowardPosition().
         int handSize = GameLogic.G.hand.Count;
         int idxInHand = GameLogic.G.hand.IndexOf(cardId);
         float totalDist = cardAreaTopBound - cardAreaBottomBound;
         float cardSpacing = totalDist / (handSize + 1);
         float distFromTop = (idxInHand + 1) * cardSpacing;
         float cardY = cardAreaTopBound - distFromTop;
-        transform.position = new Vector3(0, cardY, 0);
+        cardPosition = new Vector3(0, cardY, 0);
+        moveTowardPosition();
         
         // Default to this Card not being highlighted (regular size, regular depth).
         setCardSize(1);
@@ -126,6 +135,20 @@ public class Card : MonoBehaviour, IPointerClickHandler
     /* Given a BlockType, give the cardName of the card that places a single block of that type. */
     {
         return $"single_block_{blockType}";
+    }
+
+    private void moveTowardPosition()
+    /* We update each Card's cardPosition instantly when it needs to move, but the actual object
+        doesn't move there instantly. Use this function to move there smoothly.
+    */
+    {
+        Vector3 currentPosition = transform.position;
+        Vector3 diff = cardPosition - currentPosition;
+        float diffHalfDist = diff.magnitude / 2;
+        float movementSpeed = Mathf.Max(diffHalfDist / movementHalftime, movementMinSpeed);
+        float movementDist = movementSpeed * Time.deltaTime;
+        Vector3 movement = diff.normalized * movementDist;
+        transform.position = currentPosition + movement;
     }
 
     private void setCardSize(float multiplier = 1)
@@ -176,6 +199,8 @@ public class Card : MonoBehaviour, IPointerClickHandler
 
         // If the Cards are where they need to be, don't move anything.
         // Otherwise, in order, place each Card at the end, so they end up in the correct order.
+        Debug.Log(desiredHierarchyOrder.ToString());
+        Debug.Log(currentHierarchyOrder.ToString());
         if (desiredHierarchyOrder.SequenceEqual(currentHierarchyOrder))
         {
             return;
