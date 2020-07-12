@@ -28,12 +28,16 @@ public class Card : MonoBehaviour, IPointerClickHandler
         { getSingleBlockCardName(BlockType.YELLOW), yellowCardColor },
         { getSingleBlockCardName(BlockType.RED), redCardColor },
     };
-    private static int cardHeight;
-    private static int cardWidth;
+    private static float cardHeight;
+    private static float cardWidth;
+    private static float cardAreaBottomBound;
+    private static float cardAreaTopBound;
+    private static float cardAreaRightBound;
 
     private GameObject backgroundObj;
     private GameObject iconObj;
     private GameObject handObj;
+    private Canvas canvas;
 
     // Parameters.
     public string cardId;
@@ -41,17 +45,21 @@ public class Card : MonoBehaviour, IPointerClickHandler
 
     void Awake()
     {
-        cardHeight = 200;
-        cardWidth = 150;
+        backgroundObj = transform.Find("Background").gameObject;
+        iconObj = transform.Find("Icon").gameObject;
+        handObj = GameObject.Find("Hand");
+        canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
+
+        cardHeight = 100;
+        cardWidth = 75;
+        cardAreaBottomBound = 0;
+        cardAreaTopBound = Screen.height * 0.75f;
+        cardAreaRightBound = cardWidth * canvas.scaleFactor;
     }
 
     void Start()
     {
         cardName = GameLogic.G.cardsById[cardId].cardName;
-
-        backgroundObj = transform.Find("Background").gameObject;
-        iconObj = transform.Find("Icon").gameObject;
-        handObj = GameObject.Find("Hand");
         
         Color backgroundColor = cardNameToBackgroundColor[cardName];
         backgroundObj.GetComponent<Image>().color = backgroundColor;
@@ -66,12 +74,10 @@ public class Card : MonoBehaviour, IPointerClickHandler
         // For 1 card put it at 1/2. For 2 cards put them at 1/3 and 2/3. Etc.
         int handSize = GameLogic.G.hand.Count;
         int idxInHand = GameLogic.G.hand.IndexOf(cardId);
-        float bottomBound = 0;
-        float topBound = Screen.height;
-        float totalDist = topBound - bottomBound;
+        float totalDist = cardAreaTopBound - cardAreaBottomBound;
         float cardSpacing = totalDist / (handSize + 1);
         float distFromTop = (idxInHand + 1) * cardSpacing;
-        float cardY = topBound - distFromTop;
+        float cardY = cardAreaTopBound - distFromTop;
         transform.position = new Vector3(0, cardY, 0);
         
         // Default to this Card not being highlighted (regular size, regular depth).
@@ -81,16 +87,15 @@ public class Card : MonoBehaviour, IPointerClickHandler
         // to the front.
         Vector2 mousePos = Input.mousePosition;
         bool isMouseInHandArea = (
-            handSize > 0
-            && 0 <= mousePos.x
-            && mousePos.x <= cardWidth
-            && bottomBound <= mousePos.y
-            && mousePos.y <= topBound
+            0 <= mousePos.x
+            && mousePos.x <= cardAreaRightBound
+            && cardAreaBottomBound <= mousePos.y
+            && mousePos.y <= cardAreaTopBound
         );
         string hoveredCardId = null;
         if (isMouseInHandArea)
         {
-            float mouseDistFromTop = topBound - mousePos.y;
+            float mouseDistFromTop = cardAreaTopBound - mousePos.y;
             float areaPerCard = totalDist / handSize;
             int hoveredIdx = (int)Mathf.Floor(mouseDistFromTop / areaPerCard);
             hoveredCardId = GameLogic.G.hand[hoveredIdx];
