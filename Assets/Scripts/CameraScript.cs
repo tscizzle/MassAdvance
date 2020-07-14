@@ -4,18 +4,9 @@ using UnityEngine;
 
 public class CameraScript : MonoBehaviour
 {
-    public GameObject floorObj;
-
-    private Floor floor;
-
     private float mouseScrollGain = 30f;
     private float scrollZUpperLimit = -3;
     private float scrollZLowerLimit = -6;
-
-    void Awake()
-    {
-        floor = floorObj.GetComponent<Floor>();
-    }
 
     void Start()
     {
@@ -55,10 +46,11 @@ public class CameraScript : MonoBehaviour
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
                 GameObject clickedObj = hit.transform.gameObject;
+                FloorSquare floorSquare = clickedObj.GetComponent<FloorSquare>();
 
-                if (clickedObj == floorObj)
+                if (floorSquare != null)
                 {
-                    handleClickFloor(hit.point);
+                    handleClickFloor(floorSquare);
                 }
             }
         } else if (Input.GetMouseButtonDown(1))
@@ -70,9 +62,9 @@ public class CameraScript : MonoBehaviour
         }
     }
 
-    private void handleClickFloor(Vector3 clickPoint)
+    private void handleClickFloor(FloorSquare floorSquare)
     {
-        Vector2 gridIndices = floor.getGridIndices(clickPoint);
+        Vector2 gridIndices = floorSquare.gridIndices;
         GameLogic.G.attemptToPlaceBlock(gridIndices);
     }
 

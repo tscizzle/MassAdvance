@@ -3,27 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class Floor : MonoBehaviour
+public class FloorSquare : MonoBehaviour
 {
     private static float gridSquareSize = 1; // in Unity units
+    
+    // Parameters.
+    public Vector2 gridIndices;
 
     void Start()
     {
-        // Floor size.
-        float gridSquareScale = transform.localScale.x / 10; // Plane defaults to 10 units across.
-        transform.localScale = new Vector3(
-            gridSquareScale * GameLogic.numGridSquaresWide,
-            gridSquareScale * GameLogic.numGridSquaresDeep,
-            1
-        );
+        // Size.
+        // Plane defaults to 10 units across.
+        float gridSquareScale = (transform.localScale.x / 10) * gridSquareSize;
+        gridSquareScale -= 0.005f; // Slight margin between squares.
+        transform.localScale = new Vector3(gridSquareScale, 1, gridSquareScale);
 
-        // Floor color.
+        // Color.
         Color floorColor;
         ColorUtility.TryParseHtmlString("#aaaaaa", out floorColor);
         GetComponent<MeshRenderer>().material.SetColor("_Color", floorColor);
-
-        // Floor grid lines.
-        drawGridLines();
     }
 
     void Update()

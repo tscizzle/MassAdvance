@@ -10,6 +10,7 @@ public class PrefabInstantiator : MonoBehaviour
     public GameObject blockPrefab;
     public GameObject pointerPrefab;
     public GameObject cardPrefab;
+    public GameObject floorSquarePrefab;
 
     private Canvas canvas;
     private GameObject handObj;
@@ -37,7 +38,7 @@ public class PrefabInstantiator : MonoBehaviour
     :returns GameObject blockObj:
     */
     {
-        Vector3 position = Floor.getGridSquareCenter(gridIndices);
+        Vector3 position = FloorSquare.getGridSquareCenter(gridIndices);
 
         GameObject blockObj = Instantiate(blockPrefab, position, Quaternion.identity);
         
@@ -66,15 +67,33 @@ public class PrefabInstantiator : MonoBehaviour
         return cardObj;
     }
 
+    public GameObject CreateFloorSquare(Vector2 gridIndices)
+    /* Create a FloorSquare.
+
+    :param Vector2 gridIndices: Which square of the grid this object is ((0, 0) is the bottom-left).
+
+    :returns GameObject floorSquareObj:
+    */
+    {
+        Vector3 position = FloorSquare.getGridSquareCenter(gridIndices);
+        GameObject floorSquareObj = Instantiate(floorSquarePrefab, position, Quaternion.identity);
+
+        FloorSquare floorSquare = floorSquareObj.GetComponent<FloorSquare>();
+        floorSquare.gridIndices = gridIndices;
+
+        return floorSquareObj;
+    }
+
     public GameObject CreatePointer(Vector2 gridIndices)
     /* Create a Pointer.
 
-    :param Vector2 gridIndices: The square over which to point the pointer ((0, 0) is the bottom-left).
+    :param Vector2 gridIndices: The square over which to point the pointer ((0, 0) is the
+        bottom-left).
 
     :returns GameObject pointerObj:
     */
     {
-        Vector3 position = Floor.getGridSquareCenter(gridIndices);
+        Vector3 position = FloorSquare.getGridSquareCenter(gridIndices);
         position.y = 1;
 
         GameObject pointerObj = Instantiate(pointerPrefab, position, Quaternion.identity);

@@ -20,6 +20,7 @@ public class GameLogic : MonoBehaviour
     public int turnsToSurvive;
     private int startingIum;
     private int startingHandSize;
+    private int startingScorchedRowThreshold;
     // Game state.
     public Dictionary<Vector2, Block> placedBlocks = new Dictionary<Vector2, Block>();
     public int currentIum;
@@ -45,12 +46,15 @@ public class GameLogic : MonoBehaviour
         turnsToSurvive = 20;
         startingIum = 10;
         startingHandSize = 5;
+        startingScorchedRowThreshold = 3;
         currentIum = 0;
         turnsTaken = 0;
     }
 
     IEnumerator Start()
     {
+        initializeFloor();
+
         initializeCards();
 
         // Start with ium and a hand.
@@ -61,7 +65,9 @@ public class GameLogic : MonoBehaviour
         }
 
         // TODO: freeze user input
+        
         yield return StartCoroutine(placeStartingBlocks());
+
         // TODO: unfreeze user input
     }
 
@@ -79,7 +85,7 @@ public class GameLogic : MonoBehaviour
     :param Vector2 gridIndices: The square in which to put the block ((0, 0) is the bottom-left).
     */
     {
-        if (selectedCardId != null)
+        if (!String.IsNullOrEmpty(selectedCardId))
         {
             CardInfo selectedCard = cardsById[selectedCardId];
             string cardName = selectedCard.cardName;
@@ -152,12 +158,16 @@ public class GameLogic : MonoBehaviour
     */
     {
         // TODO: freeze user input
+        
+        discardHand();
+
         yield return executeProducePhase();
         
         yield return executeMassSpreadingPhase();
-        // TODO: unfreeze user input after above phases are finished (careful, they're async)
         
         turnsTaken += 1;
+
+        // TODO: unfreeze user input after above phases are finished (careful, they're async)
     }
 
     public void speedUpGame()
@@ -221,6 +231,19 @@ public class GameLogic : MonoBehaviour
 
     /* HELPERS */
 
+    private void initializeFloor()
+    /* Create the grid of FloorSquares. */
+    {
+        foreach (int xIdx in Enumerable.Range(0, numGridSquaresWide))
+        {
+            foreach (int yIdx in Enumerable.Range(0, numGridSquaresDeep))
+            {
+                Vector2 gridIndices = new Vector2(xIdx, yIdx);
+                PrefabInstantiator.P.CreateFloorSquare(gridIndices);
+            }
+        }
+    }
+
     private void initializeCards()
     /* Shuffle the player's cards and put them in the draw pile. */
     {
@@ -264,7 +287,16 @@ public class GameLogic : MonoBehaviour
         yield return new WaitForSeconds(secondsBetweenActions);
     }
 
-
+    private void discardHand()
+    /* Discard all Cards in the current hand. */
+    {
+        List<string> handCopy = new List<string>(hand);
+        
+        foreach (string cardId in handCopy)
+        {
+            discardCard(cardId);
+        }
+    }
 
     private List<Vector2> getProductiveBlocks()
     /* Get a list of all squares that have player Blocks with `produce` effects.
