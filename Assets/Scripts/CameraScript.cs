@@ -40,41 +40,12 @@ public class CameraScript : MonoBehaviour
 
     private void mouseClick()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(1))
         {
-            Ray ray = GetComponent<Camera>().ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit))
-            {
-                GameObject clickedObj = hit.transform.gameObject;
-                FloorSquare floorSquare = clickedObj.GetComponent<FloorSquare>();
-
-                if (floorSquare != null)
-                {
-                    handleClickFloor(floorSquare);
-                }
-            }
-        } else if (Input.GetMouseButtonDown(1))
-        {
-            handleRightClick();
+            GameLogic.G.speedUpGame();
         } else if (Input.GetMouseButtonUp(1))
         {
-            handleRightUnclick();
+            GameLogic.G.slowDownGame();
         }
-    }
-
-    private void handleClickFloor(FloorSquare floorSquare)
-    {
-        Vector2 gridIndices = floorSquare.gridIndices;
-        GameLogic.G.attemptToPlaceBlock(gridIndices);
-    }
-
-    private void handleRightClick()
-    {
-        GameLogic.G.speedUpGame();
-    }
-
-    private void handleRightUnclick()
-    {
-        GameLogic.G.slowDownGame();
     }
 }

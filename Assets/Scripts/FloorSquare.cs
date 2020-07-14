@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-public class FloorSquare : MonoBehaviour
+public class FloorSquare : MonoBehaviour, IPointerClickHandler
 {
     private static float gridSquareSize = 1; // in Unity units
     private static float gridSquareMargin = 0.01f;
@@ -34,6 +35,15 @@ public class FloorSquare : MonoBehaviour
     }
 
     /* PUBLIC API */
+
+    public void OnPointerClick(PointerEventData eventData)
+    /* Override this function of IPointerClickHandler. Triggers when this FloorSquare is clicked.
+    
+    :param PointerEventData eventData: This interface is defined by Unity.
+    */
+    {
+        GameLogic.G.attemptToPlaceBlock(gridIndices);
+    }
 
     public void setFloorSquareStain(bool newIsStained)
     /* Set this FloorSquare to stained or not.

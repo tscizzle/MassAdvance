@@ -16,8 +16,10 @@ public class GameLogic : MonoBehaviour
     // Gameplay parameters.
     public static int numGridSquaresWide;
     public static int numGridSquaresDeep;
-    private static int blockIumCost;
+    private static int baseIumCostForBlock;
     public int turnsToSurvive;
+    private int baseIumPerTurn;
+    private int baseDrawPerTurn;
     private int startingIum;
     private int startingHandSize;
     private int startingUnstainedRows;
@@ -36,37 +38,39 @@ public class GameLogic : MonoBehaviour
         // Since there should only be 1 GameLogic instance, assign this instance to a global var.
         G = this;
 
-        // Initialize variables.
+        // Initialize parameters.
         secondsBetweenActions_fast = 0.1f;
         secondsBetweenActions_slow = 0.6f;
         secondsBetweenActions = secondsBetweenActions_slow;
         numGridSquaresWide = 6;
         numGridSquaresDeep = 10;
-        blockIumCost = 2;
+        baseIumCostForBlock = 2;
         turnsToSurvive = 20;
-        startingIum = 10;
-        startingHandSize = 5;
+        baseIumPerTurn = 1;
+        baseDrawPerTurn = 1;
+        startingIum = 4;
+        startingHandSize = 4;
         startingUnstainedRows = 3;
-        currentIum = 0;
-        turnsTaken = 0;
     }
 
     IEnumerator Start()
     {
+        // TODO: freeze user input
+
         initializeFloor();
 
         initializeCards();
+        
+        yield return StartCoroutine(placeStartingBlocks());
 
-        // Start with ium and a hand.
-        gainIum(startingIum);
+        currentIum = startingIum;
         foreach (int _ in Enumerable.Range(0, startingHandSize))
         {
             drawCard();
         }
+        turnsTaken = 0;
 
-        // TODO: freeze user input
-        
-        yield return StartCoroutine(placeStartingBlocks());
+        startTurn();
 
         // TODO: unfreeze user input
     }
@@ -90,11 +94,19 @@ public class GameLogic : MonoBehaviour
             CardInfo selectedCard = cardsById[selectedCardId];
             string cardName = selectedCard.cardName;
             bool isSelectedCardABlock = Card.cardNameToBlockType.ContainsKey(cardName);
-            bool canAffordBlock = currentIum >= blockIumCost;
+
+            FloorSquare floorSquare = FloorSquare.floorSquaresMap[gridIndices];
+            int iumCost = baseIumCostForBlock;
+            if (floorSquare.isStained)
+            {
+                iumCost *= 2;
+            }
+            bool canAffordBlock = currentIum >= iumCost;
+            
             if (isSelectedCardABlock && canAffordBlock)
             {
                 BlockType blockType = Card.cardNameToBlockType[cardName];
-                currentIum -= blockIumCost;
+                currentIum -= iumCost;
                 placeBlock(blockType, gridIndices);
                 discardCard(selectedCardId);
                 selectedCardId = null;
@@ -152,6 +164,17 @@ public class GameLogic : MonoBehaviour
         placedBlocks.Remove(gridIndices);
     }
 
+    public void startTurn()
+    /* Begin the player's turn, e.g. gain a base amount of ium and draw a base number of cards. */
+    {
+        gainIum(baseIumPerTurn);
+        
+        foreach (int _ in Enumerable.Range(0, baseDrawPerTurn))
+        {
+            drawCard();
+        }
+    }
+
     public IEnumerator endTurn()
     /* Do the steps that should occur when player's turn ends, like evaluate combos and produce,
         trigger the enemy's turn, etc.
@@ -163,11 +186,13 @@ public class GameLogic : MonoBehaviour
         
         discardHand();
 
-        yield return executeProducePhase();
+        yield return producePhase();
         
-        yield return executeMassSpreadingPhase();
+        yield return massSpreadingPhase();
 
         unstainRow();
+
+        startTurn();
 
         // TODO: unfreeze user input after above phases are finished (careful, they're async)
     }
@@ -253,7 +278,6 @@ public class GameLogic : MonoBehaviour
             {
                 Vector2 gridIndices = new Vector2(xIdx, yIdx);
                 FloorSquare floorSquare = FloorSquare.floorSquaresMap[gridIndices];
-                Debug.Log("hi");
                 floorSquare.setFloorSquareStain(true);
             }
         }
@@ -345,7 +369,7 @@ public class GameLogic : MonoBehaviour
         return productiveBlocks;
     }
 
-    private IEnumerator executeProducePhase()
+    private IEnumerator producePhase()
     /* For all a player's Blocks on the grid, trigger their produce ability. */
     {
         List<Vector2> productiveBlocks = getProductiveBlocks();
@@ -439,7 +463,7 @@ public class GameLogic : MonoBehaviour
         return didFindMass;
     }
 
-    private IEnumerator executeMassSpreadingPhase()
+    private IEnumerator massSpreadingPhase()
     /* Play the enemy's turn, where the mass spreads to empty squares and attacks the player's
         blocks
     */
