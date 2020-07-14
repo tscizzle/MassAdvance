@@ -6,22 +6,26 @@ using UnityEngine;
 public class FloorSquare : MonoBehaviour
 {
     private static float gridSquareSize = 1; // in Unity units
-    
+    private static float gridSquareMargin = 0.01f;
+    private static Color floorColor = new Color(200/255f, 200/255f, 200/255f);
+    private static Color stainedFloorColor = new Color(100/255f, 100/255f, 100/255f);
+    // So we can find FloorSquare objects from their grid indices.
+    public static Dictionary<Vector2, FloorSquare> floorSquaresMap = new Dictionary<Vector2, FloorSquare>();
+
     // Parameters.
     public Vector2 gridIndices;
+    public bool isStained;
 
     void Start()
     {
         // Size.
-        // Plane defaults to 10 units across.
-        float gridSquareScale = (transform.localScale.x / 10) * gridSquareSize;
-        gridSquareScale -= 0.005f; // Slight margin between squares.
+        float defaultPlaneSize = 10; // Plane defaults to 10 units across.
+        float gridSquareScale = (transform.localScale.x / defaultPlaneSize) * gridSquareSize;
+        gridSquareScale -= gridSquareMargin / 2;
         transform.localScale = new Vector3(gridSquareScale, 1, gridSquareScale);
 
         // Color.
-        Color floorColor;
-        ColorUtility.TryParseHtmlString("#aaaaaa", out floorColor);
-        GetComponent<MeshRenderer>().material.SetColor("_Color", floorColor);
+        setFloorSquareStain(isStained);
     }
 
     void Update()
@@ -31,28 +35,15 @@ public class FloorSquare : MonoBehaviour
 
     /* PUBLIC API */
 
-    public Vector2 getGridIndices(Vector3 worldPoint)
-    /* Take a clicked point on the Floor in Unity coordinates and return the clicked square's
-        position in the grid, where (0, 0) is the bottom-left square.
+    public void setFloorSquareStain(bool newIsStained)
+    /* Set this FloorSquare to stained or not.
     
-    :param Vector3 worldPoint: The clicked point in Unity coordinates. x is the width axis, z is the
-        depth axis, y doesn't matter.
-
-    :returns Vector2 gridIndices:
+    :param bool newIsStained: Whether setting to stained or unstained.
     */
     {
-        float floorWidth = GameLogic.numGridSquaresWide * gridSquareSize;
-        float floorDepth = GameLogic.numGridSquaresDeep * gridSquareSize;
-
-        float shiftedX = worldPoint.x + (floorWidth / 2);
-        float shiftedY = worldPoint.z + (floorDepth / 2);
-
-        int squareX = (int)Mathf.Floor(shiftedX / gridSquareSize);
-        int squareY = (int)Mathf.Floor(shiftedY / gridSquareSize);
-
-        Vector2 gridIndices = new Vector2(squareX, squareY);
-
-        return gridIndices;
+        isStained = newIsStained;
+        Color newColor = isStained ? stainedFloorColor : floorColor;
+        GetComponent<MeshRenderer>().material.SetColor("_Color", newColor);
     }
 
     public static Vector3 getGridSquareCenter(Vector2 gridIndices)
@@ -78,55 +69,5 @@ public class FloorSquare : MonoBehaviour
         Vector3 squareCenter = new Vector3(centerX, 0, centerZ);
 
         return squareCenter;
-    }
-
-    /* HELPERS */
-
-    void drawGridLine(Vector3[] points)
-    {
-        Color lineColor;
-        ColorUtility.TryParseHtmlString("#888888", out lineColor);
-        Material mat = new Material(Shader.Find("Sprites/Default"));
-        float lineWidth = 0.01f;
-        
-        GameObject lineObj = new GameObject();
-        LineRenderer line = lineObj.AddComponent<LineRenderer>();
-        line.material = mat;
-        line.startColor = lineColor;
-        line.endColor = lineColor;
-        line.widthMultiplier = lineWidth;
-        line.SetPositions(points);
-    }
-
-    void drawGridLines()
-    {
-        // Horizontal lines
-        foreach (int idx in Enumerable.Range(1, GameLogic.numGridSquaresWide - 1))
-        {
-            float x = -(GameLogic.numGridSquaresWide / 2) + idx;
-            float y = 0.01f;
-            float z_0 = -GameLogic.numGridSquaresDeep / 2;
-            float z_1 = GameLogic.numGridSquaresDeep / 2;
-            Vector3[] points =
-            {
-                new Vector3(x, y, z_0),
-                new Vector3(x, y, z_1),
-            };
-            drawGridLine(points);
-        }
-        // Vertical lines
-        foreach (int idx in Enumerable.Range(1, GameLogic.numGridSquaresDeep - 1))
-        {
-            float x_0 = -GameLogic.numGridSquaresWide / 2;
-            float x_1 = GameLogic.numGridSquaresWide / 2;
-            float y = 0.01f;
-            float z = -(GameLogic.numGridSquaresDeep / 2) + idx;
-            Vector3[] points =
-            {
-                new Vector3(x_0, y, z),
-                new Vector3(x_1, y, z),
-            };
-            drawGridLine(points);
-        }
     }
 }

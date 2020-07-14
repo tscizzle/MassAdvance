@@ -20,7 +20,7 @@ public class GameLogic : MonoBehaviour
     public int turnsToSurvive;
     private int startingIum;
     private int startingHandSize;
-    private int startingScorchedRowThreshold;
+    private int startingUnstainedRows;
     // Game state.
     public Dictionary<Vector2, Block> placedBlocks = new Dictionary<Vector2, Block>();
     public int currentIum;
@@ -46,7 +46,7 @@ public class GameLogic : MonoBehaviour
         turnsToSurvive = 20;
         startingIum = 10;
         startingHandSize = 5;
-        startingScorchedRowThreshold = 3;
+        startingUnstainedRows = 3;
         currentIum = 0;
         turnsTaken = 0;
     }
@@ -159,13 +159,15 @@ public class GameLogic : MonoBehaviour
     {
         // TODO: freeze user input
         
+        turnsTaken += 1;
+        
         discardHand();
 
         yield return executeProducePhase();
         
         yield return executeMassSpreadingPhase();
-        
-        turnsTaken += 1;
+
+        unstainRow();
 
         // TODO: unfreeze user input after above phases are finished (careful, they're async)
     }
@@ -234,12 +236,25 @@ public class GameLogic : MonoBehaviour
     private void initializeFloor()
     /* Create the grid of FloorSquares. */
     {
+        // Create the grid.
         foreach (int xIdx in Enumerable.Range(0, numGridSquaresWide))
         {
             foreach (int yIdx in Enumerable.Range(0, numGridSquaresDeep))
             {
                 Vector2 gridIndices = new Vector2(xIdx, yIdx);
                 PrefabInstantiator.P.CreateFloorSquare(gridIndices);
+            }
+        }
+
+        // Stain all but the starting unstained rows.
+        foreach (int xIdx in Enumerable.Range(0, numGridSquaresWide))
+        {
+            foreach (int yIdx in Enumerable.Range(0, numGridSquaresDeep - startingUnstainedRows))
+            {
+                Vector2 gridIndices = new Vector2(xIdx, yIdx);
+                FloorSquare floorSquare = FloorSquare.floorSquaresMap[gridIndices];
+                Debug.Log("hi");
+                floorSquare.setFloorSquareStain(true);
             }
         }
     }
@@ -445,6 +460,21 @@ public class GameLogic : MonoBehaviour
                 attackBlock(gridIndices);
             }
             yield return new WaitForSeconds(secondsBetweenActions);
+        }
+    }
+
+    private void unstainRow()
+    /* Each turn that elapses allows another row of squares to become unstained. */
+    {
+        int rowToUnstain = numGridSquaresDeep - startingUnstainedRows - turnsTaken;
+        if (rowToUnstain >= 0)
+        {
+            foreach (int xIdx in Enumerable.Range(0, numGridSquaresWide))
+            {
+                Vector2 gridIndices = new Vector2(xIdx, rowToUnstain);
+                FloorSquare floorSquare = FloorSquare.floorSquaresMap[gridIndices];
+                floorSquare.setFloorSquareStain(false);
+            }
         }
     }
 }
