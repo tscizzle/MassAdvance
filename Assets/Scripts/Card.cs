@@ -105,12 +105,25 @@ public class Card : MonoBehaviour, IPointerClickHandler
         if (isMouseInHandArea)
         {
             float mouseDistFromTop = cardAreaTopBound - mousePos.y;
-            float areaPerCard = totalDist / handSize;
-            int hoveredIdx = (int)Mathf.Floor(mouseDistFromTop / areaPerCard);
-            hoveredCardId = GameLogic.G.hand[hoveredIdx];
-            if (cardId == hoveredCardId)
+            int hoveredIdx = -1;
+            foreach (int idx in Enumerable.Range(0, handSize))
             {
-                setCardSize(1.3f);
+                float cardDistFromTop = (idx + 1) * cardSpacing;
+                float distFromCard = Mathf.Abs(mouseDistFromTop - cardDistFromTop);
+                float tolerance = cardSpacing / 2;
+                if (distFromCard < tolerance)
+                {
+                    hoveredIdx = idx;
+                    break;
+                }
+            }
+            if (hoveredIdx > -1)
+            {
+                hoveredCardId = GameLogic.G.hand[hoveredIdx];
+                if (cardId == hoveredCardId)
+                {
+                    setCardSize(1.3f);
+                }
             }
         }
 

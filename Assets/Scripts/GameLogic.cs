@@ -183,8 +183,6 @@ public class GameLogic : MonoBehaviour
         // TODO: freeze user input
         
         turnsTaken += 1;
-        
-        discardHand();
 
         yield return producePhase();
         
