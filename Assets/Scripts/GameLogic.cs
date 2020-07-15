@@ -97,7 +97,7 @@ public class GameLogic : MonoBehaviour
 
             FloorSquare floorSquare = FloorSquare.floorSquaresMap[gridIndices];
             int iumCost = baseIumCostForBlock;
-            if (floorSquare.isStained)
+            if (floorSquare.isStained())
             {
                 iumCost *= 2;
             }
@@ -150,13 +150,13 @@ public class GameLogic : MonoBehaviour
         
         turnsTaken += 1;
 
+        decrementStain();
+
         yield return productionPhase();
         
         yield return massSpreadingPhase();
 
         yield return destructionPhase();
-
-        unstainRow();
 
         startTurn();
 
@@ -237,14 +237,15 @@ public class GameLogic : MonoBehaviour
             }
         }
 
-        // Stain all but the starting unstained rows.
+        // Stain all but the starting unstained rows, 1 extra turn of stain per row you move back.
         foreach (int xIdx in Enumerable.Range(0, numGridSquaresWide))
         {
             foreach (int yIdx in Enumerable.Range(0, numGridSquaresDeep - startingUnstainedRows))
             {
                 Vector2 gridIndices = new Vector2(xIdx, yIdx);
                 FloorSquare floorSquare = FloorSquare.floorSquaresMap[gridIndices];
-                floorSquare.setFloorSquareStain(true);
+                int stainTurns = numGridSquaresDeep - startingUnstainedRows - yIdx;
+                floorSquare.addStainTurns(stainTurns);
             }
         }
     }
@@ -497,18 +498,14 @@ public class GameLogic : MonoBehaviour
         }
     }
 
-    private void unstainRow()
-    /* Each turn that elapses allows another row of squares to become unstained. */
+    private void decrementStain()
+    /* Each FloorSquare may be stained for a number of turns. For each FloorSquare, tell it a turn
+        has passed.
+    */
     {
-        int rowToUnstain = numGridSquaresDeep - startingUnstainedRows - turnsTaken;
-        if (rowToUnstain >= 0)
+        foreach (FloorSquare floorSquare in FloorSquare.floorSquaresMap.Values)
         {
-            foreach (int xIdx in Enumerable.Range(0, numGridSquaresWide))
-            {
-                Vector2 gridIndices = new Vector2(xIdx, rowToUnstain);
-                FloorSquare floorSquare = FloorSquare.floorSquaresMap[gridIndices];
-                floorSquare.setFloorSquareStain(false);
-            }
+            floorSquare.addStainTurns(-1);
         }
     }
 }

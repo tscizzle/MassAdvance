@@ -15,7 +15,8 @@ public class FloorSquare : MonoBehaviour, IPointerClickHandler
 
     // Parameters.
     public Vector2 gridIndices;
-    public bool isStained;
+    // State.
+    public int numTurnsStained;
 
     void Start()
     {
@@ -26,7 +27,7 @@ public class FloorSquare : MonoBehaviour, IPointerClickHandler
         transform.localScale = new Vector3(gridSquareScale, 1, gridSquareScale);
 
         // Color.
-        setFloorSquareStain(isStained);
+        setColor();
     }
 
     void Update()
@@ -45,15 +46,25 @@ public class FloorSquare : MonoBehaviour, IPointerClickHandler
         GameLogic.G.playSelectedCardOnFloorSquare(gridIndices);
     }
 
-    public void setFloorSquareStain(bool newIsStained)
-    /* Set this FloorSquare to stained or not.
+    public void addStainTurns(int numTurns)
+    /* Add more turns of stain to this FloorSquare.
+
+    Note that numTurns can be negative, to reduce the number of turns of stain remaining.
     
     :param bool newIsStained: Whether setting to stained or unstained.
     */
     {
-        isStained = newIsStained;
-        Color newColor = isStained ? stainedFloorColor : floorColor;
-        GetComponent<MeshRenderer>().material.SetColor("_Color", newColor);
+        numTurnsStained = Mathf.Max(numTurnsStained + numTurns, 0);
+        setColor();
+    }
+
+    public bool isStained()
+    /* Return whether or not this FloorSquare is currently stained.
+    
+    :returns bool:
+    */
+    {
+        return numTurnsStained > 0;
     }
 
     public static Vector3 getGridSquareCenter(Vector2 gridIndices)
@@ -79,5 +90,14 @@ public class FloorSquare : MonoBehaviour, IPointerClickHandler
         Vector3 squareCenter = new Vector3(centerX, 0, centerZ);
 
         return squareCenter;
+    }
+
+    /* HELPERS */
+
+    private void setColor()
+    /* Color this FloorSquare, based on if it is stained or not. */
+    {
+        Color newColor = isStained() ? stainedFloorColor : floorColor;
+        GetComponent<MeshRenderer>().material.SetColor("_Color", newColor);
     }
 }

@@ -109,6 +109,8 @@ public class Block : MonoBehaviour
         }
 
         // TODO: set the floorSquare at gridIndices to be stained for 1 turn
+        FloorSquare floorSquare = FloorSquare.floorSquaresMap[gridIndices];
+        floorSquare.addStainTurns(1);
         
         GameLogic.G.placedBlocks.Remove(gridIndices);
 
