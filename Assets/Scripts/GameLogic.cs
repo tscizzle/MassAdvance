@@ -82,7 +82,7 @@ public class GameLogic : MonoBehaviour
 
     /* PUBLIC API */
 
-    public void attemptToPlaceBlock(Vector2 gridIndices)
+    public void playSelectedCardOnFloorSquare(Vector2 gridIndices)
     /* Attempty to put a block into play in the grid, but may not succeed due to constraints like
         ium and placement restrictions.
     
@@ -130,40 +130,6 @@ public class GameLogic : MonoBehaviour
         StartCoroutine(Pointer.displayPointer(gridIndices));
     }
 
-    public void attackBlock(Vector2 gridIndices)
-    /* Apply the mass's current attack to a player's block.
-
-    :param Vector2 gridIndices: The square with the block being attacked.
-    */
-    {
-        Block block = placedBlocks[gridIndices];
-        if (block.isDamaged)
-        {
-            destroyBlock(gridIndices);
-            StartCoroutine(Pointer.displayPointer(gridIndices));
-        } else
-        {
-            block.damageBlock();
-            StartCoroutine(Pointer.displayPointer(gridIndices));
-        }
-    }
-
-    public void destroyBlock(Vector2 gridIndices)
-    /* Remove a Block from the grid, applying any onDestroy effects.
-    
-    :param Vector2 gridIndices: The square with the block being destroyed.
-    */
-    {
-        Block block = placedBlocks[gridIndices];
-
-        // TODO: run any onDestroy effects of this Block.
-        
-        GameObject blockObj = block.gameObject;
-        Destroy(blockObj);
-        
-        placedBlocks.Remove(gridIndices);
-    }
-
     public void startTurn()
     /* Begin the player's turn, e.g. gain a base amount of ium and draw a base number of cards. */
     {
@@ -184,9 +150,11 @@ public class GameLogic : MonoBehaviour
         
         turnsTaken += 1;
 
-        yield return producePhase();
+        yield return productionPhase();
         
         yield return massSpreadingPhase();
+
+        yield return destructionPhase();
 
         unstainRow();
 
@@ -367,7 +335,7 @@ public class GameLogic : MonoBehaviour
         return productiveBlocks;
     }
 
-    private IEnumerator producePhase()
+    private IEnumerator productionPhase()
     /* For all a player's Blocks on the grid, trigger their produce ability. */
     {
         List<Vector2> productiveBlocks = getProductiveBlocks();
@@ -463,7 +431,7 @@ public class GameLogic : MonoBehaviour
 
     private IEnumerator massSpreadingPhase()
     /* Play the enemy's turn, where the mass spreads to empty squares and attacks the player's
-        blocks
+        blocks.
     */
     {
         List<Vector2> nextTargets = getNextMassTargets();
@@ -471,7 +439,6 @@ public class GameLogic : MonoBehaviour
         foreach (Vector2 gridIndices in nextTargets)
         {
             BlockType? blockType = getBlockTypeOfSquare(gridIndices);
-            
             // If nothing is there, expand the mass into it.
             // Otherwise, attack the player block that's there.
             if (blockType == null)
@@ -479,8 +446,53 @@ public class GameLogic : MonoBehaviour
                 placeBlock(BlockType.MASS, gridIndices);
             } else
             {
-                attackBlock(gridIndices);
+                Block block = placedBlocks[gridIndices];
+                block.attack();
             }
+            yield return new WaitForSeconds(secondsBetweenActions);
+        }
+    }
+
+    private List<Vector2> getBlocksQueuedToBeDestroyed()
+    /* Get a list of all squares that have player Blocks that are about to be destroyed.
+    
+    The result is ordered from top-left and going down, so column by column from the left.
+    
+    :returns List<Vector2> blocksToBeDestroyed:
+    */
+    {
+        List<Vector2> unorderedBlocksToBeDestroyed = new List<Vector2>();
+
+        foreach (int xIdx in Enumerable.Range(0, numGridSquaresWide))
+        {
+            foreach (int yIdx in Enumerable.Range(0, numGridSquaresDeep))
+            {
+                Vector2 gridIndices = new Vector2(xIdx, yIdx);
+                bool isBlockExists = placedBlocks.ContainsKey(gridIndices);
+                if (isBlockExists && placedBlocks[gridIndices].isBeingDestroyed)
+                {
+                    unorderedBlocksToBeDestroyed.Add(gridIndices);
+                }
+            }
+        }
+
+        List<Vector2> blocksToBeDestroyed = unorderedBlocksToBeDestroyed
+            .OrderBy(el => el.x)
+            .ThenByDescending(el => el.y)
+            .ToList();
+
+        return blocksToBeDestroyed;
+    }
+
+    private IEnumerator destructionPhase()
+    /* Destroy all the player blocks that were queued up to be destroyed during mass-spreading. */
+    {
+        List<Vector2> blocksToBeDestroyed = getBlocksQueuedToBeDestroyed();
+
+        foreach (Vector2 gridIndices in blocksToBeDestroyed)
+        {
+            Block block = placedBlocks[gridIndices];
+            block.destroy();
             yield return new WaitForSeconds(secondsBetweenActions);
         }
     }

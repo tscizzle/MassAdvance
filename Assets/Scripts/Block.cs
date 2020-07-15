@@ -25,6 +25,7 @@ public class Block : MonoBehaviour
     public Vector2 gridIndices;
     // State.
     public bool isDamaged = false;
+    public bool isBeingDestroyed = false;
 
     void Start()
     {
@@ -66,7 +67,28 @@ public class Block : MonoBehaviour
         }
     }
 
-    public void damageBlock()
+    public void attack()
+    /* Apply the mass's current attack to a player's block. */
+    {
+        if (isDamaged)
+        {
+            queueToBeDestroyed();
+        } else
+        {
+            damage();
+        }
+        StartCoroutine(Pointer.displayPointer(gridIndices));
+    }
+
+    public void queueToBeDestroyed()
+    /* Mark this Block to be destroyed in the upcoming destruction phase. */
+    {
+        isBeingDestroyed = true;
+
+        // TODO: visually indicate that this block is queued to be destroyed
+    }
+
+    public void damage()
     /* Change this Block from healthy to damaged. */
     {
         isDamaged = true;
@@ -75,6 +97,22 @@ public class Block : MonoBehaviour
 
         Color color = blockTypeToColor[blockType];
         GetComponent<Renderer>().material.SetColor("_Color", color);
+    }
+
+    public void destroy()
+    /* Remove this Block from the grid, applying any onDestroy effects. */
+    {
+        // If this Block has any onDestroy effects, run them.
+        if (blockType == BlockType.RED)
+        {
+            // TODO: clear mass around this block being destroyed (no diagonals)
+        }
+
+        // TODO: set the floorSquare at gridIndices to be stained for 1 turn
+        
+        GameLogic.G.placedBlocks.Remove(gridIndices);
+
+        StartCoroutine(Pointer.displayPointer(gridIndices, () => Destroy(gameObject)));
     }
 }
 

@@ -42,7 +42,7 @@ public class FloorSquare : MonoBehaviour, IPointerClickHandler
     :param PointerEventData eventData: This interface is defined by Unity.
     */
     {
-        GameLogic.G.attemptToPlaceBlock(gridIndices);
+        GameLogic.G.playSelectedCardOnFloorSquare(gridIndices);
     }
 
     public void setFloorSquareStain(bool newIsStained)
