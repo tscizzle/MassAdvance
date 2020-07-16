@@ -222,6 +222,21 @@ public class GameLogic : MonoBehaviour
         discardPile.Add(cardId);
     }
 
+    public BlockType? getBlockTypeOfSquare(Vector2 gridIndices)
+    /* Get the blockType of a place in the grid.
+    
+    :param Vector2 gridIndices: Position of square we want the block type of.
+
+    :returns BlockType blockType: enum defined in Block.cs
+    */
+    {
+        bool isSquareOccupied = placedBlocks.ContainsKey(gridIndices);
+        BlockType? blockType = isSquareOccupied
+            ? placedBlocks[gridIndices].blockType
+            : (BlockType?)null;
+        return blockType;
+    }
+
     /* HELPERS */
 
     private void initializeFloor()
@@ -345,7 +360,7 @@ public class GameLogic : MonoBehaviour
         {
             Block block = placedBlocks[gridIndices];
             block.produce();
-            yield return new WaitForSeconds(secondsBetweenActions);
+            yield return Pointer.displayPointer(gridIndices);
         }
     }
 
@@ -385,21 +400,6 @@ public class GameLogic : MonoBehaviour
         return nextTargets;
     }
 
-    private BlockType? getBlockTypeOfSquare(Vector2 gridIndices)
-    /* Get the blockType of a place in the grid.
-    
-    :param Vector2 gridIndices: Position of square we want the block type of.
-
-    :returns BlockType blockType: enum defined in Block.cs
-    */
-    {
-        bool isSquareOccupied = placedBlocks.ContainsKey(gridIndices);
-        BlockType? blockType = isSquareOccupied
-            ? placedBlocks[gridIndices].blockType
-            : (BlockType?)null;
-        return blockType;
-    }
-
     private bool isNeighboredByMass(Vector2 gridIndices)
     /* Return whether or not any neighbors (no diagonals, no self) are mass.
     
@@ -408,17 +408,8 @@ public class GameLogic : MonoBehaviour
     :returns bool:
     */
     {
-        float xIdx = gridIndices.x;
-        float yIdx = gridIndices.y;
-
         bool didFindMass = false;
-        Vector2[] neighbors =
-        {
-            new Vector2(xIdx, yIdx - 1),
-            new Vector2(xIdx - 1, yIdx),
-            new Vector2(xIdx + 1, yIdx),
-            new Vector2(xIdx, yIdx + 1),
-        };
+        Vector2[] neighbors = MiscHelpers.getNeighbors(gridIndices);
         foreach (Vector2 neighbor in neighbors)
         {
             if (getBlockTypeOfSquare(neighbor) == BlockType.MASS)
@@ -450,7 +441,7 @@ public class GameLogic : MonoBehaviour
                 Block block = placedBlocks[gridIndices];
                 block.attack();
             }
-            yield return new WaitForSeconds(secondsBetweenActions);
+            yield return Pointer.displayPointer(gridIndices);
         }
     }
 
@@ -494,7 +485,7 @@ public class GameLogic : MonoBehaviour
         {
             Block block = placedBlocks[gridIndices];
             block.destroy();
-            yield return new WaitForSeconds(secondsBetweenActions);
+            yield return Pointer.displayPointer(gridIndices);
         }
     }
 

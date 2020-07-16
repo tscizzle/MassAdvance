@@ -49,43 +49,25 @@ public class Block : MonoBehaviour
     public void produce()
     /* Depending on the blockType, perform any production effects. */
     {
-        bool isProductive = false;
-
         if (blockType == BlockType.BLUE)
         {
             GameLogic.G.gainIum(1);
-            isProductive = true;
         } else if (blockType == BlockType.YELLOW)
         {
             GameLogic.G.drawCard();
-            isProductive = true;
-        }
-
-        if (isProductive)
-        {
-            StartCoroutine(Pointer.displayPointer(gridIndices));
         }
     }
 
     public void attack()
     /* Apply the mass's current attack to a player's block. */
     {
-        if (isDamaged)
+        if (isDamaged || blockType == BlockType.RED)
         {
             queueToBeDestroyed();
         } else
         {
             damage();
         }
-        StartCoroutine(Pointer.displayPointer(gridIndices));
-    }
-
-    public void queueToBeDestroyed()
-    /* Mark this Block to be destroyed in the upcoming destruction phase. */
-    {
-        isBeingDestroyed = true;
-
-        // TODO: visually indicate that this block is queued to be destroyed
     }
 
     public void damage()
@@ -99,22 +81,46 @@ public class Block : MonoBehaviour
         GetComponent<Renderer>().material.SetColor("_Color", color);
     }
 
+    public void queueToBeDestroyed()
+    /* Mark this Block to be destroyed in the upcoming destruction phase. */
+    {
+        isBeingDestroyed = true;
+
+        // TODO: visually indicate that this block is queued to be destroyed
+    }
+
     public void destroy()
     /* Remove this Block from the grid, applying any onDestroy effects. */
     {
         // If this Block has any onDestroy effects, run them.
         if (blockType == BlockType.RED)
         {
-            // TODO: clear mass around this block being destroyed (no diagonals)
+            clearNeighboringMass();
         }
 
-        // TODO: set the floorSquare at gridIndices to be stained for 1 turn
         FloorSquare floorSquare = FloorSquare.floorSquaresMap[gridIndices];
         floorSquare.addStainTurns(1);
         
         GameLogic.G.placedBlocks.Remove(gridIndices);
 
-        StartCoroutine(Pointer.displayPointer(gridIndices, () => Destroy(gameObject)));
+        Destroy(gameObject);
+    }
+
+    /* HELPERS */
+
+    private void clearNeighboringMass()
+    /* Remove mass Blocks that neighbor this Block. */
+    {
+        Vector2[] neighbors = MiscHelpers.getNeighbors(gridIndices);
+        foreach (Vector2 neighborIndices in neighbors)
+        {
+            BlockType? neighborBlockType = GameLogic.G.getBlockTypeOfSquare(neighborIndices);
+            if (neighborBlockType == BlockType.MASS)
+            {
+                Block neighborBlock = GameLogic.G.placedBlocks[neighborIndices];
+                neighborBlock.destroy();
+            }
+        }
     }
 }
 

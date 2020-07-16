@@ -17,17 +17,12 @@ public class Pointer : MonoBehaviour
 
     /* PUBLIC API */
 
-    public static IEnumerator displayPointer(Vector2 gridIndices, Action callback = null)
+    public static IEnumerator displayPointer(Vector2 gridIndices)
     {
         GameObject pointerObj = PrefabInstantiator.P.CreatePointer(gridIndices);
 
         yield return new WaitForSeconds(GameLogic.G.secondsBetweenActions);
         
         Destroy(pointerObj);
-
-        if (callback != null)
-        {
-            callback();
-        }
     }
 }
