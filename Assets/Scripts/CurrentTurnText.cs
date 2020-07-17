@@ -12,6 +12,6 @@ public class CurrentTurnText : MonoBehaviour
 
     void Update()
     {
-        GetComponent<Text>().text = $"Turn {GameLogic.G.turnsTaken} / {GameLogic.G.turnsToSurvive}";
+        GetComponent<Text>().text = $"Turn {TrialLogic.T.turnsTaken} / {TrialLogic.T.turnsToSurvive}";
     }
 }

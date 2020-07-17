@@ -43,7 +43,7 @@ public class FloorSquare : MonoBehaviour, IPointerClickHandler
     :param PointerEventData eventData: This interface is defined by Unity.
     */
     {
-        GameLogic.G.playSelectedCardOnFloorSquare(gridIndices);
+        TrialLogic.T.playSelectedCardOnFloorSquare(gridIndices);
     }
 
     public void addStainTurns(int numTurns)
@@ -78,8 +78,8 @@ public class FloorSquare : MonoBehaviour, IPointerClickHandler
         square. y doesn't matter, since z is the depth axis in world coordinates.
     */
     {
-        float shiftedXIdx = gridIndices.x - (GameLogic.numGridSquaresWide / 2);
-        float shiftedZIdx = gridIndices.y - (GameLogic.numGridSquaresDeep / 2);
+        float shiftedXIdx = gridIndices.x - (TrialLogic.numGridSquaresWide / 2);
+        float shiftedZIdx = gridIndices.y - (TrialLogic.numGridSquaresDeep / 2);
 
         float scaledX = shiftedXIdx * gridSquareSize;
         float scaledZ = shiftedZIdx * gridSquareSize;

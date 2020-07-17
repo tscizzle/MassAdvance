@@ -66,7 +66,7 @@ public class Card : MonoBehaviour, IPointerClickHandler
 
     void Start()
     {
-        cardName = GameLogic.G.cardsById[cardId].cardName;
+        cardName = TrialLogic.T.cardsById[cardId].cardName;
         
         Color backgroundColor = cardNameToBackgroundColor[cardName];
         backgroundObj.GetComponent<Image>().color = backgroundColor;
@@ -80,8 +80,8 @@ public class Card : MonoBehaviour, IPointerClickHandler
         // Place this Card in the correct vertical position along the left-side of the screen.
         // For 1 Card put it at 1/2. For 2 Cards put them at 1/3 and 2/3. Etc.
         // Note however, we move the Card there non-instantaneously, using moveTowardPosition().
-        int handSize = GameLogic.G.hand.Count;
-        int idxInHand = GameLogic.G.hand.IndexOf(cardId);
+        int handSize = TrialLogic.T.hand.Count;
+        int idxInHand = TrialLogic.T.hand.IndexOf(cardId);
         float totalDist = cardAreaTopBound - cardAreaBottomBound;
         float cardSpacing = totalDist / (handSize + 1);
         float distFromTop = (idxInHand + 1) * cardSpacing;
@@ -119,7 +119,7 @@ public class Card : MonoBehaviour, IPointerClickHandler
             }
             if (hoveredIdx > -1)
             {
-                hoveredCardId = GameLogic.G.hand[hoveredIdx];
+                hoveredCardId = TrialLogic.T.hand[hoveredIdx];
                 if (cardId == hoveredCardId)
                 {
                     setCardSize(1.3f);
@@ -139,7 +139,7 @@ public class Card : MonoBehaviour, IPointerClickHandler
     :param PointerEventData eventData: This interface is defined by Unity.
     */
     {
-        GameLogic.G.selectedCardId = cardId;
+        TrialLogic.T.selectedCardId = cardId;
     }
 
     /* HELPERS */
@@ -191,7 +191,7 @@ public class Card : MonoBehaviour, IPointerClickHandler
     */
     {
         // Desired order of Cards in the GameObject Hierarchy.
-        List<string> desiredHierarchyOrder = new List<string>(GameLogic.G.hand);
+        List<string> desiredHierarchyOrder = new List<string>(TrialLogic.T.hand);
         if (hoveredCardId != null)
         {
             desiredHierarchyOrder.Remove(hoveredCardId);

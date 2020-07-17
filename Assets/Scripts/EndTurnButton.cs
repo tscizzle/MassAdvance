@@ -4,24 +4,20 @@ using UnityEngine;
 
 public class EndTurnButton : MonoBehaviour
 {
-    public GameObject gameLogicObj;
-
-    private GameLogic gameLogic;
-
-    void Awake()
-    {
-        gameLogic = gameLogicObj.GetComponent<GameLogic>();
-    }
-
     void Start()
     {
 
+    }
+
+    void Update()
+    {
+        
     }
 
     /* PUBLIC API */
 
     public void clickEndTurn()
     {
-        StartCoroutine(gameLogic.endTurn());
+        StartCoroutine(TrialLogic.T.endTurn());
     }
 }

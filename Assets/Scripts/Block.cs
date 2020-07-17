@@ -51,10 +51,10 @@ public class Block : MonoBehaviour
     {
         if (blockType == BlockType.BLUE)
         {
-            GameLogic.G.gainIum(1);
+            TrialLogic.T.gainIum(1);
         } else if (blockType == BlockType.YELLOW)
         {
-            GameLogic.G.drawCard();
+            TrialLogic.T.drawCard();
         }
     }
 
@@ -101,7 +101,7 @@ public class Block : MonoBehaviour
         FloorSquare floorSquare = FloorSquare.floorSquaresMap[gridIndices];
         floorSquare.addStainTurns(1);
         
-        GameLogic.G.placedBlocks.Remove(gridIndices);
+        TrialLogic.T.placedBlocks.Remove(gridIndices);
 
         Destroy(gameObject);
     }
@@ -114,10 +114,10 @@ public class Block : MonoBehaviour
         Vector2[] neighbors = MiscHelpers.getNeighbors(gridIndices);
         foreach (Vector2 neighborIndices in neighbors)
         {
-            BlockType? neighborBlockType = GameLogic.G.getBlockTypeOfSquare(neighborIndices);
+            BlockType? neighborBlockType = TrialLogic.T.getBlockTypeOfSquare(neighborIndices);
             if (neighborBlockType == BlockType.MASS)
             {
-                Block neighborBlock = GameLogic.G.placedBlocks[neighborIndices];
+                Block neighborBlock = TrialLogic.T.placedBlocks[neighborIndices];
                 neighborBlock.destroy();
             }
         }

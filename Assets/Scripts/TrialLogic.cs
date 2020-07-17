@@ -3,17 +3,20 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class GameLogic : MonoBehaviour
+public class TrialLogic : MonoBehaviour
 {
-    // Global var that even a prefab can reference. Will be assigned our 1 instance of GameLogic.
-    public static GameLogic G;
+    // Global var that even a prefab can reference. Will be assigned our 1 instance of TrialLogic.
+    public static TrialLogic T;
+
+    private PostTrialScreen postTrialScreen;
     
-    // User interaction parameters.
+    // Parameters (user-interaction).
     private float secondsBetweenActions_fast;
     private float secondsBetweenActions_slow;
     public float secondsBetweenActions;
-    // Gameplay parameters.
+    // Parameters (gameplay).
     public static int numGridSquaresWide;
     public static int numGridSquaresDeep;
     private static int baseIumCostForBlock;
@@ -23,7 +26,7 @@ public class GameLogic : MonoBehaviour
     private int startingIum;
     private int startingHandSize;
     private int startingUnstainedRows;
-    // Game state.
+    // State.
     public Dictionary<Vector2, Block> placedBlocks = new Dictionary<Vector2, Block>();
     public int currentIum;
     public int turnsTaken;
@@ -32,11 +35,16 @@ public class GameLogic : MonoBehaviour
     public List<string> hand = new List<string>();
     public List<string> discardPile = new List<string>();
     public string selectedCardId = null;
+    public bool isTrialWin = false;
+    public bool isTrialLoss = false;
 
     void Awake()
     {
-        // Since there should only be 1 GameLogic instance, assign this instance to a global var.
-        G = this;
+        // Since there should only be 1 TrialLogic instance, assign this instance to a global var.
+        T = this;
+
+        GameObject postTrialScreenObj = GameObject.Find("PostTrialScreen");
+        postTrialScreen = postTrialScreenObj.GetComponent<PostTrialScreen>();
 
         // Initialize parameters.
         secondsBetweenActions_fast = 0.1f;
@@ -45,7 +53,7 @@ public class GameLogic : MonoBehaviour
         numGridSquaresWide = 6;
         numGridSquaresDeep = 10;
         baseIumCostForBlock = 2;
-        turnsToSurvive = 20;
+        turnsToSurvive = 15;
         baseIumPerTurn = 1;
         baseDrawPerTurn = 1;
         startingIum = 4;
@@ -158,9 +166,14 @@ public class GameLogic : MonoBehaviour
 
         yield return destructionPhase();
 
-        startTurn();
+        bool isTrialOver = checkForTrialEnd();
 
-        // TODO: unfreeze user input after above phases are finished (careful, they're async)
+        if (!isTrialOver)
+        {
+            startTurn();
+        }
+
+        // TODO: unfreeze user input
     }
 
     public void speedUpGame()
@@ -308,14 +321,14 @@ public class GameLogic : MonoBehaviour
         yield return new WaitForSeconds(secondsBetweenActions);
     }
 
-    private void discardHand()
-    /* Discard all Cards in the current hand. */
+    private void decrementStain()
+    /* Each FloorSquare may be stained for a number of turns. For each FloorSquare, tell it a turn
+        has passed.
+    */
     {
-        List<string> handCopy = new List<string>(hand);
-        
-        foreach (string cardId in handCopy)
+        foreach (FloorSquare floorSquare in FloorSquare.floorSquaresMap.Values)
         {
-            discardCard(cardId);
+            floorSquare.addStainTurns(-1);
         }
     }
 
@@ -489,15 +502,36 @@ public class GameLogic : MonoBehaviour
         }
     }
 
-    private void decrementStain()
-    /* Each FloorSquare may be stained for a number of turns. For each FloorSquare, tell it a turn
-        has passed.
-    */
+    private bool checkForTrialEnd()
+    /* Check conditions for losing and for winning, and if they are met then end the trial. */
     {
-        foreach (FloorSquare floorSquare in FloorSquare.floorSquaresMap.Values)
+        bool hasMassReachedLastRow = false;
+        int lastRowYIdx = 0;
+        foreach (int xIdx in Enumerable.Range(0, numGridSquaresWide))
         {
-            floorSquare.addStainTurns(-1);
+            Vector2 gridIndices = new Vector2(xIdx, lastRowYIdx);
+            if (getBlockTypeOfSquare(gridIndices) == BlockType.MASS)
+            {
+                hasMassReachedLastRow = true;
+            }
         }
+
+        if (hasMassReachedLastRow)
+        {
+            isTrialLoss = true;
+        }
+        else if (turnsTaken >= turnsToSurvive)
+        {
+            isTrialWin = true;
+        }
+
+        bool isTrialOver = isTrialLoss || isTrialWin;
+        if (isTrialOver)
+        {
+            postTrialScreen.show();
+        }
+
+        return isTrialOver;
     }
 }
 
