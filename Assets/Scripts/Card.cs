@@ -10,6 +10,7 @@ public class Card : MonoBehaviour, IPointerClickHandler
     public static Color blueCardColor = new Color(51/255f, 170/255f, 250/255f);
     public static Color yellowCardColor = new Color(250/255f, 250/255f, 136/255f);
     public static Color redCardColor = new Color(238/255f, 68/255f, 102/255f);
+    public static Color iumCostTextColor = new Color(50/255, 50/255, 50/255);
     public static Dictionary<string, BlockType> cardNameToBlockType = new Dictionary<string, BlockType>
     {
         { getSingleBlockCardName(BlockType.BLUE), BlockType.BLUE },
@@ -40,6 +41,7 @@ public class Card : MonoBehaviour, IPointerClickHandler
 
     private GameObject backgroundObj;
     private GameObject iconObj;
+    private GameObject iumCostObj;
     private GameObject handObj;
     private Canvas canvas;
 
@@ -51,6 +53,7 @@ public class Card : MonoBehaviour, IPointerClickHandler
     {
         backgroundObj = transform.Find("Background").gameObject;
         iconObj = transform.Find("Icon").gameObject;
+        iumCostObj = transform.Find("IumCostText").gameObject;
         handObj = GameObject.Find("Hand");
         canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
 
@@ -75,7 +78,12 @@ public class Card : MonoBehaviour, IPointerClickHandler
         Color iconColor = cardNameToIconColor[cardName];
         iconObj.GetComponent<Image>().color = iconColor;
 
+        iumCostObj.GetComponent<Text>().color = iumCostTextColor;
+
         setCardSize(1);
+
+        // Ium cost display.
+        iumCostObj.GetComponent<Text>().text = TrialLogic.baseIumCostForBlock.ToString();
     }
 
     void Update()

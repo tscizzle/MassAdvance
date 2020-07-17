@@ -13,19 +13,19 @@ public class TrialLogic : MonoBehaviour
     private PostTrialScreen postTrialScreen;
     
     // Parameters (user-interaction).
-    private float secondsBetweenActions_fast;
-    private float secondsBetweenActions_slow;
-    public float secondsBetweenActions;
+    private static float secondsBetweenActions_fast;
+    private static float secondsBetweenActions_slow;
+    public static float secondsBetweenActions;
     // Parameters (gameplay).
     public static int numGridSquaresWide;
     public static int numGridSquaresDeep;
-    private static int baseIumCostForBlock;
-    public int turnsToSurvive;
-    private int baseIumPerTurn;
-    private int baseDrawPerTurn;
-    private int startingIum;
-    private int startingHandSize;
-    private int startingUnstainedRows;
+    public static int baseIumCostForBlock;
+    public static int turnsToSurvive;
+    private static int baseIumPerTurn;
+    private static int baseDrawPerTurn;
+    private static int startingIum;
+    private static int startingHandSize;
+    private static int startingUnstainedRows;
     // State.
     public Dictionary<Vector2, Block> placedBlocks = new Dictionary<Vector2, Block>();
     public int currentIum;

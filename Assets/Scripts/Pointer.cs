@@ -21,7 +21,7 @@ public class Pointer : MonoBehaviour
     {
         GameObject pointerObj = PrefabInstantiator.P.CreatePointer(gridIndices);
 
-        yield return new WaitForSeconds(TrialLogic.T.secondsBetweenActions);
+        yield return new WaitForSeconds(TrialLogic.secondsBetweenActions);
         
         Destroy(pointerObj);
     }
