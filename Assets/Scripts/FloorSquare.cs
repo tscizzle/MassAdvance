@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using TMPro;
 
 public class FloorSquare : MonoBehaviour, IPointerClickHandler
 {
@@ -28,6 +29,9 @@ public class FloorSquare : MonoBehaviour, IPointerClickHandler
 
         // Color.
         setColor();
+
+        // Stain text.
+        setStainText();
     }
 
     void Update()
@@ -55,6 +59,7 @@ public class FloorSquare : MonoBehaviour, IPointerClickHandler
     */
     {
         numTurnsStained = Mathf.Max(numTurnsStained + numTurns, 0);
+        setStainText();
         setColor();
     }
 
@@ -93,6 +98,14 @@ public class FloorSquare : MonoBehaviour, IPointerClickHandler
     }
 
     /* HELPERS */
+
+    private void setStainText()
+    /* Set the number that displays on this FloorSquare, for how many turns of stain is has left. */
+    {
+        GetComponentInChildren<TextMeshPro>().text = numTurnsStained > 0
+            ? numTurnsStained.ToString()
+            : "";
+    }
 
     private void setColor()
     /* Color this FloorSquare, based on if it is stained or not. */
