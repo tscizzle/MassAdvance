@@ -37,6 +37,7 @@ public class TrialLogic : MonoBehaviour
     public string selectedCardId = null;
     public bool isTrialWin = false;
     public bool isTrialLoss = false;
+    public bool isTrialOver = false;
 
     void Awake()
     {
@@ -166,11 +167,14 @@ public class TrialLogic : MonoBehaviour
 
         yield return destructionPhase();
 
-        bool isTrialOver = checkForTrialEnd();
+        evaluateTrialEndConditions();
 
         if (!isTrialOver)
         {
             startTurn();
+        } else
+        {
+            yield return handleTrialEnd();
         }
 
         // TODO: unfreeze user input
@@ -332,15 +336,32 @@ public class TrialLogic : MonoBehaviour
         }
     }
 
-    private List<Vector2> getProductiveBlocks()
-    /* Get a list of all squares that have player Blocks with `produce` effects.
+    private List<Vector2> standardOrder(IEnumerable<Vector2> gridIndicesList)
+    /* Often our game actions occur to a list of Blocks, and instead of doing it in a random order,
+        we use a standardized ordering of starting at the top-left, going down the column, then
+        repeating for columns left to right.
     
-    The result is ordered from top-left and going down, so column by column from the left.
+    :params List<Vector2> gridIndicesList: List of floor square positions in the grid.
+
+    :returns List<Vector2> sortedGridIndicesList: Same floor square positions but sorted as
+        described above.
+    */
+    {
+        List<Vector2> sortedGridIndicesList = gridIndicesList
+            .OrderBy(el => el.x)
+            .ThenByDescending(el => el.y)
+            .ToList();
+        
+        return sortedGridIndicesList;
+    }
+
+    private List<Vector2> getProductiveBlocks()
+    /* Get a list of all squares that have player Blocks with `produce` effects, in standard order.
     
     :returns List<Vector2> productiveBlocks:
     */
     {
-        List<Vector2> unorderedProductiveBlocks = new List<Vector2>();
+        List<Vector2> productiveBlocks = new List<Vector2>();
 
         foreach (int xIdx in Enumerable.Range(0, numGridSquaresWide))
         {
@@ -351,15 +372,12 @@ public class TrialLogic : MonoBehaviour
 
                 if (blockType == BlockType.BLUE || blockType == BlockType.YELLOW)
                 {
-                    unorderedProductiveBlocks.Add(gridIndices);
+                    productiveBlocks.Add(gridIndices);
                 }
             }
         }
 
-        List<Vector2> productiveBlocks = unorderedProductiveBlocks
-            .OrderBy(el => el.x)
-            .ThenByDescending(el => el.y)
-            .ToList();
+        productiveBlocks = standardOrder(productiveBlocks);
 
         return productiveBlocks;
     }
@@ -378,10 +396,8 @@ public class TrialLogic : MonoBehaviour
     }
 
     private List<Vector2> getNextMassTargets()
-    /* Get a list of all squares that current mass blocks borders, which are the squares it expands
-        to or attacks if there are player blocks there.
-    
-    The result is ordered from top-left and going down, so column by column from the left.
+    /* Get a list of all squares that current Mass Blocks border, which are the squares it expands
+        to or attacks if there are player blocks there. Return in standard order.
     
     :returns List<Vector2> nextTargets:
     */
@@ -405,10 +421,7 @@ public class TrialLogic : MonoBehaviour
             }
         }
 
-        List<Vector2> nextTargets = uniqueNextTargets
-            .OrderBy(el => el.x)
-            .ThenByDescending(el => el.y)
-            .ToList();
+        List<Vector2> nextTargets = standardOrder(uniqueNextTargets);
 
         return nextTargets;
     }
@@ -466,7 +479,7 @@ public class TrialLogic : MonoBehaviour
     :returns List<Vector2> blocksToBeDestroyed:
     */
     {
-        List<Vector2> unorderedBlocksToBeDestroyed = new List<Vector2>();
+        List<Vector2> blocksToBeDestroyed = new List<Vector2>();
 
         foreach (int xIdx in Enumerable.Range(0, numGridSquaresWide))
         {
@@ -476,15 +489,12 @@ public class TrialLogic : MonoBehaviour
                 bool isBlockExists = placedBlocks.ContainsKey(gridIndices);
                 if (isBlockExists && placedBlocks[gridIndices].isBeingDestroyed)
                 {
-                    unorderedBlocksToBeDestroyed.Add(gridIndices);
+                    blocksToBeDestroyed.Add(gridIndices);
                 }
             }
         }
 
-        List<Vector2> blocksToBeDestroyed = unorderedBlocksToBeDestroyed
-            .OrderBy(el => el.x)
-            .ThenByDescending(el => el.y)
-            .ToList();
+        blocksToBeDestroyed = standardOrder(blocksToBeDestroyed);
 
         return blocksToBeDestroyed;
     }
@@ -502,8 +512,10 @@ public class TrialLogic : MonoBehaviour
         }
     }
 
-    private bool checkForTrialEnd()
-    /* Check conditions for losing and for winning, and if they are met then end the trial. */
+    private void evaluateTrialEndConditions()
+    /* Check conditions for losing and for winning and set variables isTrialLoss, isTrialWin, and
+        isTrialOver.
+    */
     {
         bool hasMassReachedLastRow = false;
         int lastRowYIdx = 0;
@@ -524,14 +536,29 @@ public class TrialLogic : MonoBehaviour
         {
             isTrialWin = true;
         }
+        
+        isTrialOver = isTrialLoss || isTrialWin;
+    }
 
-        bool isTrialOver = isTrialLoss || isTrialWin;
-        if (isTrialOver)
+    private IEnumerator handleTrialEnd()
+    /* Perform actions that happen after a win or loss (wipe out mass, show post-trial screen, ...)
+    */
+    {
+        if (isTrialWin)
         {
-            postTrialScreen.show();
+            List<Vector2> gridIndicesList = standardOrder(placedBlocks.Keys.ToList());
+            foreach (Vector2 gridIndices in gridIndicesList)
+            {
+                Block block = placedBlocks[gridIndices];
+                if (block.blockType == BlockType.MASS)
+                {
+                    block.destroy();
+                    yield return Pointer.displayPointer(block.gridIndices);
+                }
+            }
         }
 
-        return isTrialOver;
+        postTrialScreen.show();
     }
 }
 

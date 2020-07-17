@@ -12,6 +12,6 @@ public class CurrentIumText : MonoBehaviour
 
     void Update()
     {
-        GetComponent<Text>().text = $"{TrialLogic.T.currentIum} ium";
+        GetComponent<Text>().text = $"<b>{TrialLogic.T.currentIum}</b> ium";
     }
 }
