@@ -45,9 +45,6 @@ public class Card : MonoBehaviour, IPointerClickHandler
     public string cardId;
     public string cardName;
 
-    // State.
-    private Vector3 cardPosition;
-
     void Awake()
     {
         backgroundObj = transform.Find("Background").gameObject;
@@ -77,54 +74,15 @@ public class Card : MonoBehaviour, IPointerClickHandler
 
     void Update()
     {
-        // Place this Card in the correct vertical position along the left-side of the screen.
-        // For 1 Card put it at 1/2. For 2 Cards put them at 1/3 and 2/3. Etc.
-        // Note however, we move the Card there non-instantaneously, using moveTowardPosition().
-        int handSize = TrialLogic.T.hand.Count;
-        int idxInHand = TrialLogic.T.hand.IndexOf(cardId);
-        float totalDist = cardAreaTopBound - cardAreaBottomBound;
-        float cardSpacing = totalDist / (handSize + 1);
-        float distFromTop = (idxInHand + 1) * cardSpacing;
-        float cardY = cardAreaTopBound - distFromTop;
-        cardPosition = new Vector3(0, cardY, 0);
         moveTowardPosition();
         
-        // Default to this Card not being highlighted (regular size, regular depth).
-        setCardSize(1);
-
-        // Highlight this card if the mouse is hovered near it, by enlarging the card and moving it
-        // to the front.
-        Vector2 mousePos = Input.mousePosition;
-        bool isMouseInHandArea = (
-            0 <= mousePos.x
-            && mousePos.x <= cardAreaRightBound
-            && cardAreaBottomBound <= mousePos.y
-            && mousePos.y <= cardAreaTopBound
-        );
-        string hoveredCardId = null;
-        if (isMouseInHandArea)
+        string hoveredCardId = getHoveredCardId();
+        if (hoveredCardId == cardId)
         {
-            float mouseDistFromTop = cardAreaTopBound - mousePos.y;
-            int hoveredIdx = -1;
-            foreach (int idx in Enumerable.Range(0, handSize))
-            {
-                float cardDistFromTop = (idx + 1) * cardSpacing;
-                float distFromCard = Mathf.Abs(mouseDistFromTop - cardDistFromTop);
-                float tolerance = cardSpacing / 2;
-                if (distFromCard < tolerance)
-                {
-                    hoveredIdx = idx;
-                    break;
-                }
-            }
-            if (hoveredIdx > -1)
-            {
-                hoveredCardId = TrialLogic.T.hand[hoveredIdx];
-                if (cardId == hoveredCardId)
-                {
-                    setCardSize(1.3f);
-                }
-            }
+            setCardSize(1.3f);
+        } else
+        {
+            setCardSize(1);
         }
 
         // Order the cards, front-to-back-wise.
@@ -150,18 +108,90 @@ public class Card : MonoBehaviour, IPointerClickHandler
         return $"single_block_{blockType}";
     }
 
-    private void moveTowardPosition()
-    /* We update each Card's cardPosition instantly when it needs to move, but the actual object
-        doesn't move there instantly. Use this function to move there smoothly.
+    private float getCardSpacing()
+    /* Return the distance between Cards displayed in the hand.
+    
+    :returns float cardSpacing:
     */
     {
+        float totalDist = cardAreaTopBound - cardAreaBottomBound;
+        int handSize = TrialLogic.T.hand.Count;
+        float cardSpacing = totalDist / (handSize + 1);
+
+        return cardSpacing;
+    }
+
+    private Vector3 getEventualPosition()
+    /* Calculate this Card's veritcal position along the left-side of the screen. For 1 Card put it
+        at 1/2, for 2 Cards put them at 1/3 and 2/3, etc.
+    
+    :returns Vector3 cardPosition: Position where this Card belongs.
+    */
+    {
+        int idxInHand = TrialLogic.T.hand.IndexOf(cardId);
+        float cardSpacing = getCardSpacing();
+        float distFromTop = (idxInHand + 1) * cardSpacing;
+        float cardY = cardAreaTopBound - distFromTop;
+        Vector3 cardPosition = new Vector3(0, cardY, 0);
+        
+        return cardPosition;
+    }
+
+    private void moveTowardPosition()
+    /* Move smoothly toward this Card's eventual position. */
+    {
         Vector3 currentPosition = transform.position;
-        Vector3 diff = cardPosition - currentPosition;
-        float diffHalfDist = diff.magnitude / 2;
-        float movementSpeed = Mathf.Max(diffHalfDist / movementHalftime, movementMinSpeed);
+        Vector3 eventualPosition = getEventualPosition();
+        Vector3 diffVector = eventualPosition - currentPosition;
+        
+        float diffVectorHalfDist = diffVector.magnitude / 2;
+        float movementSpeed = Mathf.Max(diffVectorHalfDist / movementHalftime, movementMinSpeed);
         float movementDist = movementSpeed * Time.deltaTime;
-        Vector3 movement = diff.normalized * movementDist;
+        
+        Vector3 movement = diffVector.normalized * movementDist;
+        
         transform.position = currentPosition + movement;
+    }
+
+    private string getHoveredCardId()
+    /* Get the id of the Card nearest the mouse cursor, if the mouse cursor is in the hand area.
+    
+    :returns string hoveredCardId:
+    */
+    {
+        Vector2 mousePos = Input.mousePosition;
+
+        bool isMouseInHandArea = (
+            0 <= mousePos.x
+            && mousePos.x <= cardAreaRightBound
+            && cardAreaBottomBound <= mousePos.y
+            && mousePos.y <= cardAreaTopBound
+        );
+        if (!isMouseInHandArea)
+        {
+            return null;
+        }
+
+        int handSize = TrialLogic.T.hand.Count;
+        float cardSpacing = getCardSpacing();
+        float mouseDistFromTop = cardAreaTopBound - mousePos.y;
+
+        int hoveredIdx = -1;
+        foreach (int idx in Enumerable.Range(0, handSize))
+        {
+            float cardDistFromTop = (idx + 1) * cardSpacing;
+            float distFromCard = Mathf.Abs(mouseDistFromTop - cardDistFromTop);
+            float tolerance = cardSpacing / 2;
+            if (distFromCard < tolerance)
+            {
+                hoveredIdx = idx;
+                break;
+            }
+        }
+        
+        string hoveredCardId = hoveredIdx > -1 ? TrialLogic.T.hand[hoveredIdx] : null;
+
+        return hoveredCardId;
     }
 
     private void setCardSize(float multiplier = 1)
