@@ -159,6 +159,8 @@ public class TrialLogic : MonoBehaviour
         
         turnsTaken += 1;
 
+        TrialLogic.T.selectedCardId = null;
+
         decrementStain();
 
         yield return productionPhase();

@@ -30,11 +30,13 @@ public class Card : MonoBehaviour, IPointerClickHandler
     };
     private static float cardHeight;
     private static float cardWidth;
+    private static float highlightedCardSizeMultiplier;
     private static float cardAreaBottomBound;
     private static float cardAreaTopBound;
     private static float cardAreaRightBound;
     private static float movementHalftime;
     private static float movementMinSpeed;
+    private static float growthSpeed;
 
     private GameObject backgroundObj;
     private GameObject iconObj;
@@ -54,11 +56,13 @@ public class Card : MonoBehaviour, IPointerClickHandler
 
         cardHeight = 50;
         cardWidth = 35;
+        highlightedCardSizeMultiplier = 1.3f;
         cardAreaBottomBound = 0;
         cardAreaTopBound = Screen.height * 0.75f;
         cardAreaRightBound = cardWidth * canvas.scaleFactor;
         movementHalftime = 0.05f;
         movementMinSpeed = 0.01f;
+        growthSpeed = 2;
     }
 
     void Start()
@@ -70,23 +74,18 @@ public class Card : MonoBehaviour, IPointerClickHandler
         
         Color iconColor = cardNameToIconColor[cardName];
         iconObj.GetComponent<Image>().color = iconColor;
+
+        setCardSize(1);
     }
 
     void Update()
     {
         moveTowardPosition();
-        
-        string hoveredCardId = getHoveredCardId();
-        if (hoveredCardId == cardId)
-        {
-            setCardSize(1.3f);
-        } else
-        {
-            setCardSize(1);
-        }
+
+        growTowardSizeMultiplier();
 
         // Order the cards, front-to-back-wise.
-        setAllCardsDepth(hoveredCardId);
+        setAllCardsDepth();
     }
 
     /* PUBLIC API */
@@ -97,7 +96,8 @@ public class Card : MonoBehaviour, IPointerClickHandler
     :param PointerEventData eventData: This interface is defined by Unity.
     */
     {
-        TrialLogic.T.selectedCardId = cardId;
+        // Select this Card, or deselect it if it's already selected.
+        TrialLogic.T.selectedCardId = TrialLogic.T.selectedCardId == cardId ? null : cardId;
     }
 
     /* HELPERS */
@@ -128,11 +128,14 @@ public class Card : MonoBehaviour, IPointerClickHandler
     :returns Vector3 cardPosition: Position where this Card belongs.
     */
     {
+        float cardX = TrialLogic.T.selectedCardId == cardId ? cardAreaRightBound : 0;
+
         int idxInHand = TrialLogic.T.hand.IndexOf(cardId);
         float cardSpacing = getCardSpacing();
         float distFromTop = (idxInHand + 1) * cardSpacing;
         float cardY = cardAreaTopBound - distFromTop;
-        Vector3 cardPosition = new Vector3(0, cardY, 0);
+
+        Vector3 cardPosition = new Vector3(cardX, cardY, 0);
         
         return cardPosition;
     }
@@ -143,14 +146,100 @@ public class Card : MonoBehaviour, IPointerClickHandler
         Vector3 currentPosition = transform.position;
         Vector3 eventualPosition = getEventualPosition();
         Vector3 diffVector = eventualPosition - currentPosition;
+
+        if (diffVector == Vector3.zero)
+        {
+            return;
+        }
         
         float diffVectorHalfDist = diffVector.magnitude / 2;
         float movementSpeed = Mathf.Max(diffVectorHalfDist / movementHalftime, movementMinSpeed);
         float movementDist = movementSpeed * Time.deltaTime;
         
-        Vector3 movement = diffVector.normalized * movementDist;
+        // If would have moved past the desired point, just go right to it.
+        if (movementDist > diffVector.magnitude)
+        {
+            transform.position = eventualPosition;
+        } else
+        {
+            Vector3 movement = diffVector.normalized * movementDist;
+            transform.position = currentPosition + movement;
+        }
+    }
+
+    private float getEventualSizeMultiplier()
+    /* Calculate the size multiplier for this Card, making it larger than others if it is hovered or
+        selected.
+    
+    :returns float: Number to multiply the Card's size by when we want to highlight it.
+    */
+    {
+        string hoveredCardId = getHoveredCardId();
+        if (cardId == TrialLogic.T.selectedCardId || cardId == hoveredCardId)
+        {
+            return highlightedCardSizeMultiplier;
+        } else
+        {
+            return 1;
+        }
+    }
+
+    private void setCardSize(float multiplier)
+    /* Set the Rect size of this Card.
+    
+    :param float multiplier: The size, relative to normal, to make this Card.
+    */
+    {
+        Vector2 backgroundSize = new Vector2(cardWidth, cardHeight) * multiplier;
+        GetComponent<RectTransform>().sizeDelta = backgroundSize;
+        backgroundObj.GetComponent<RectTransform>().sizeDelta = backgroundSize;
+
+        Vector2 iconSize = backgroundSize * 0.67f;
+        iconSize.y = iconSize.x; // Make the icon a square.
+        iconObj.GetComponent<RectTransform>().sizeDelta = iconSize;
+    }
+
+    private void growTowardSizeMultiplier()
+    /* Change size smoothly toward this Card's eventual size. */
+    {
+        float currentMultiplier = GetComponent<RectTransform>().sizeDelta.x / cardWidth;
+        float eventualMultiplier = getEventualSizeMultiplier();
+        float diff = eventualMultiplier - currentMultiplier;
+
+        if (diff == 0)
+        {
+            return;
+        }
+
+        float diffSign = diff / Mathf.Abs(diff);
+        float multiplierChange = growthSpeed * diffSign * Time.deltaTime;
+        // If we are ever about to go past the desired size, instead just go straight to it.
+        if (Mathf.Abs(multiplierChange) > Mathf.Abs(diff))
+        {
+            multiplierChange = diff;
+        }
+
+        float newMultiplier = currentMultiplier + multiplierChange;
         
-        transform.position = currentPosition + movement;
+        setCardSize(newMultiplier);
+    }
+
+    private bool getIsMouseInHandArea()
+    /* Return a bool for whether or not the mouse is in the area of the player's hand of Cards.
+    
+    :returns bool isInArea:
+    */
+    {
+        Vector2 mousePos = Input.mousePosition;
+
+        bool isInArea = (
+            0 <= mousePos.x
+            && mousePos.x <= cardAreaRightBound
+            && cardAreaBottomBound <= mousePos.y
+            && mousePos.y <= cardAreaTopBound
+        );
+
+        return isInArea;
     }
 
     private string getHoveredCardId()
@@ -159,19 +248,13 @@ public class Card : MonoBehaviour, IPointerClickHandler
     :returns string hoveredCardId:
     */
     {
-        Vector2 mousePos = Input.mousePosition;
-
-        bool isMouseInHandArea = (
-            0 <= mousePos.x
-            && mousePos.x <= cardAreaRightBound
-            && cardAreaBottomBound <= mousePos.y
-            && mousePos.y <= cardAreaTopBound
-        );
+        bool isMouseInHandArea = getIsMouseInHandArea();
         if (!isMouseInHandArea)
         {
             return null;
         }
 
+        Vector2 mousePos = Input.mousePosition;
         int handSize = TrialLogic.T.hand.Count;
         float cardSpacing = getCardSpacing();
         float mouseDistFromTop = cardAreaTopBound - mousePos.y;
@@ -194,32 +277,15 @@ public class Card : MonoBehaviour, IPointerClickHandler
         return hoveredCardId;
     }
 
-    private void setCardSize(float multiplier = 1)
-    /* Set this Card's size to some multiple of the default height and width. Keep the icon on the
-        card a square, and slightly in from the sides of the card.
-
-    :param float multiplier: Proportion by which to enlarge this Card's size by. 1 keeps it regular.
-    */
-    {
-
-        Vector2 backgroundSize = new Vector2(cardWidth, cardHeight) * multiplier;
-        GetComponent<RectTransform>().sizeDelta = backgroundSize;
-        backgroundObj.GetComponent<RectTransform>().sizeDelta = backgroundSize;
-
-        Vector2 iconSize = backgroundSize * 0.67f;
-        iconSize.y = iconSize.x; // Make the icon a square.
-        iconObj.GetComponent<RectTransform>().sizeDelta = iconSize;
-    }
-
-    private void setAllCardsDepth(string hoveredCardId)
-    /* Set the order of Cards in the Hierarchy so they appear correctly front-to-back-wise.
+    private void setAllCardsDepth()
+    /* Set the order of Cards in the Hierarchy so they appear correctly front-to-back-wise,
+        including putting the hovered Card in front.
     
     Note that if another Card's Update already ran and did this, nothing needs to happen here.
-
-    :param string hoveredCardId: id of Card that should be highlighted because the mouse is near it,
-        meaning it is "taken out" of order and placed at the end of the siblings in the Hierarchy.
     */
     {
+        string hoveredCardId = getHoveredCardId();
+
         // Desired order of Cards in the GameObject Hierarchy.
         List<string> desiredHierarchyOrder = new List<string>(TrialLogic.T.hand);
         if (hoveredCardId != null)
