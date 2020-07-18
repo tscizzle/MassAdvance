@@ -57,10 +57,10 @@ public class Card : MonoBehaviour, IPointerClickHandler
         handObj = GameObject.Find("Hand");
         canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
 
-        cardHeight = 50;
-        cardWidth = 35;
+        cardHeight = 80;
+        cardWidth = 56;
         highlightedCardSizeMultiplier = 1.3f;
-        cardAreaBottomBound = 0;
+        cardAreaBottomBound = 50;
         cardAreaTopBound = Screen.height * 0.75f;
         cardAreaRightBound = cardWidth * canvas.scaleFactor;
         movementHalftime = 0.05f;
@@ -136,7 +136,15 @@ public class Card : MonoBehaviour, IPointerClickHandler
     :returns Vector3 cardPosition: Position where this Card belongs.
     */
     {
-        float cardX = TrialLogic.T.selectedCardId == cardId ? cardAreaRightBound : 0;
+        float cardX = -cardWidth / 4;
+        string hoveredCardId = getHoveredCardId();
+        if (TrialLogic.T.selectedCardId == cardId)
+        {
+            cardX = cardAreaRightBound;
+        } else if (hoveredCardId == cardId)
+        {
+            cardX = cardWidth / 4;
+        }
 
         int idxInHand = TrialLogic.T.hand.IndexOf(cardId);
         float cardSpacing = getCardSpacing();

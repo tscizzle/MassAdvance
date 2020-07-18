@@ -58,9 +58,17 @@ public class FloorSquare : MonoBehaviour, IPointerClickHandler
     :param bool newIsStained: Whether setting to stained or unstained.
     */
     {
-        numTurnsStained = Mathf.Max(numTurnsStained + numTurns, 0);
-        setStainText();
-        setColor();
+        int oldVal = numTurnsStained;
+        int newVal = Mathf.Max(numTurnsStained + numTurns, 0);
+
+        if (newVal != oldVal)
+        {
+            numTurnsStained = Mathf.Max(numTurnsStained + numTurns, 0);
+            setStainText();
+            setColor();
+
+            EventLog.LogEvent($"Stain at {gridIndices} changed from {oldVal} to {newVal}.");
+        }
     }
 
     public bool isStained()

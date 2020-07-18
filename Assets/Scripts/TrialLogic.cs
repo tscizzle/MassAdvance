@@ -27,17 +27,17 @@ public class TrialLogic : MonoBehaviour
     private static int startingHandSize;
     private static int startingUnstainedRows;
     // State.
-    public Dictionary<Vector2, Block> placedBlocks = new Dictionary<Vector2, Block>();
     public int currentIum;
-    public int turnsTaken;
+    public int turnNumber;
+    public Dictionary<Vector2, Block> placedBlocks = new Dictionary<Vector2, Block>();
     public Dictionary<string, CardInfo> cardsById = new Dictionary<string, CardInfo>();
-    public List<string> drawPile = new List<string>();
+    private List<string> drawPile = new List<string>();
     public List<string> hand = new List<string>();
-    public List<string> discardPile = new List<string>();
+    private List<string> discardPile = new List<string>();
     public string selectedCardId = null;
     public bool isTrialWin = false;
     public bool isTrialLoss = false;
-    public bool isTrialOver = false;
+    private bool isTrialOver = false;
 
     void Awake()
     {
@@ -54,12 +54,16 @@ public class TrialLogic : MonoBehaviour
         numGridSquaresWide = 6;
         numGridSquaresDeep = 10;
         baseIumCostForBlock = 2;
-        turnsToSurvive = 15;
+        turnsToSurvive = 3;
         baseIumPerTurn = 1;
         baseDrawPerTurn = 1;
         startingIum = 4;
         startingHandSize = 4;
         startingUnstainedRows = 3;
+
+        // Initialize state.
+        currentIum = startingIum;
+        turnNumber = 0;
     }
 
     IEnumerator Start()
@@ -72,12 +76,10 @@ public class TrialLogic : MonoBehaviour
         
         yield return StartCoroutine(placeStartingBlocks());
 
-        currentIum = startingIum;
         foreach (int _ in Enumerable.Range(0, startingHandSize))
         {
             drawCard();
         }
-        turnsTaken = 0;
 
         startTurn();
 
@@ -115,7 +117,7 @@ public class TrialLogic : MonoBehaviour
             if (isSelectedCardABlock && canAffordBlock)
             {
                 BlockType blockType = Card.cardNameToBlockType[cardName];
-                currentIum -= iumCost;
+                gainIum(-iumCost);
                 placeBlock(blockType, gridIndices);
                 discardCard(selectedCardId);
                 selectedCardId = null;
@@ -137,11 +139,15 @@ public class TrialLogic : MonoBehaviour
         placedBlocks[gridIndices] = block;
 
         StartCoroutine(Pointer.displayPointer(gridIndices));
+
+        EventLog.LogEvent($"Placed block {blockType} at {gridIndices}");
     }
 
     public void startTurn()
     /* Begin the player's turn, e.g. gain a base amount of ium and draw a base number of cards. */
     {
+        turnNumber += 1;
+
         gainIum(baseIumPerTurn);
         
         foreach (int _ in Enumerable.Range(0, baseDrawPerTurn))
@@ -156,8 +162,6 @@ public class TrialLogic : MonoBehaviour
     */
     {
         // TODO: freeze user input
-        
-        turnsTaken += 1;
 
         TrialLogic.T.selectedCardId = null;
 
@@ -171,12 +175,12 @@ public class TrialLogic : MonoBehaviour
 
         evaluateTrialEndConditions();
 
-        if (!isTrialOver)
-        {
-            startTurn();
-        } else
+        if (isTrialOver)
         {
             yield return handleTrialEnd();
+        } else
+        {
+            startTurn();
         }
 
         // TODO: unfreeze user input
@@ -200,7 +204,15 @@ public class TrialLogic : MonoBehaviour
     :param int ium: Amount of ium to gain.
     */
     {
-        currentIum += ium;
+        int oldVal = currentIum;
+        int newVal = currentIum + ium;
+
+        if (newVal != oldVal)
+        {
+            currentIum = newVal;
+
+            EventLog.LogEvent($"Current ium changed from {oldVal} to {newVal}.");
+        }
     }
 
     public void drawCard()
@@ -210,18 +222,22 @@ public class TrialLogic : MonoBehaviour
         {
             drawPile = discardPile.OrderBy(_ => UnityEngine.Random.value).ToList();
             discardPile.Clear();
+
+            EventLog.LogEvent($"Replenished draw pile from discard pile.");
         }
 
-        string drawnCardId = drawPile[drawPile.Count - 1];
+        string cardId = drawPile[drawPile.Count - 1];
         drawPile.RemoveAt(drawPile.Count - 1);
-        hand.Add(drawnCardId);
+        hand.Add(cardId);
 
-        GameObject cardObj = PrefabInstantiator.P.CreateCard(drawnCardId);
+        GameObject cardObj = PrefabInstantiator.P.CreateCard(cardId);
         
         Card card = cardObj.GetComponent<Card>();
-        CardInfo cardInfo = cardsById[drawnCardId];
+        CardInfo cardInfo = cardsById[cardId];
         cardInfo.card = card;
-        cardsById[drawnCardId] = cardInfo;
+        cardsById[cardId] = cardInfo;
+
+        EventLog.LogEvent($"Drew card {cardInfo.cardName} (id: {cardId}).");
     }
 
     public void discardCard(string cardId)
@@ -239,6 +255,8 @@ public class TrialLogic : MonoBehaviour
         cardsById[cardId] = cardInfo;
 
         discardPile.Add(cardId);
+
+        EventLog.LogEvent($"Discarded card {cardInfo.cardName} (id: {cardId}).");
     }
 
     public BlockType? getBlockTypeOfSquare(Vector2 gridIndices)
@@ -534,12 +552,17 @@ public class TrialLogic : MonoBehaviour
         {
             isTrialLoss = true;
         }
-        else if (turnsTaken >= turnsToSurvive)
+        else if (turnNumber >= turnsToSurvive)
         {
             isTrialWin = true;
         }
         
         isTrialOver = isTrialLoss || isTrialWin;
+
+        if (isTrialOver)
+        {
+            EventLog.LogEvent($"Trial is over. isTrialLoss: {isTrialLoss}. IsTrialWin: {isTrialWin}");
+        }
     }
 
     private IEnumerator handleTrialEnd()

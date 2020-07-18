@@ -56,6 +56,8 @@ public class Block : MonoBehaviour
         {
             TrialLogic.T.drawCard();
         }
+        
+        EventLog.LogEvent($"Produced for blockType {blockType} at {gridIndices}.");
     }
 
     public void attack()
@@ -68,6 +70,8 @@ public class Block : MonoBehaviour
         {
             damage();
         }
+
+        EventLog.LogEvent($"Was attacked at {gridIndices}.");
     }
 
     public void damage()
@@ -79,6 +83,8 @@ public class Block : MonoBehaviour
 
         Color color = blockTypeToColor[blockType];
         GetComponent<Renderer>().material.SetColor("_Color", color);
+
+        EventLog.LogEvent($"Was damaged at {gridIndices}.");
     }
 
     public void queueToBeDestroyed()
@@ -87,6 +93,8 @@ public class Block : MonoBehaviour
         isBeingDestroyed = true;
 
         // TODO: visually indicate that this block is queued to be destroyed
+
+        EventLog.LogEvent($"Was queued to be destroyed at {gridIndices}.");
     }
 
     public void destroy()
@@ -102,6 +110,8 @@ public class Block : MonoBehaviour
         floorSquare.addStainTurns(1);
         
         TrialLogic.T.placedBlocks.Remove(gridIndices);
+
+        EventLog.LogEvent($"Was destroyed at {gridIndices}.");
 
         Destroy(gameObject);
     }
