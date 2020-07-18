@@ -9,8 +9,9 @@ public class PrefabInstantiator : MonoBehaviour
 
     public GameObject blockPrefab;
     public GameObject pointerPrefab;
-    public GameObject cardPrefab;
     public GameObject floorSquarePrefab;
+    public GameObject repairBlockCardPrefab;
+    public GameObject placeSingleBlockCardPrefab;
 
     private Canvas canvas;
     private GameObject handObj;
@@ -57,12 +58,21 @@ public class PrefabInstantiator : MonoBehaviour
     :returns GameObject cardObj:
     */
     {
+        CardInfo cardInfo = TrialLogic.T.cardsById[cardId];
+        string cardName = cardInfo.cardName;
+
+        GameObject cardPrefab = cardNameToPrefabMap(cardName);
         Vector3 position = new Vector3(0, -Screen.height, 0);
         GameObject cardObj = Instantiate(cardPrefab, position, Quaternion.identity);
         cardObj.transform.SetParent(handObj.transform, worldPositionStays: false);
 
         Card card = cardObj.GetComponent<Card>();
         card.cardId = cardId;
+        card.cardName = cardName;
+        card.setCardParams();
+
+        cardInfo.card = card;
+        TrialLogic.T.cardsById[cardId] = cardInfo;
 
         return cardObj;
     }
@@ -102,5 +112,29 @@ public class PrefabInstantiator : MonoBehaviour
         GameObject pointerObj = Instantiate(pointerPrefab, position, Quaternion.identity);
 
         return pointerObj;
+    }
+
+    /* HELPERS */
+
+    private GameObject cardNameToPrefabMap(string cardName)
+    /* Of the Prefabs that are attached to this Script, return the one that's associated with the
+        given cardName.
+    
+    :param string cardName:
+
+    :returns GameObject cardPrefab:
+    */
+    {
+        if (cardName == "repair_block")
+        {
+            return repairBlockCardPrefab;
+        } else if (PlaceSingleBlockCard.cardNameToBlockType.ContainsKey(cardName))
+        {
+            return placeSingleBlockCardPrefab;
+        } else
+        {
+            // Shouldn't ever get here. It would mean we have a card without an associated prefab.
+            return new GameObject();
+        }
     }
 }

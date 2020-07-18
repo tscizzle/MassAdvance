@@ -7,28 +7,7 @@ using UnityEngine.EventSystems;
 
 public class Card : MonoBehaviour, IPointerClickHandler
 {
-    public static Color blueCardColor = new Color(51/255f, 170/255f, 250/255f);
-    public static Color yellowCardColor = new Color(250/255f, 250/255f, 136/255f);
-    public static Color redCardColor = new Color(238/255f, 68/255f, 102/255f);
-    public static Color iumCostTextColor = new Color(50/255, 50/255, 50/255);
-    public static Dictionary<string, BlockType> cardNameToBlockType = new Dictionary<string, BlockType>
-    {
-        { getSingleBlockCardName(BlockType.BLUE), BlockType.BLUE },
-        { getSingleBlockCardName(BlockType.YELLOW), BlockType.YELLOW },
-        { getSingleBlockCardName(BlockType.RED), BlockType.RED },
-    };
-    private static Dictionary<string, Color> cardNameToIconColor = new Dictionary<string, Color>
-    {
-        { getSingleBlockCardName(BlockType.BLUE), Block.blueColor },
-        { getSingleBlockCardName(BlockType.YELLOW), Block.yellowColor },
-        { getSingleBlockCardName(BlockType.RED), Block.redColor },
-    };
-    private static Dictionary<string, Color> cardNameToBackgroundColor = new Dictionary<string, Color>
-    {
-        { getSingleBlockCardName(BlockType.BLUE), blueCardColor },
-        { getSingleBlockCardName(BlockType.YELLOW), yellowCardColor },
-        { getSingleBlockCardName(BlockType.RED), redCardColor },
-    };
+    private static Color iumCostTextColor = new Color(50/255, 50/255, 50/255);
     private static float cardHeight;
     private static float cardWidth;
     private static float highlightedCardSizeMultiplier;
@@ -39,8 +18,8 @@ public class Card : MonoBehaviour, IPointerClickHandler
     private static float movementMinSpeed;
     private static float growthSpeed;
 
-    private GameObject backgroundObj;
-    private GameObject iconObj;
+    public GameObject backgroundObj;
+    public GameObject iconObj;
     private GameObject iumCostObj;
     private GameObject handObj;
     private Canvas canvas;
@@ -48,6 +27,7 @@ public class Card : MonoBehaviour, IPointerClickHandler
     // Parameters.
     public string cardId;
     public string cardName;
+    public int iumCost;
 
     void Awake()
     {
@@ -68,22 +48,13 @@ public class Card : MonoBehaviour, IPointerClickHandler
         growthSpeed = 2;
     }
 
-    void Start()
+    public virtual void Start()
     {
-        cardName = TrialLogic.T.cardsById[cardId].cardName;
-        
-        Color backgroundColor = cardNameToBackgroundColor[cardName];
-        backgroundObj.GetComponent<Image>().color = backgroundColor;
-        
-        Color iconColor = cardNameToIconColor[cardName];
-        iconObj.GetComponent<Image>().color = iconColor;
-
         iumCostObj.GetComponent<Text>().color = iumCostTextColor;
 
         setCardSize(1);
 
-        // Ium cost display.
-        iumCostObj.GetComponent<Text>().text = TrialLogic.baseIumCostForBlock.ToString();
+        iumCostObj.GetComponent<Text>().text = iumCost.ToString();
     }
 
     void Update()
@@ -108,13 +79,28 @@ public class Card : MonoBehaviour, IPointerClickHandler
         TrialLogic.T.selectedCardId = TrialLogic.T.selectedCardId == cardId ? null : cardId;
     }
 
-    /* HELPERS */
+    public virtual void setCardParams()
+    /* To be overridden in each subclass.
+    
+    Sets the fields:
+    - iumCost
+    */
+    {
 
-    private static string getSingleBlockCardName(BlockType blockType)
-    /* Given a BlockType, give the cardName of the card that places a single block of that type. */
+    }
+
+    public static string getSingleBlockCardName(BlockType blockType)
+    /* Given a BlockType, give the cardName of the card that places a single block of that type.
+    
+    :param BlockType blockType:
+
+    :returns string cardName:
+    */
     {
         return $"single_block_{blockType}";
     }
+
+    /* HELPERS */
 
     private float getCardSpacing()
     /* Return the distance between Cards displayed in the hand.

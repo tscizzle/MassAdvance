@@ -942,9 +942,11 @@ MonoBehaviour:
     type: 3}
   pointerPrefab: {fileID: 2546780840405447781, guid: 7b684558c63763a2f9cfda80af17baf9,
     type: 3}
-  cardPrefab: {fileID: 2480274681150162899, guid: c75e1664f28be246c858e079930e4bb2,
-    type: 3}
   floorSquarePrefab: {fileID: 95978272586658124, guid: 4ad75cf8730e6a197a25284133dc2311,
+    type: 3}
+  repairBlockCardPrefab: {fileID: 2377805131135822773, guid: 5a99a4dea54ed0ccaa30febfef040f22,
+    type: 3}
+  placeSingleBlockCardPrefab: {fileID: 658036284559976157, guid: 23d195d2e824906b0905710e63850cb2,
     type: 3}
 --- !u!4 &1431573956
 Transform:

@@ -104,7 +104,8 @@ public class TrialLogic : MonoBehaviour
         {
             CardInfo selectedCard = cardsById[selectedCardId];
             string cardName = selectedCard.cardName;
-            bool isSelectedCardABlock = Card.cardNameToBlockType.ContainsKey(cardName);
+            bool isSelectedCardABlock =
+                PlaceSingleBlockCard.cardNameToBlockType.ContainsKey(cardName);
 
             FloorSquare floorSquare = FloorSquare.floorSquaresMap[gridIndices];
             int iumCost = baseIumCostForBlock;
@@ -116,7 +117,7 @@ public class TrialLogic : MonoBehaviour
             
             if (isSelectedCardABlock && canAffordBlock)
             {
-                BlockType blockType = Card.cardNameToBlockType[cardName];
+                BlockType blockType = PlaceSingleBlockCard.cardNameToBlockType[cardName];
                 gainIum(-iumCost);
                 placeBlock(blockType, gridIndices);
                 discardCard(selectedCardId);
@@ -234,8 +235,6 @@ public class TrialLogic : MonoBehaviour
         
         Card card = cardObj.GetComponent<Card>();
         CardInfo cardInfo = cardsById[cardId];
-        cardInfo.card = card;
-        cardsById[cardId] = cardInfo;
 
         EventLog.LogEvent($"Drew card {cardInfo.cardName} (id: {cardId}).");
     }
@@ -310,7 +309,7 @@ public class TrialLogic : MonoBehaviour
         {
             foreach (int idx in Enumerable.Range(0, 100))
             {
-                string cardName = $"single_block_{blockType}";
+                string cardName = Card.getSingleBlockCardName(blockType);
                 string cardId = MiscHelpers.getRandomId();
 
                 cardsById[cardId] = new CardInfo(cardName, cardId);
