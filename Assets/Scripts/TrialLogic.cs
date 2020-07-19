@@ -7,10 +7,7 @@ using UnityEngine.UI;
 
 public class TrialLogic : MonoBehaviour
 {
-    // Global var that even a prefab can reference. Will be assigned our 1 instance of TrialLogic.
-    public static TrialLogic T;
-
-    private PostTrialScreen postTrialScreen;
+    private static PostTrialScreen postTrialScreen;
     
     // Parameters (user-interaction).
     private static float secondsBetweenActions_fast;
@@ -27,23 +24,20 @@ public class TrialLogic : MonoBehaviour
     private static int startingHandSize;
     private static int startingUnstainedRows;
     // State.
-    public int currentIum;
-    public int turnNumber;
-    public Dictionary<Vector2, Block> placedBlocks = new Dictionary<Vector2, Block>();
-    public Dictionary<string, CardInfo> cardsById = new Dictionary<string, CardInfo>();
-    private List<string> drawPile = new List<string>();
-    public List<string> hand = new List<string>();
-    private List<string> discardPile = new List<string>();
-    public string selectedCardId = null;
-    public bool isTrialWin = false;
-    public bool isTrialLoss = false;
-    private bool isTrialOver = false;
+    public static int currentIum;
+    public static int turnNumber;
+    public static Dictionary<Vector2, Block> placedBlocks = new Dictionary<Vector2, Block>();
+    public static Dictionary<string, CardInfo> cardsById = new Dictionary<string, CardInfo>();
+    private static List<string> drawPile = new List<string>();
+    public static List<string> hand = new List<string>();
+    private static List<string> discardPile = new List<string>();
+    public static string selectedCardId = null;
+    public static bool isTrialWin = false;
+    public static bool isTrialLoss = false;
+    private static bool isTrialOver = false;
 
     void Awake()
     {
-        // Since there should only be 1 TrialLogic instance, assign this instance to a global var.
-        T = this;
-
         GameObject postTrialScreenObj = GameObject.Find("PostTrialScreen");
         postTrialScreen = postTrialScreenObj.GetComponent<PostTrialScreen>();
 
@@ -93,17 +87,7 @@ public class TrialLogic : MonoBehaviour
 
     /* PUBLIC API */
 
-    public void playSelectedCardOnBlock(Block block)
-    {
-        if (String.IsNullOrEmpty(selectedCardId))
-        {
-            return;
-        }
-        
-        CardInfo selectedCard = cardsById[selectedCardId];
-    }
-
-    public void placeBlock(BlockType blockType, Vector2 gridIndices)
+    public static void placeBlock(BlockType blockType, Vector2 gridIndices)
     /* Put a block into play in the grid.
     
     :param BlockType blockType: enum defined in Block.cs
@@ -113,15 +97,13 @@ public class TrialLogic : MonoBehaviour
         GameObject blockObj = PrefabInstantiator.P.CreateBlock(blockType, gridIndices);
         
         Block block = blockObj.GetComponent<Block>();
-        
-        placedBlocks[gridIndices] = block;
 
-        StartCoroutine(Pointer.displayPointer(gridIndices));
+        placedBlocks[gridIndices] = block;
 
         EventLog.LogEvent($"Placed block {blockType} at {gridIndices}");
     }
 
-    public void startTurn()
+    public static void startTurn()
     /* Begin the player's turn, e.g. gain a base amount of ium and draw a base number of cards. */
     {
         turnNumber += 1;
@@ -134,14 +116,14 @@ public class TrialLogic : MonoBehaviour
         }
     }
 
-    public IEnumerator endTurn()
+    public static IEnumerator endTurn()
     /* Do the steps that should occur when player's turn ends, like evaluate combos and produce,
         trigger the enemy's turn, etc.
     */
     {
         // TODO: freeze user input
 
-        TrialLogic.T.selectedCardId = null;
+        TrialLogic.selectedCardId = null;
 
         decrementStain();
 
@@ -164,19 +146,19 @@ public class TrialLogic : MonoBehaviour
         // TODO: unfreeze user input
     }
 
-    public void speedUpGame()
+    public static void speedUpGame()
     /* Speeds up the game by lowering secondsBetweenActions */
     {
         secondsBetweenActions = secondsBetweenActions_fast;
     }
 
-    public void slowDownGame()
+    public static void slowDownGame()
     /* Slows down the game by raising secondsBetweenActions */
     {
         secondsBetweenActions = secondsBetweenActions_slow;
     }
 
-    public void gainIum(int ium)
+    public static void gainIum(int ium)
     /* Gain ium equal to the amount passed in.
     
     :param int ium: Amount of ium to gain.
@@ -193,7 +175,7 @@ public class TrialLogic : MonoBehaviour
         }
     }
 
-    public void drawCard()
+    public static void drawCard()
     /* Pick up a Card from drawPile to currentHand. */
     {
         if (drawPile.Count == 0)
@@ -216,7 +198,7 @@ public class TrialLogic : MonoBehaviour
         EventLog.LogEvent($"Drew card {cardInfo.cardName} (id: {cardId}).");
     }
 
-    public void discardCard(string cardId)
+    public static void discardCard(string cardId)
     /* Put a Card from the hand to the discard pile
     
     :param string cardId: id of the Card in the hand to discard
@@ -235,7 +217,7 @@ public class TrialLogic : MonoBehaviour
         EventLog.LogEvent($"Discarded card {cardInfo.cardName} (id: {cardId}).");
     }
 
-    public BlockType? getBlockTypeOfSquare(Vector2 gridIndices)
+    public static BlockType? getBlockTypeOfSquare(Vector2 gridIndices)
     /* Get the blockType of a place in the grid.
     
     :param Vector2 gridIndices: Position of square we want the block type of.
@@ -252,7 +234,7 @@ public class TrialLogic : MonoBehaviour
 
     /* HELPERS */
 
-    private void initializeFloor()
+    private static void initializeFloor()
     /* Create the grid of FloorSquares. */
     {
         // Create the grid.
@@ -278,8 +260,8 @@ public class TrialLogic : MonoBehaviour
         }
     }
 
-    private void initializeCards()
-    /* Shuffle the player's cards and put them in the draw pile. */
+    private static void initializeCards()
+    /* Shuffle some set of cards I chose and put them in the draw pile. */
     {
         List<string> cardNames = new List<string>();
 
@@ -300,7 +282,6 @@ public class TrialLogic : MonoBehaviour
             cardNames.Add(cardName);
         }
 
-        // 
         foreach (string cardName in cardNames)
         {
             string cardId = MiscHelpers.getRandomId();
@@ -315,7 +296,7 @@ public class TrialLogic : MonoBehaviour
         }
     }
 
-    private IEnumerator placeStartingBlocks()
+    private static IEnumerator placeStartingBlocks()
     /* Place the Blocks that start out on the grid at the beginning of a round. */
     {
         Vector2[] startingMassSquares =
@@ -326,18 +307,19 @@ public class TrialLogic : MonoBehaviour
         foreach (Vector2 gridIndices in startingMassSquares)
         {
             placeBlock(BlockType.MASS, gridIndices);
-            yield return new WaitForSeconds(secondsBetweenActions);
+            yield return Pointer.displayPointer(gridIndices);
         }
 
         Vector2 startingBlueSquare = new Vector2(0, numGridSquaresDeep - 2);
         placeBlock(BlockType.BLUE, startingBlueSquare);
-        yield return new WaitForSeconds(secondsBetweenActions);
+        yield return Pointer.displayPointer(startingBlueSquare);
+
         Vector2 startingYellowSquare = new Vector2(numGridSquaresWide - 1, numGridSquaresDeep - 2);
         placeBlock(BlockType.YELLOW, startingYellowSquare);
-        yield return new WaitForSeconds(secondsBetweenActions);
+        yield return Pointer.displayPointer(startingYellowSquare);
     }
 
-    private void decrementStain()
+    private static void decrementStain()
     /* Each FloorSquare may be stained for a number of turns. For each FloorSquare, tell it a turn
         has passed.
     */
@@ -348,7 +330,7 @@ public class TrialLogic : MonoBehaviour
         }
     }
 
-    private List<Vector2> standardOrder(IEnumerable<Vector2> gridIndicesList)
+    private static List<Vector2> standardOrder(IEnumerable<Vector2> gridIndicesList)
     /* Often our game actions occur to a list of Blocks, and instead of doing it in a random order,
         we use a standardized ordering of starting at the top-left, going down the column, then
         repeating for columns left to right.
@@ -367,7 +349,7 @@ public class TrialLogic : MonoBehaviour
         return sortedGridIndicesList;
     }
 
-    private List<Vector2> getProductiveBlocks()
+    private static List<Vector2> getProductiveBlocks()
     /* Get a list of all squares that have player Blocks with `produce` effects, in standard order.
     
     :returns List<Vector2> productiveBlocks:
@@ -394,7 +376,7 @@ public class TrialLogic : MonoBehaviour
         return productiveBlocks;
     }
 
-    private IEnumerator productionPhase()
+    private static IEnumerator productionPhase()
     /* For all a player's Blocks on the grid, trigger their produce ability. */
     {
         List<Vector2> productiveBlocks = getProductiveBlocks();
@@ -407,7 +389,7 @@ public class TrialLogic : MonoBehaviour
         }
     }
 
-    private List<Vector2> getNextMassTargets()
+    private static List<Vector2> getNextMassTargets()
     /* Get a list of all squares that current Mass Blocks border, which are the squares it expands
         to or attacks if there are player blocks there. Return in standard order.
     
@@ -438,7 +420,7 @@ public class TrialLogic : MonoBehaviour
         return nextTargets;
     }
 
-    private bool isNeighboredByMass(Vector2 gridIndices)
+    private static bool isNeighboredByMass(Vector2 gridIndices)
     /* Return whether or not any neighbors (no diagonals, no self) are mass.
     
     :param Vector2 gridIndices: Position of square whose neighbors we are checking.
@@ -459,7 +441,7 @@ public class TrialLogic : MonoBehaviour
         return didFindMass;
     }
 
-    private IEnumerator massSpreadingPhase()
+    private static IEnumerator massSpreadingPhase()
     /* Play the enemy's turn, where the mass spreads to empty squares and attacks the player's
         blocks.
     */
@@ -483,7 +465,7 @@ public class TrialLogic : MonoBehaviour
         }
     }
 
-    private List<Vector2> getBlocksQueuedToBeDestroyed()
+    private static List<Vector2> getBlocksQueuedToBeDestroyed()
     /* Get a list of all squares that have player Blocks that are about to be destroyed.
     
     The result is ordered from top-left and going down, so column by column from the left.
@@ -511,7 +493,7 @@ public class TrialLogic : MonoBehaviour
         return blocksToBeDestroyed;
     }
 
-    private IEnumerator destructionPhase()
+    private static IEnumerator destructionPhase()
     /* Destroy all the player blocks that were queued up to be destroyed during mass-spreading. */
     {
         List<Vector2> blocksToBeDestroyed = getBlocksQueuedToBeDestroyed();
@@ -524,7 +506,7 @@ public class TrialLogic : MonoBehaviour
         }
     }
 
-    private void evaluateTrialEndConditions()
+    private static void evaluateTrialEndConditions()
     /* Check conditions for losing and for winning and set variables isTrialLoss, isTrialWin, and
         isTrialOver.
     */
@@ -557,7 +539,7 @@ public class TrialLogic : MonoBehaviour
         }
     }
 
-    private IEnumerator handleTrialEnd()
+    private static IEnumerator handleTrialEnd()
     /* Perform actions that happen after a win or loss (wipe out mass, show post-trial screen, ...)
     */
     {

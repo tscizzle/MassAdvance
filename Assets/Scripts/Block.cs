@@ -56,12 +56,12 @@ public class Block : MonoBehaviour, IPointerClickHandler
     :param PointerEventData eventData: This interface is defined by Unity.
     */
     {
-        if (String.IsNullOrEmpty(TrialLogic.T.selectedCardId))
+        if (String.IsNullOrEmpty(TrialLogic.selectedCardId))
         {
             return;
         }
         
-        Card selectedCard = TrialLogic.T.cardsById[TrialLogic.T.selectedCardId].card;
+        Card selectedCard = TrialLogic.cardsById[TrialLogic.selectedCardId].card;
         selectedCard.playCard(gridIndices);
     }
 
@@ -70,10 +70,10 @@ public class Block : MonoBehaviour, IPointerClickHandler
     {
         if (blockType == BlockType.BLUE)
         {
-            TrialLogic.T.gainIum(1);
+            TrialLogic.gainIum(1);
         } else if (blockType == BlockType.YELLOW)
         {
-            TrialLogic.T.drawCard();
+            TrialLogic.drawCard();
         }
         
         EventLog.LogEvent($"Produced for blockType {blockType} at {gridIndices}.");
@@ -144,7 +144,7 @@ public class Block : MonoBehaviour, IPointerClickHandler
         FloorSquare floorSquare = FloorSquare.floorSquaresMap[gridIndices];
         floorSquare.addStainTurns(1);
         
-        TrialLogic.T.placedBlocks.Remove(gridIndices);
+        TrialLogic.placedBlocks.Remove(gridIndices);
 
         EventLog.LogEvent($"Was destroyed at {gridIndices}.");
 
@@ -159,10 +159,10 @@ public class Block : MonoBehaviour, IPointerClickHandler
         Vector2[] neighbors = MiscHelpers.getNeighbors(gridIndices);
         foreach (Vector2 neighborIndices in neighbors)
         {
-            BlockType? neighborBlockType = TrialLogic.T.getBlockTypeOfSquare(neighborIndices);
+            BlockType? neighborBlockType = TrialLogic.getBlockTypeOfSquare(neighborIndices);
             if (neighborBlockType == BlockType.MASS)
             {
-                Block neighborBlock = TrialLogic.T.placedBlocks[neighborIndices];
+                Block neighborBlock = TrialLogic.placedBlocks[neighborIndices];
                 neighborBlock.destroy();
             }
         }

@@ -17,10 +17,10 @@ public class PostTrialScreen : MonoBehaviour
 
     void Update()
     {
-        if (TrialLogic.T.isTrialLoss)
+        if (TrialLogic.isTrialLoss)
         {
             postTrialText.text = "The Mass advanced.";
-        } else if (TrialLogic.T.isTrialWin)
+        } else if (TrialLogic.isTrialWin)
         {
             postTrialText.text = "You stopped the Mass from advancing.";
         } else

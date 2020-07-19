@@ -14,9 +14,9 @@ public class CurrentTurnText : MonoBehaviour
 
     void Update()
     {
-        GetComponent<Text>().text = $"Turn {TrialLogic.T.turnNumber} / {TrialLogic.turnsToSurvive}";
+        GetComponent<Text>().text = $"Turn {TrialLogic.turnNumber} / {TrialLogic.turnsToSurvive}";
         
-        if (TrialLogic.T.isTrialWin)
+        if (TrialLogic.isTrialWin)
         {
             Transform background = transform.parent;
             background.GetComponent<Image>().color = winningColor;

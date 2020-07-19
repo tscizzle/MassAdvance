@@ -48,12 +48,12 @@ public class FloorSquare : MonoBehaviour, IPointerClickHandler
     :param PointerEventData eventData: This interface is defined by Unity.
     */
     {
-        if (String.IsNullOrEmpty(TrialLogic.T.selectedCardId))
+        if (String.IsNullOrEmpty(TrialLogic.selectedCardId))
         {
             return;
         }
         
-        Card selectedCard = TrialLogic.T.cardsById[TrialLogic.T.selectedCardId].card;
+        Card selectedCard = TrialLogic.cardsById[TrialLogic.selectedCardId].card;
         selectedCard.playCard(gridIndices);
     }
 

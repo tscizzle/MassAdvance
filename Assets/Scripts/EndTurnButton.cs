@@ -18,6 +18,6 @@ public class EndTurnButton : MonoBehaviour
 
     public void clickEndTurn()
     {
-        StartCoroutine(TrialLogic.T.endTurn());
+        StartCoroutine(TrialLogic.endTurn());
     }
 }

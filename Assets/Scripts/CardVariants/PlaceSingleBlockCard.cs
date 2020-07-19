@@ -81,7 +81,7 @@ public class PlaceSingleBlockCard : Card
     See getIsAbleToPlay on base class Card.
     */
     {
-        BlockType? blockTypeThere = TrialLogic.T.getBlockTypeOfSquare(gridIndices);
+        BlockType? blockTypeThere = TrialLogic.getBlockTypeOfSquare(gridIndices);
         bool nothingIsThere = blockTypeThere == null;
         return nothingIsThere;
     }
@@ -92,7 +92,7 @@ public class PlaceSingleBlockCard : Card
     See cardAction on base class Card.
     */
     {
-        TrialLogic.T.placeBlock(blockType, gridIndices);
+        TrialLogic.placeBlock(blockType, gridIndices);
     }
 
     /* PUBLIC API */

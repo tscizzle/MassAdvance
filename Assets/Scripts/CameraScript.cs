@@ -42,10 +42,10 @@ public class CameraScript : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(1))
         {
-            TrialLogic.T.speedUpGame();
+            TrialLogic.speedUpGame();
         } else if (Input.GetMouseButtonUp(1))
         {
-            TrialLogic.T.slowDownGame();
+            TrialLogic.slowDownGame();
         }
     }
 }

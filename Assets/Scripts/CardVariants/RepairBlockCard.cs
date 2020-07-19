@@ -21,7 +21,7 @@ public class RepairBlockCard : Card
     See getIsAbleToPlay on base class Card.
     */
     {
-        BlockType? blockType = TrialLogic.T.getBlockTypeOfSquare(gridIndices);
+        BlockType? blockType = TrialLogic.getBlockTypeOfSquare(gridIndices);
         bool playerBlockIsThere = blockType != null && blockType != BlockType.MASS;
         return playerBlockIsThere;
     }
@@ -29,7 +29,7 @@ public class RepairBlockCard : Card
     public override void cardAction(Vector2 gridIndices)
     /* See cardAction on base class Card. */
     {
-        Block block = TrialLogic.T.placedBlocks[gridIndices];
+        Block block = TrialLogic.placedBlocks[gridIndices];
         block.repair();
     }
 }

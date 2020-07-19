@@ -58,7 +58,7 @@ public class PrefabInstantiator : MonoBehaviour
     :returns GameObject cardObj:
     */
     {
-        CardInfo cardInfo = TrialLogic.T.cardsById[cardId];
+        CardInfo cardInfo = TrialLogic.cardsById[cardId];
         string cardName = cardInfo.cardName;
 
         GameObject cardPrefab = cardNameToPrefabMap(cardName);
@@ -72,7 +72,7 @@ public class PrefabInstantiator : MonoBehaviour
         card.setCardParams();
 
         cardInfo.card = card;
-        TrialLogic.T.cardsById[cardId] = cardInfo;
+        TrialLogic.cardsById[cardId] = cardInfo;
 
         return cardObj;
     }

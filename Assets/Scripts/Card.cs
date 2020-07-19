@@ -91,7 +91,7 @@ public class Card : MonoBehaviour, IPointerClickHandler
     */
     {
         // Select this Card, or deselect it if it's already selected.
-        TrialLogic.T.selectedCardId = TrialLogic.T.selectedCardId == cardId ? null : cardId;
+        TrialLogic.selectedCardId = TrialLogic.selectedCardId == cardId ? null : cardId;
     }
 
     public void playCard(Vector2 gridIndices)
@@ -102,14 +102,14 @@ public class Card : MonoBehaviour, IPointerClickHandler
     */
     {
         int costToPlay = getCostToPlay(gridIndices);
-        bool canAffordToPlay = TrialLogic.T.currentIum >= costToPlay;
+        bool canAffordToPlay = TrialLogic.currentIum >= costToPlay;
         bool isAbleToPlay = getIsAbleToPlay(gridIndices);
         if (canAffordToPlay && isAbleToPlay)
         {
-            TrialLogic.T.gainIum(-costToPlay);
+            TrialLogic.gainIum(-costToPlay);
             cardAction(gridIndices);
-            TrialLogic.T.discardCard(cardId);
-            TrialLogic.T.selectedCardId = null;
+            TrialLogic.discardCard(cardId);
+            TrialLogic.selectedCardId = null;
         }
     }
 
@@ -170,7 +170,7 @@ public class Card : MonoBehaviour, IPointerClickHandler
     */
     {
         float totalDist = cardAreaTopBound - cardAreaBottomBound;
-        int handSize = TrialLogic.T.hand.Count;
+        int handSize = TrialLogic.hand.Count;
         float cardSpacing = totalDist / (handSize + 1);
 
         return cardSpacing;
@@ -185,7 +185,7 @@ public class Card : MonoBehaviour, IPointerClickHandler
     {
         float cardX = -cardWidth / 4;
         string hoveredCardId = getHoveredCardId();
-        if (TrialLogic.T.selectedCardId == cardId)
+        if (TrialLogic.selectedCardId == cardId)
         {
             cardX = cardAreaRightBound;
         } else if (hoveredCardId == cardId)
@@ -193,7 +193,7 @@ public class Card : MonoBehaviour, IPointerClickHandler
             cardX = cardWidth / 4;
         }
 
-        int idxInHand = TrialLogic.T.hand.IndexOf(cardId);
+        int idxInHand = TrialLogic.hand.IndexOf(cardId);
         float cardSpacing = getCardSpacing();
         float distFromTop = (idxInHand + 1) * cardSpacing;
         float cardY = cardAreaTopBound - distFromTop;
@@ -238,7 +238,7 @@ public class Card : MonoBehaviour, IPointerClickHandler
     */
     {
         string hoveredCardId = getHoveredCardId();
-        if (cardId == TrialLogic.T.selectedCardId || cardId == hoveredCardId)
+        if (cardId == TrialLogic.selectedCardId || cardId == hoveredCardId)
         {
             return highlightedCardSizeMultiplier;
         } else
@@ -295,7 +295,7 @@ public class Card : MonoBehaviour, IPointerClickHandler
     */
     {
         // Leave the Card flat horizontal if it is selected or hovered.
-        bool isSelectedCard = TrialLogic.T.selectedCardId == cardId;
+        bool isSelectedCard = TrialLogic.selectedCardId == cardId;
         string hoveredCardId = getHoveredCardId();
         bool isHoveredCard = hoveredCardId == cardId;
         if (isSelectedCard || isHoveredCard)
@@ -305,8 +305,8 @@ public class Card : MonoBehaviour, IPointerClickHandler
 
         // Fan out the hand so the top Card is angled up by handFanAngle, and the bottom Card is
         // angled down the same amount.
-        int idxInHand = TrialLogic.T.hand.IndexOf(cardId);
-        int handSize = TrialLogic.T.hand.Count;
+        int idxInHand = TrialLogic.hand.IndexOf(cardId);
+        int handSize = TrialLogic.hand.Count;
         float angleSpacing = 2 * handFanAngle / handSize;
         float cardAngle = handFanAngle - (idxInHand * angleSpacing);
 
@@ -378,7 +378,7 @@ public class Card : MonoBehaviour, IPointerClickHandler
         }
 
         Vector2 mousePos = Input.mousePosition;
-        int handSize = TrialLogic.T.hand.Count;
+        int handSize = TrialLogic.hand.Count;
         float cardSpacing = getCardSpacing();
         float mouseDistFromTop = cardAreaTopBound - mousePos.y;
 
@@ -395,7 +395,7 @@ public class Card : MonoBehaviour, IPointerClickHandler
             }
         }
         
-        string hoveredCardId = hoveredIdx > -1 ? TrialLogic.T.hand[hoveredIdx] : null;
+        string hoveredCardId = hoveredIdx > -1 ? TrialLogic.hand[hoveredIdx] : null;
 
         return hoveredCardId;
     }
@@ -410,7 +410,7 @@ public class Card : MonoBehaviour, IPointerClickHandler
         string hoveredCardId = getHoveredCardId();
 
         // Desired order of Cards in the GameObject Hierarchy.
-        List<string> desiredHierarchyOrder = new List<string>(TrialLogic.T.hand);
+        List<string> desiredHierarchyOrder = new List<string>(TrialLogic.hand);
         if (hoveredCardId != null)
         {
             desiredHierarchyOrder.Remove(hoveredCardId);
