@@ -2,9 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-public class Block : MonoBehaviour
+public class Block : MonoBehaviour, IPointerClickHandler
 {
+    public Material regularMaterial;
     public Material damagedMaterial;
 
     public static Color massColor = new Color(85/255f, 85/255f, 85/255f);
@@ -37,6 +39,8 @@ public class Block : MonoBehaviour
 
         Color color = blockTypeToColor[blockType];
         GetComponent<Renderer>().material.SetColor("_Color", color);
+
+        regularMaterial = GetComponent<Renderer>().material;
     }
 
     void Update()
@@ -45,6 +49,21 @@ public class Block : MonoBehaviour
     }
 
     /* PUBLIC API */
+
+    public void OnPointerClick(PointerEventData eventData)
+    /* Override this function of IPointerClickHandler. Triggers when this Block is clicked.
+    
+    :param PointerEventData eventData: This interface is defined by Unity.
+    */
+    {
+        if (String.IsNullOrEmpty(TrialLogic.T.selectedCardId))
+        {
+            return;
+        }
+        
+        Card selectedCard = TrialLogic.T.cardsById[TrialLogic.T.selectedCardId].card;
+        selectedCard.playCard(gridIndices);
+    }
 
     public void produce()
     /* Depending on the blockType, perform any production effects. */
@@ -77,14 +96,30 @@ public class Block : MonoBehaviour
     public void damage()
     /* Change this Block from healthy to damaged. */
     {
-        isDamaged = true;
+        bool oldVal = isDamaged;
+        bool newVal = true;
+
+        isDamaged = newVal;
         
         GetComponent<Renderer>().material = damagedMaterial;
 
         Color color = blockTypeToColor[blockType];
         GetComponent<Renderer>().material.SetColor("_Color", color);
 
-        EventLog.LogEvent($"Was damaged at {gridIndices}.");
+        EventLog.LogEvent($"isDamaged changed from {oldVal} to {newVal} at {gridIndices}.");
+    }
+
+    public void repair()
+    /* Change this Block from damaged to healthy. */
+    {
+        bool oldVal = isDamaged;
+        bool newVal = false;
+
+        isDamaged = newVal;
+
+        GetComponent<Renderer>().material = regularMaterial;
+
+        EventLog.LogEvent($"isDamaged changed from {oldVal} to {newVal} at {gridIndices}.");
     }
 
     public void queueToBeDestroyed()

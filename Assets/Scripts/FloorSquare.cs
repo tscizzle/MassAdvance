@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -47,7 +48,13 @@ public class FloorSquare : MonoBehaviour, IPointerClickHandler
     :param PointerEventData eventData: This interface is defined by Unity.
     */
     {
-        TrialLogic.T.playSelectedCardOnFloorSquare(gridIndices);
+        if (String.IsNullOrEmpty(TrialLogic.T.selectedCardId))
+        {
+            return;
+        }
+        
+        Card selectedCard = TrialLogic.T.cardsById[TrialLogic.T.selectedCardId].card;
+        selectedCard.playCard(gridIndices);
     }
 
     public void addStainTurns(int numTurns)

@@ -7,7 +7,9 @@ using UnityEngine.EventSystems;
 
 public class Card : MonoBehaviour, IPointerClickHandler
 {
-    private static Color iumCostTextColor = new Color(50/255, 50/255, 50/255);
+    private static Color cardTextColor = new Color(80/255, 80/255, 80/255);
+    private static int iumCostFontSize = 14;
+    private static int displayNameFontSize = 8;
     private static float cardHeight;
     private static float cardWidth;
     private static float highlightedCardSizeMultiplier;
@@ -21,6 +23,7 @@ public class Card : MonoBehaviour, IPointerClickHandler
     public GameObject backgroundObj;
     public GameObject iconObj;
     private GameObject iumCostObj;
+    private GameObject displayNameObj;
     private GameObject handObj;
     private Canvas canvas;
 
@@ -28,20 +31,22 @@ public class Card : MonoBehaviour, IPointerClickHandler
     public string cardId;
     public string cardName;
     public int iumCost;
+    public string displayName;
 
     void Awake()
     {
         backgroundObj = transform.Find("Background").gameObject;
         iconObj = transform.Find("Icon").gameObject;
         iumCostObj = transform.Find("IumCostText").gameObject;
+        displayNameObj = transform.Find("NameText").gameObject;
         handObj = GameObject.Find("Hand");
         canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
 
-        cardHeight = 80;
-        cardWidth = 56;
+        cardHeight = 70;
+        cardWidth = 100;
         highlightedCardSizeMultiplier = 1.3f;
-        cardAreaBottomBound = 50;
-        cardAreaTopBound = Screen.height * 0.75f;
+        cardAreaBottomBound = Screen.height * 0.05f;
+        cardAreaTopBound = Screen.height * 0.7f;
         cardAreaRightBound = cardWidth * canvas.scaleFactor;
         movementHalftime = 0.05f;
         movementMinSpeed = 0.01f;
@@ -50,11 +55,16 @@ public class Card : MonoBehaviour, IPointerClickHandler
 
     public virtual void Start()
     {
-        iumCostObj.GetComponent<Text>().color = iumCostTextColor;
+        iumCostObj.GetComponent<Text>().color = cardTextColor;
+        displayNameObj.GetComponent<Text>().color = cardTextColor;
 
-        setCardSize(1);
+        iumCostObj.GetComponent<Text>().fontSize = iumCostFontSize;
+        displayNameObj.GetComponent<Text>().fontSize = displayNameFontSize;
 
         iumCostObj.GetComponent<Text>().text = iumCost.ToString();
+        displayNameObj.GetComponent<Text>().text = displayName;
+
+        setCardSize(1);
     }
 
     void Update()
@@ -63,7 +73,6 @@ public class Card : MonoBehaviour, IPointerClickHandler
 
         growTowardSizeMultiplier();
 
-        // Order the cards, front-to-back-wise.
         setAllCardsDepth();
     }
 
@@ -79,25 +88,71 @@ public class Card : MonoBehaviour, IPointerClickHandler
         TrialLogic.T.selectedCardId = TrialLogic.T.selectedCardId == cardId ? null : cardId;
     }
 
-    public virtual void setCardParams()
-    /* To be overridden in each subclass.
+    public void playCard(Vector2 gridIndices)
+    /* Check that there is enough ium to play this Card, perform this Card's Action, then discard it
+        and unset the selected Card.
     
-    Sets the fields:
-    - iumCost
+    :param Vector2 gridIndices: Square on the grid this Card is being applied to.
     */
     {
-
+        int costToPlay = getCostToPlay(gridIndices);
+        bool canAffordToPlay = TrialLogic.T.currentIum >= costToPlay;
+        bool isAbleToPlay = getIsAbleToPlay(gridIndices);
+        if (canAffordToPlay && isAbleToPlay)
+        {
+            TrialLogic.T.gainIum(-costToPlay);
+            cardAction(gridIndices);
+            TrialLogic.T.discardCard(cardId);
+            TrialLogic.T.selectedCardId = null;
+        }
     }
 
-    public static string getSingleBlockCardName(BlockType blockType)
-    /* Given a BlockType, give the cardName of the card that places a single block of that type.
-    
-    :param BlockType blockType:
+    /* INTERFACE FOR SUBCLASSES TO OVERRIDE */
 
-    :returns string cardName:
+    public virtual void setCardParams()
+    /* Sets the fields:
+    - iumCost
+    - displayName
+    
+    May be overridden in each subclass.
     */
     {
-        return $"single_block_{blockType}";
+        
+    }
+
+    public virtual int getCostToPlay(Vector2 gridIndices)
+    /* Calculates the ium cost to play this Card at a particular square currently.
+    
+    May be overridden in each subclass.
+
+    :param Vector2 gridIndices: Square on the grid this Card is being applied to.
+    */
+    {
+        return iumCost;
+    }
+
+    public virtual bool getIsAbleToPlay(Vector2 gridIndices)
+    /* Checks if this Card can be played at a particular square.
+    
+    May be overridden in each subclass.
+
+    :param Vector2 gridIndices: Square on the grid this Card is being applied to.
+
+    :returns bool:
+    */
+    {
+        return false;
+    }
+
+    public virtual void cardAction(Vector2 gridIndices)
+    /* Performs whatever action this Card is for.
+    
+    May be overridden in each subclass.
+
+    :param Vector2 gridIndices: Square on the grid this Card's is being applied to.
+    */
+    {
+        
     }
 
     /* HELPERS */
@@ -197,8 +252,12 @@ public class Card : MonoBehaviour, IPointerClickHandler
         backgroundObj.GetComponent<RectTransform>().sizeDelta = backgroundSize;
 
         Vector2 iconSize = backgroundSize * 0.67f;
-        iconSize.y = iconSize.x; // Make the icon a square.
+        iconSize.x = iconSize.y; // Make the icon a square.
         iconObj.GetComponent<RectTransform>().sizeDelta = iconSize;
+
+        // iumCostObj.GetComponent<Text>().fontSize = (int)(iumCostFontSize * multiplier);
+
+        // displayNameObj.GetComponent<Text>().fontSize = (int)(displayNameFontSize * multiplier);
     }
 
     private void growTowardSizeMultiplier()

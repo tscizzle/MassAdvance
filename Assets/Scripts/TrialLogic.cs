@@ -54,7 +54,7 @@ public class TrialLogic : MonoBehaviour
         numGridSquaresWide = 6;
         numGridSquaresDeep = 10;
         baseIumCostForBlock = 2;
-        turnsToSurvive = 3;
+        turnsToSurvive = 15;
         baseIumPerTurn = 1;
         baseDrawPerTurn = 1;
         startingIum = 4;
@@ -93,37 +93,14 @@ public class TrialLogic : MonoBehaviour
 
     /* PUBLIC API */
 
-    public void playSelectedCardOnFloorSquare(Vector2 gridIndices)
-    /* Attempty to put a block into play in the grid, but may not succeed due to constraints like
-        ium and placement restrictions.
-    
-    :param Vector2 gridIndices: The square in which to put the block ((0, 0) is the bottom-left).
-    */
+    public void playSelectedCardOnBlock(Block block)
     {
-        if (!String.IsNullOrEmpty(selectedCardId))
+        if (String.IsNullOrEmpty(selectedCardId))
         {
-            CardInfo selectedCard = cardsById[selectedCardId];
-            string cardName = selectedCard.cardName;
-            bool isSelectedCardABlock =
-                PlaceSingleBlockCard.cardNameToBlockType.ContainsKey(cardName);
-
-            FloorSquare floorSquare = FloorSquare.floorSquaresMap[gridIndices];
-            int iumCost = baseIumCostForBlock;
-            if (floorSquare.isStained())
-            {
-                iumCost *= 2;
-            }
-            bool canAffordBlock = currentIum >= iumCost;
-            
-            if (isSelectedCardABlock && canAffordBlock)
-            {
-                BlockType blockType = PlaceSingleBlockCard.cardNameToBlockType[cardName];
-                gainIum(-iumCost);
-                placeBlock(blockType, gridIndices);
-                discardCard(selectedCardId);
-                selectedCardId = null;
-            }
+            return;
         }
+        
+        CardInfo selectedCard = cardsById[selectedCardId];
     }
 
     public void placeBlock(BlockType blockType, Vector2 gridIndices)
@@ -304,18 +281,34 @@ public class TrialLogic : MonoBehaviour
     private void initializeCards()
     /* Shuffle the player's cards and put them in the draw pile. */
     {
+        List<string> cardNames = new List<string>();
+
+        // Put in some PlaceSingleBlockCards.
         BlockType[] playerBlockTypes = new[] { BlockType.BLUE, BlockType.YELLOW, BlockType.RED };
         foreach (BlockType blockType in playerBlockTypes)
         {
-            foreach (int idx in Enumerable.Range(0, 100))
+            foreach (int idx in Enumerable.Range(0, 20))
             {
-                string cardName = Card.getSingleBlockCardName(blockType);
-                string cardId = MiscHelpers.getRandomId();
-
-                cardsById[cardId] = new CardInfo(cardName, cardId);
+                string cardName = PlaceSingleBlockCard.getSingleBlockCardName(blockType);
+                cardNames.Add(cardName);
             }
         }
+        // Put in some RepairBlockCards.
+        foreach (int idx in Enumerable.Range(0, 20))
+        {
+            string cardName = RepairBlockCard.repairBlockCardName;
+            cardNames.Add(cardName);
+        }
+
+        // 
+        foreach (string cardName in cardNames)
+        {
+            string cardId = MiscHelpers.getRandomId();
+            cardsById[cardId] = new CardInfo(cardName, cardId);
+        }
+        
         List<CardInfo> shuffledDeck = cardsById.Values.OrderBy(_ => UnityEngine.Random.value).ToList();
+
         foreach (CardInfo cardInfo in shuffledDeck)
         {
             drawPile.Add(cardInfo.cardId);

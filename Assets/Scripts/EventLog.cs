@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -17,7 +18,7 @@ public class EventLog : MonoBehaviour
 
     void LateUpdate()
     {
-        GetComponent<Text>().text = string.Join("\n\n", events);
+        GetComponent<Text>().text = String.Join("\n\n", events);
 
         if (shouldScrollToBottom)
         {

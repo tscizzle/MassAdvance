@@ -26,17 +26,14 @@ public class PlaceSingleBlockCard : Card
         { getSingleBlockCardName(BlockType.YELLOW), yellowCardColor },
         { getSingleBlockCardName(BlockType.RED), redCardColor },
     };
+    private static Dictionary<string, string> cardNameToDisplayName = new Dictionary<string, string>
+    {
+        { getSingleBlockCardName(BlockType.BLUE), "Mini Blue" },
+        { getSingleBlockCardName(BlockType.YELLOW), "Mini Yellow" },
+        { getSingleBlockCardName(BlockType.RED), "Mini Red" },
+    };
 
     public BlockType blockType;
-
-    public override void setCardParams()
-    /* See setCardParams on base class Card. */
-    {
-        // Standard.
-        iumCost = 2;
-        // Unique to this subclass.
-        blockType = cardNameToBlockType[cardName];
-    }
 
     public override void Start()
     {
@@ -47,5 +44,67 @@ public class PlaceSingleBlockCard : Card
         
         Color iconColor = cardNameToIconColor[cardName];
         iconObj.GetComponent<Image>().color = iconColor;
+    }
+
+    /* SATISFYING CARD'S API */
+
+    public override void setCardParams()
+    /* See setCardParams on base class Card. */
+    {
+        // Standard.
+        iumCost = 2;
+        displayName = cardNameToDisplayName[cardName];
+        // Unique to this subclass.
+        blockType = cardNameToBlockType[cardName];
+    }
+
+    public override int getCostToPlay(Vector2 gridIndices)
+    /* Use this Card's normal cost, except double it if the targeted square is stained.
+    
+    See getCostToPlay on base class Card.
+    */
+    {
+        int costToPlace = iumCost;
+
+        FloorSquare floorSquare = FloorSquare.floorSquaresMap[gridIndices];
+        if (floorSquare.isStained())
+        {
+            costToPlace *= 2;
+        }
+
+        return costToPlace;
+    }
+
+    public override bool getIsAbleToPlay(Vector2 gridIndices)
+    /* Return true as long as there is no Block already in the targeted square.
+    
+    See getIsAbleToPlay on base class Card.
+    */
+    {
+        BlockType? blockTypeThere = TrialLogic.T.getBlockTypeOfSquare(gridIndices);
+        bool nothingIsThere = blockTypeThere == null;
+        return nothingIsThere;
+    }
+
+    public override void cardAction(Vector2 gridIndices)
+    /* Simply place a single Block in the targeted square.
+    
+    See cardAction on base class Card.
+    */
+    {
+        TrialLogic.T.placeBlock(blockType, gridIndices);
+    }
+
+    /* PUBLIC API */
+
+    public static string getSingleBlockCardName(BlockType blockType)
+    /* Given a BlockType, give the cardName of the card that places a single block of that type.
+    
+    :param BlockType blockType:
+
+    :returns string cardName:
+    */
+    {
+        return $"single_block_{blockType}";
     }
 }

@@ -125,7 +125,7 @@ public class PrefabInstantiator : MonoBehaviour
     :returns GameObject cardPrefab:
     */
     {
-        if (cardName == "repair_block")
+        if (cardName == RepairBlockCard.repairBlockCardName)
         {
             return repairBlockCardPrefab;
         } else if (PlaceSingleBlockCard.cardNameToBlockType.ContainsKey(cardName))
