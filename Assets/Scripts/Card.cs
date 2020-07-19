@@ -16,9 +16,11 @@ public class Card : MonoBehaviour, IPointerClickHandler
     private static float cardAreaBottomBound;
     private static float cardAreaTopBound;
     private static float cardAreaRightBound;
+    private static float handFanAngle;
     private static float movementHalftime;
     private static float movementMinSpeed;
     private static float growthSpeed;
+    private static float rotationSpeed;
 
     public GameObject backgroundObj;
     public GameObject iconObj;
@@ -48,9 +50,11 @@ public class Card : MonoBehaviour, IPointerClickHandler
         cardAreaBottomBound = Screen.height * 0.05f;
         cardAreaTopBound = Screen.height * 0.7f;
         cardAreaRightBound = cardWidth * canvas.scaleFactor;
+        handFanAngle = 20;
         movementHalftime = 0.05f;
         movementMinSpeed = 0.01f;
         growthSpeed = 2;
+        rotationSpeed = 100;
     }
 
     public virtual void Start()
@@ -72,6 +76,8 @@ public class Card : MonoBehaviour, IPointerClickHandler
         moveTowardPosition();
 
         growTowardSizeMultiplier();
+        
+        rotateTowardAngle();
 
         setAllCardsDepth();
     }
@@ -254,10 +260,6 @@ public class Card : MonoBehaviour, IPointerClickHandler
         Vector2 iconSize = backgroundSize * 0.67f;
         iconSize.x = iconSize.y; // Make the icon a square.
         iconObj.GetComponent<RectTransform>().sizeDelta = iconSize;
-
-        // iumCostObj.GetComponent<Text>().fontSize = (int)(iumCostFontSize * multiplier);
-
-        // displayNameObj.GetComponent<Text>().fontSize = (int)(displayNameFontSize * multiplier);
     }
 
     private void growTowardSizeMultiplier()
@@ -283,6 +285,66 @@ public class Card : MonoBehaviour, IPointerClickHandler
         float newMultiplier = currentMultiplier + multiplierChange;
         
         setCardSize(newMultiplier);
+    }
+
+    private float getEventualAngle()
+    /* Calculate the angle for this Card, so that the hand fans out a bit, but hovered and selected
+        Cards are straight.
+    
+    :returns float: Angle to rotate this Card by.
+    */
+    {
+        // Leave the Card flat horizontal if it is selected or hovered.
+        bool isSelectedCard = TrialLogic.T.selectedCardId == cardId;
+        string hoveredCardId = getHoveredCardId();
+        bool isHoveredCard = hoveredCardId == cardId;
+        if (isSelectedCard || isHoveredCard)
+        {
+            return 0;
+        }
+
+        // Fan out the hand so the top Card is angled up by handFanAngle, and the bottom Card is
+        // angled down the same amount.
+        int idxInHand = TrialLogic.T.hand.IndexOf(cardId);
+        int handSize = TrialLogic.T.hand.Count;
+        float angleSpacing = 2 * handFanAngle / handSize;
+        float cardAngle = handFanAngle - (idxInHand * angleSpacing);
+
+        return cardAngle;
+    }
+
+    private void rotateTowardAngle()
+    /* Rotate this Card smoothly toward its eventual angle. */
+    {
+        float currentAngle = transform.localEulerAngles.z;
+        float eventualAngle = getEventualAngle();
+        float diff = eventualAngle - currentAngle;
+        
+        // Handle the case where Unity uses the range 180 to 360 instead of -180 to 0.
+        float alternativeAngle = eventualAngle + 360;
+        float alternativeDiff = alternativeAngle - currentAngle;
+        if (Mathf.Abs(alternativeDiff) < Mathf.Abs(diff))
+        {
+            eventualAngle = alternativeAngle;
+            diff = alternativeDiff;
+        }
+
+        if (diff == 0)
+        {
+            return;
+        }
+
+        float diffSign = diff / Mathf.Abs(diff);
+        float angleChange = rotationSpeed * diffSign * Time.deltaTime;
+        // If we are ever about to go past the desired size, instead just go straight to it.
+        if (Mathf.Abs(angleChange) > Mathf.Abs(diff))
+        {
+            angleChange = diff;
+        }
+
+        float newAngle = currentAngle + angleChange;
+
+        transform.localRotation = Quaternion.Euler(0, 0, newAngle);
     }
 
     private bool getIsMouseInHandArea()
