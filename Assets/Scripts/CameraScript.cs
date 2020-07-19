@@ -8,11 +8,6 @@ public class CameraScript : MonoBehaviour
     private float scrollZUpperLimit = -3;
     private float scrollZLowerLimit = -6;
 
-    void Start()
-    {
-
-    }
-
     void Update()
     {
         mouseScroll();

@@ -27,20 +27,17 @@ public class TrialLogic : MonoBehaviour
     public static int currentIum;
     public static int turnNumber;
     public static Dictionary<Vector2, Block> placedBlocks = new Dictionary<Vector2, Block>();
-    public static Dictionary<string, CardInfo> cardsById = new Dictionary<string, CardInfo>();
-    private static List<string> drawPile = new List<string>();
-    public static List<string> hand = new List<string>();
-    private static List<string> discardPile = new List<string>();
+    public static Dictionary<string, CardInfo> trialDeck = new Dictionary<string, CardInfo>();
+    private static List<string> drawPile = new List<string>(); // cardIds
+    public static List<string> hand = new List<string>(); // cardIds
+    private static List<string> discardPile = new List<string>(); // cardIds
     public static string selectedCardId = null;
     public static bool isTrialWin = false;
     public static bool isTrialLoss = false;
     private static bool isTrialOver = false;
 
-    void Awake()
+    static TrialLogic()
     {
-        GameObject postTrialScreenObj = GameObject.Find("PostTrialScreen");
-        postTrialScreen = postTrialScreenObj.GetComponent<PostTrialScreen>();
-
         // Initialize parameters.
         secondsBetweenActions_fast = 0.1f;
         secondsBetweenActions_slow = 0.6f;
@@ -58,6 +55,12 @@ public class TrialLogic : MonoBehaviour
         // Initialize state.
         currentIum = startingIum;
         turnNumber = 0;
+    }
+
+    void Awake()
+    {
+        GameObject postTrialScreenObj = GameObject.Find("PostTrialScreen");
+        postTrialScreen = postTrialScreenObj.GetComponent<PostTrialScreen>();
     }
 
     IEnumerator Start()
@@ -78,11 +81,6 @@ public class TrialLogic : MonoBehaviour
         startTurn();
 
         // TODO: unfreeze user input
-    }
-
-    void Update()
-    {
-
     }
 
     /* PUBLIC API */
@@ -193,7 +191,7 @@ public class TrialLogic : MonoBehaviour
         GameObject cardObj = PrefabInstantiator.P.CreateCard(cardId);
         
         Card card = cardObj.GetComponent<Card>();
-        CardInfo cardInfo = cardsById[cardId];
+        CardInfo cardInfo = trialDeck[cardId];
 
         EventLog.LogEvent($"Drew card {cardInfo.cardName} (id: {cardId}).");
     }
@@ -206,11 +204,11 @@ public class TrialLogic : MonoBehaviour
     {
         hand.Remove(cardId);
 
-        CardInfo cardInfo = cardsById[cardId];
+        CardInfo cardInfo = trialDeck[cardId];
         GameObject cardObj = cardInfo.card.gameObject;
         Destroy(cardObj);
         cardInfo.card = null;
-        cardsById[cardId] = cardInfo;
+        trialDeck[cardId] = cardInfo;
 
         discardPile.Add(cardId);
 
@@ -285,10 +283,10 @@ public class TrialLogic : MonoBehaviour
         foreach (string cardName in cardNames)
         {
             string cardId = MiscHelpers.getRandomId();
-            cardsById[cardId] = new CardInfo(cardName, cardId);
+            trialDeck[cardId] = new CardInfo(cardName, cardId);
         }
         
-        List<CardInfo> shuffledDeck = cardsById.Values.OrderBy(_ => UnityEngine.Random.value).ToList();
+        List<CardInfo> shuffledDeck = trialDeck.Values.OrderBy(_ => UnityEngine.Random.value).ToList();
 
         foreach (CardInfo cardInfo in shuffledDeck)
         {

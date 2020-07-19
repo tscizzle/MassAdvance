@@ -7,11 +7,6 @@ public class MiscHelpers : MonoBehaviour
 {
     private static System.Random rng = new System.Random();
 
-    void Start()
-    {
-
-    }
-
     /* PUBLIC API */
 
     public static string getRandomId()

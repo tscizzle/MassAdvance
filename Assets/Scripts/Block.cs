@@ -61,7 +61,7 @@ public class Block : MonoBehaviour, IPointerClickHandler
             return;
         }
         
-        Card selectedCard = TrialLogic.cardsById[TrialLogic.selectedCardId].card;
+        Card selectedCard = TrialLogic.trialDeck[TrialLogic.selectedCardId].card;
         selectedCard.playCard(gridIndices);
     }
 

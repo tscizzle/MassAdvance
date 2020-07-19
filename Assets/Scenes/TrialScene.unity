@@ -431,7 +431,7 @@ GameObject:
   - component: {fileID: 622778170}
   - component: {fileID: 622778172}
   m_Layer: 0
-  m_Name: GameLogic
+  m_Name: TrialLogic
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -449,12 +449,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c46e264690a3ababcb41c55cd7fdf12d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentIum: 0
-  turnNumber: 0
-  hand: []
-  selectedCardId: 
-  isTrialWin: 0
-  isTrialLoss: 0
 --- !u!4 &622778171
 Transform:
   m_ObjectHideFlags: 0

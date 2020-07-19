@@ -5,16 +5,6 @@ using UnityEngine;
 
 public class Pointer : MonoBehaviour
 {
-    void Start()
-    {
-        
-    }
-
-    void Update()
-    {
-        
-    }
-
     /* PUBLIC API */
 
     public static IEnumerator displayPointer(Vector2 gridIndices)

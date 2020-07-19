@@ -35,11 +35,6 @@ public class FloorSquare : MonoBehaviour, IPointerClickHandler
         setStainText();
     }
 
-    void Update()
-    {
-        
-    }
-
     /* PUBLIC API */
 
     public void OnPointerClick(PointerEventData eventData)
@@ -53,7 +48,7 @@ public class FloorSquare : MonoBehaviour, IPointerClickHandler
             return;
         }
         
-        Card selectedCard = TrialLogic.cardsById[TrialLogic.selectedCardId].card;
+        Card selectedCard = TrialLogic.trialDeck[TrialLogic.selectedCardId].card;
         selectedCard.playCard(gridIndices);
     }
 

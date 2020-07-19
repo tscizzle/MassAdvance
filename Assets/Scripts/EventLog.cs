@@ -11,12 +11,7 @@ public class EventLog : MonoBehaviour
 
     private static bool shouldScrollToBottom = false;
 
-    void Start()
-    {
-        
-    }
-
-    void LateUpdate()
+    void Update()
     {
         GetComponent<Text>().text = String.Join("\n\n", events);
 
