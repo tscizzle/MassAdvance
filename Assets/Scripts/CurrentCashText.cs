@@ -7,6 +7,7 @@ public class CurrentCashText : MonoBehaviour
 {
     void Update()
     {
-        GetComponent<Text>().text = CampaignLogic.currentCash.ToString("N0");
+        int availableCash = CampaignLogic.currentCash - ShopLogic.getExpensesInCart();
+        GetComponent<Text>().text = availableCash.ToString("N0");
     }
 }

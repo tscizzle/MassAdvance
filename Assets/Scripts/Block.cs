@@ -13,13 +13,6 @@ public class Block : MonoBehaviour, IPointerClickHandler
     public static Color blueColor = new Color(0, 119/255f, 238/255f);
     public static Color yellowColor = new Color(238/255f, 238/255f, 85/255f);
     public static Color redColor = new Color(170/255f, 0, 34/255f);
-    private Dictionary<BlockType, Color> blockTypeToColor = new Dictionary<BlockType, Color>
-    {
-        { BlockType.MASS, massColor },
-        { BlockType.BLUE, blueColor },
-        { BlockType.YELLOW, yellowColor },
-        { BlockType.RED, redColor },
-    };
     public static float blockHeight = 0.5f;
 
     // Parameters.
@@ -167,6 +160,16 @@ public class Block : MonoBehaviour, IPointerClickHandler
             }
         }
     }
+
+    /* COLLECTIONS */
+    
+    private Dictionary<BlockType, Color> blockTypeToColor = new Dictionary<BlockType, Color>
+    {
+        { BlockType.MASS, massColor },
+        { BlockType.BLUE, blueColor },
+        { BlockType.YELLOW, yellowColor },
+        { BlockType.RED, redColor },
+    };
 }
 
 public enum BlockType

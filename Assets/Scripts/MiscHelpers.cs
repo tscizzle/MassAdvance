@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class MiscHelpers : MonoBehaviour
@@ -14,6 +15,19 @@ public class MiscHelpers : MonoBehaviour
     {
         string randomId = rng.Next(10000000, 99999999).ToString();
         return randomId;
+    }
+
+    public static T getRandomChoice<T>(IList<T> collection, System.Random rand)
+    /* Get a random element from a collection.
+    
+    :param IList<T> collection: An object that supports []-indexing and has a Count field.
+    :param System.Random rand: So if we call this many times, we don't keep making a new Random().
+
+    :returns T randElement:
+    */
+    {
+        T randElement = collection[rand.Next(collection.Count)];
+        return randElement;
     }
 
     public static Vector2[] getNeighbors(Vector2 gridIndices)

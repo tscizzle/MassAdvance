@@ -10,22 +10,14 @@ public class PrefabInstantiator : MonoBehaviour
     public GameObject blockPrefab;
     public GameObject pointerPrefab;
     public GameObject floorSquarePrefab;
+    public GameObject packDisplayPrefab;
     public GameObject repairBlockCardPrefab;
     public GameObject placeSingleBlockCardPrefab;
-
-    private Canvas canvas;
-    private GameObject handObj;
 
     void Awake()
     {
         // Since there should only be 1 PrefabInstantiator instance, assign this instance to a global var.
         P = this;
-    }
-
-    void Start()
-    {
-        canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
-        handObj = canvas.transform.Find("Hand").gameObject;
     }
 
     /* PUBLIC API */
@@ -50,29 +42,29 @@ public class PrefabInstantiator : MonoBehaviour
         return blockObj;
     }
 
-    public GameObject CreateCard(string cardId)
+    public GameObject CreateCard(CardInfo cardInfo, Transform parent, bool isInTrial = true)
     /* Create a Card.
 
-    :param string cardId: String identifying the Card to create.
+    :param string cardInfo:
+    :param bool isInTrial:
 
     :returns GameObject cardObj:
     */
     {
-        CardInfo cardInfo = TrialLogic.trialDeck[cardId];
+        string cardId = cardInfo.cardId;
         string cardName = cardInfo.cardName;
 
         GameObject cardPrefab = cardNameToPrefabMap(cardName);
-        Vector3 position = new Vector3(0, -Screen.height, 0);
+        Vector3 position = isInTrial ? new Vector3(0, -Screen.height, 0) : Vector3.zero;
         GameObject cardObj = Instantiate(cardPrefab, position, Quaternion.identity);
-        cardObj.transform.SetParent(handObj.transform, worldPositionStays: false);
+        
+        cardObj.transform.SetParent(parent, worldPositionStays: false);
 
         Card card = cardObj.GetComponent<Card>();
         card.cardId = cardId;
         card.cardName = cardName;
+        card.isInTrial = isInTrial;
         card.setCardParams();
-
-        cardInfo.card = card;
-        TrialLogic.trialDeck[cardId] = cardInfo;
 
         return cardObj;
     }
@@ -112,6 +104,24 @@ public class PrefabInstantiator : MonoBehaviour
         GameObject pointerObj = Instantiate(pointerPrefab, position, Quaternion.identity);
 
         return pointerObj;
+    }
+
+    public GameObject CreatePackDisplay(string packId)
+    /* Create a PackDisplay.
+    
+    :param string packId: Id of this pack to display in the shop.
+
+    :returns GameObject packDisplayObj:
+    */
+    {
+        GameObject packDisplayObj = Instantiate(
+            packDisplayPrefab, Vector3.zero, Quaternion.identity
+        );
+
+        PackDisplay packDisplay = packDisplayObj.GetComponent<PackDisplay>();
+        packDisplay.packId = packId;
+
+        return packDisplayObj;
     }
 
     /* HELPERS */

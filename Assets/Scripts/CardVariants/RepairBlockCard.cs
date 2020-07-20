@@ -13,6 +13,7 @@ public class RepairBlockCard : Card
     {
         iumCost = 1;
         displayName = "Repair";
+        isConsumable = false;
     }
 
     public override bool getIsAbleToPlay(Vector2 gridIndices)

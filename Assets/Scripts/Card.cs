@@ -32,8 +32,11 @@ public class Card : MonoBehaviour, IPointerClickHandler
     // Parameters.
     public string cardId;
     public string cardName;
+    public bool isInTrial;
+    // Parameters to be set by each subclass for that type of Card.
     public int iumCost;
     public string displayName;
+    public bool isConsumable;
 
     void Awake()
     {
@@ -73,13 +76,16 @@ public class Card : MonoBehaviour, IPointerClickHandler
 
     void Update()
     {
-        moveTowardPosition();
+        if (isInTrial)
+        {
+            moveTowardPosition();
 
-        growTowardSizeMultiplier();
-        
-        rotateTowardAngle();
+            growTowardSizeMultiplier();
+            
+            rotateTowardAngle();
 
-        setAllCardsDepth();
+            setAllCardsDepth();
+        }
     }
 
     /* PUBLIC API */
@@ -119,8 +125,9 @@ public class Card : MonoBehaviour, IPointerClickHandler
     /* Sets the fields:
     - iumCost
     - displayName
+    - isConsumable
     
-    May be overridden in each subclass.
+    Must be overridden in each subclass.
     */
     {
         

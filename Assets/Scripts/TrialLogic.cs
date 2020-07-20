@@ -8,6 +8,7 @@ using UnityEngine.UI;
 public class TrialLogic : MonoBehaviour
 {
     private static PostTrialScreen postTrialScreen;
+    private static GameObject handObj;
     
     // Parameters (user-interaction).
     private static float secondsBetweenActions_fast;
@@ -61,6 +62,8 @@ public class TrialLogic : MonoBehaviour
     {
         GameObject postTrialScreenObj = GameObject.Find("PostTrialScreen");
         postTrialScreen = postTrialScreenObj.GetComponent<PostTrialScreen>();
+
+        handObj = GameObject.Find("Hand");
     }
 
     IEnumerator Start()
@@ -184,20 +187,29 @@ public class TrialLogic : MonoBehaviour
             EventLog.LogEvent($"Replenished draw pile from discard pile.");
         }
 
+        if (drawPile.Count == 0)
+        {
+            EventLog.LogEvent($"Attempted to draw, but draw pile was empty.");
+            return;
+        }
+
         string cardId = drawPile[drawPile.Count - 1];
         drawPile.RemoveAt(drawPile.Count - 1);
         hand.Add(cardId);
 
-        GameObject cardObj = PrefabInstantiator.P.CreateCard(cardId);
+        CardInfo cardInfo = trialDeck[cardId];
+
+        GameObject cardObj = PrefabInstantiator.P.CreateCard(cardInfo, handObj.transform);
         
         Card card = cardObj.GetComponent<Card>();
-        CardInfo cardInfo = trialDeck[cardId];
+        cardInfo.card = card;
+        trialDeck[cardId] = cardInfo;
 
         EventLog.LogEvent($"Drew card {cardInfo.cardName} (id: {cardId}).");
     }
 
     public static void discardCard(string cardId)
-    /* Put a Card from the hand to the discard pile
+    /* Put a Card from the hand to the discard pile (or put it nowhere, if Card is consumable).
     
     :param string cardId: id of the Card in the hand to discard
     */
@@ -205,14 +217,19 @@ public class TrialLogic : MonoBehaviour
         hand.Remove(cardId);
 
         CardInfo cardInfo = trialDeck[cardId];
+        bool isConsumable = cardInfo.card.isConsumable;
         GameObject cardObj = cardInfo.card.gameObject;
         Destroy(cardObj);
         cardInfo.card = null;
         trialDeck[cardId] = cardInfo;
 
-        discardPile.Add(cardId);
+        if (!isConsumable)
+        {
+            discardPile.Add(cardId);
+        }
 
-        EventLog.LogEvent($"Discarded card {cardInfo.cardName} (id: {cardId}).");
+        string verb = isConsumable ? "Consumed" : "Discarded";
+        EventLog.LogEvent($"{verb} card {cardInfo.cardName} (id: {cardId}).");
     }
 
     public static BlockType? getBlockTypeOfSquare(Vector2 gridIndices)
@@ -261,30 +278,32 @@ public class TrialLogic : MonoBehaviour
     private static void initializeCards()
     /* Shuffle some set of cards I chose and put them in the draw pile. */
     {
-        List<string> cardNames = new List<string>();
+        // List<string> cardNames = new List<string>();
 
-        // Put in some PlaceSingleBlockCards.
-        BlockType[] playerBlockTypes = new[] { BlockType.BLUE, BlockType.YELLOW, BlockType.RED };
-        foreach (BlockType blockType in playerBlockTypes)
-        {
-            foreach (int idx in Enumerable.Range(0, 20))
-            {
-                string cardName = PlaceSingleBlockCard.getSingleBlockCardName(blockType);
-                cardNames.Add(cardName);
-            }
-        }
-        // Put in some RepairBlockCards.
-        foreach (int idx in Enumerable.Range(0, 20))
-        {
-            string cardName = RepairBlockCard.repairBlockCardName;
-            cardNames.Add(cardName);
-        }
+        // // Put in some PlaceSingleBlockCards.
+        // BlockType[] playerBlockTypes = new[] { BlockType.BLUE, BlockType.YELLOW, BlockType.RED };
+        // foreach (BlockType blockType in playerBlockTypes)
+        // {
+        //     foreach (int idx in Enumerable.Range(0, 20))
+        //     {
+        //         string cardName = PlaceSingleBlockCard.getSingleBlockCardName(blockType);
+        //         cardNames.Add(cardName);
+        //     }
+        // }
+        // // Put in some RepairBlockCards.
+        // foreach (int idx in Enumerable.Range(0, 20))
+        // {
+        //     string cardName = RepairBlockCard.repairBlockCardName;
+        //     cardNames.Add(cardName);
+        // }
 
-        foreach (string cardName in cardNames)
-        {
-            string cardId = MiscHelpers.getRandomId();
-            trialDeck[cardId] = new CardInfo(cardName, cardId);
-        }
+        // foreach (string cardName in cardNames)
+        // {
+        //     string cardId = MiscHelpers.getRandomId();
+        //     trialDeck[cardId] = new CardInfo(cardName, cardId);
+        // }
+
+        trialDeck = new Dictionary<string, CardInfo>(CampaignLogic.campaignDeck);
         
         List<CardInfo> shuffledDeck = trialDeck.Values.OrderBy(_ => UnityEngine.Random.value).ToList();
 

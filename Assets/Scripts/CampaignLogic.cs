@@ -9,10 +9,10 @@ public class CampaignLogic : MonoBehaviour
     public static CampaignLogic C = null;
 
     // Parameters.
-    private static float startingCash;
+    private static int startingCash;
     // State.
-    public static float currentCash;
-    private static Dictionary<string, CardInfo> campaignDeck = new Dictionary<string, CardInfo>();
+    public static int currentCash;
+    public static Dictionary<string, CardInfo> campaignDeck = new Dictionary<string, CardInfo>();
 
     static CampaignLogic()
     {
@@ -36,8 +36,13 @@ public class CampaignLogic : MonoBehaviour
 
         // Persist this object across scenes.
         DontDestroyOnLoad(this);
+    }
 
-        // Immediately open an actual scene of the game.
+    IEnumerator Start()
+    {
+        yield return new WaitForSeconds(2);
+
+        // Open an actual scene of the game.
         SceneManager.LoadScene("DeckBuildingScene");
     }
 }

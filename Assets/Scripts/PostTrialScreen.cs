@@ -34,7 +34,7 @@ public class PostTrialScreen : MonoBehaviour
     public void clickRestartTrial()
     /* Click handler for the button that shows after a trial, prompting the user to play again. */
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        SceneManager.LoadScene("DeckBuildingScene");
     }
 
     public void hide()
