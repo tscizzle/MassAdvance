@@ -17,14 +17,14 @@ public class ArmageddonCard : Card
     }
 
     public override bool getIsAbleToPlay(Vector2 gridIndices)
-    /* Return true if there is a block of mass in the targeted square.
+    /* Return true if there is a block in the targeted square.
     
     See getIsAbleToPlay on base class Card.
     */
     {
         BlockType? blockType = TrialLogic.getBlockTypeOfSquare(gridIndices);
-        bool isMass = blockType == BlockType.MASS;
-        return isMass;
+        bool isBlockThere = blockType != null;
+        return isBlockThere;
     }
 
     public override void cardAction(Vector2 gridIndices)
