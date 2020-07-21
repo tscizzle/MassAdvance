@@ -938,9 +938,12 @@ MonoBehaviour:
     type: 3}
   floorSquarePrefab: {fileID: 95978272586658124, guid: 4ad75cf8730e6a197a25284133dc2311,
     type: 3}
+  packDisplayPrefab: {fileID: 0}
+  placeSingleBlockCardPrefab: {fileID: 658036284559976157, guid: 23d195d2e824906b0905710e63850cb2,
+    type: 3}
   repairBlockCardPrefab: {fileID: 2377805131135822773, guid: 5a99a4dea54ed0ccaa30febfef040f22,
     type: 3}
-  placeSingleBlockCardPrefab: {fileID: 658036284559976157, guid: 23d195d2e824906b0905710e63850cb2,
+  washFloorSquareCardPrefab: {fileID: 1678579667819979147, guid: ee342f83d3c4212ed9932b0d376f2691,
     type: 3}
 --- !u!4 &1431573956
 Transform:

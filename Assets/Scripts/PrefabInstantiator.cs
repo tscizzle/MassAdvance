@@ -11,8 +11,9 @@ public class PrefabInstantiator : MonoBehaviour
     public GameObject pointerPrefab;
     public GameObject floorSquarePrefab;
     public GameObject packDisplayPrefab;
-    public GameObject repairBlockCardPrefab;
     public GameObject placeSingleBlockCardPrefab;
+    public GameObject repairBlockCardPrefab;
+    public GameObject washFloorSquareCardPrefab;
 
     void Awake()
     {
@@ -138,6 +139,9 @@ public class PrefabInstantiator : MonoBehaviour
         if (cardName == RepairBlockCard.repairBlockCardName)
         {
             return repairBlockCardPrefab;
+        } else if (cardName == WashFloorSquareCard.washFloorSquareCardName)
+        {
+            return washFloorSquareCardPrefab;
         } else if (PlaceSingleBlockCard.cardNameToBlockType.ContainsKey(cardName))
         {
             return placeSingleBlockCardPrefab;

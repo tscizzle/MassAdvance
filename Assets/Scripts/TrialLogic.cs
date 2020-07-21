@@ -177,7 +177,7 @@ public class TrialLogic : MonoBehaviour
     }
 
     public static void drawCard()
-    /* Pick up a Card from drawPile to currentHand. */
+    /* Pick up a card from the draw pile and put it into the current hand. */
     {
         if (drawPile.Count == 0)
         {
@@ -209,7 +209,7 @@ public class TrialLogic : MonoBehaviour
     }
 
     public static void discardCard(string cardId)
-    /* Put a Card from the hand to the discard pile (or put it nowhere, if Card is consumable).
+    /* Put a card from the hand to the discard pile (or put it nowhere, if card is consumable).
     
     :param string cardId: id of the Card in the hand to discard
     */
@@ -233,7 +233,7 @@ public class TrialLogic : MonoBehaviour
     }
 
     public static BlockType? getBlockTypeOfSquare(Vector2 gridIndices)
-    /* Get the blockType of a place in the grid.
+    /* Get the block type of a place in the grid.
     
     :param Vector2 gridIndices: Position of square we want the block type of.
 
@@ -250,7 +250,7 @@ public class TrialLogic : MonoBehaviour
     /* HELPERS */
 
     private static void initializeFloor()
-    /* Create the grid of FloorSquares. */
+    /* Create the grid of floor squares. */
     {
         // Create the grid.
         foreach (int xIdx in Enumerable.Range(0, numGridSquaresWide))
@@ -278,32 +278,13 @@ public class TrialLogic : MonoBehaviour
     private static void initializeCards()
     /* Shuffle some set of cards I chose and put them in the draw pile. */
     {
-        // List<string> cardNames = new List<string>();
-
-        // // Put in some PlaceSingleBlockCards.
-        // BlockType[] playerBlockTypes = new[] { BlockType.BLUE, BlockType.YELLOW, BlockType.RED };
-        // foreach (BlockType blockType in playerBlockTypes)
-        // {
-        //     foreach (int idx in Enumerable.Range(0, 20))
-        //     {
-        //         string cardName = PlaceSingleBlockCard.getSingleBlockCardName(blockType);
-        //         cardNames.Add(cardName);
-        //     }
-        // }
-        // // Put in some RepairBlockCards.
-        // foreach (int idx in Enumerable.Range(0, 20))
-        // {
-        //     string cardName = RepairBlockCard.repairBlockCardName;
-        //     cardNames.Add(cardName);
-        // }
-
-        // foreach (string cardName in cardNames)
-        // {
-        //     string cardId = MiscHelpers.getRandomId();
-        //     trialDeck[cardId] = new CardInfo(cardName, cardId);
-        // }
-
         trialDeck = new Dictionary<string, CardInfo>(CampaignLogic.campaignDeck);
+
+        // For testing trials not as part of a campaign.
+        if (trialDeck.Count == 0)
+        {
+            trialDeck = fakeDeck();
+        }
         
         List<CardInfo> shuffledDeck = trialDeck.Values.OrderBy(_ => UnityEngine.Random.value).ToList();
 
@@ -314,7 +295,7 @@ public class TrialLogic : MonoBehaviour
     }
 
     private static IEnumerator placeStartingBlocks()
-    /* Place the Blocks that start out on the grid at the beginning of a round. */
+    /* Place the blocks that start out on the grid at the beginning of a round. */
     {
         Vector2[] startingMassSquares =
         {
@@ -337,7 +318,7 @@ public class TrialLogic : MonoBehaviour
     }
 
     private static void decrementStain()
-    /* Each FloorSquare may be stained for a number of turns. For each FloorSquare, tell it a turn
+    /* Each FloorSquare may be stained for a number of turns. For each floor square, tell it a turn
         has passed.
     */
     {
@@ -348,7 +329,7 @@ public class TrialLogic : MonoBehaviour
     }
 
     private static List<Vector2> standardOrder(IEnumerable<Vector2> gridIndicesList)
-    /* Often our game actions occur to a list of Blocks, and instead of doing it in a random order,
+    /* Often our game actions occur to a list of blocks, and instead of doing it in a random order,
         we use a standardized ordering of starting at the top-left, going down the column, then
         repeating for columns left to right.
     
@@ -367,7 +348,7 @@ public class TrialLogic : MonoBehaviour
     }
 
     private static List<Vector2> getProductiveBlocks()
-    /* Get a list of all squares that have player Blocks with `produce` effects, in standard order.
+    /* Get a list of all squares that have player blocks with `produce` effects, in standard order.
     
     :returns List<Vector2> productiveBlocks:
     */
@@ -394,7 +375,7 @@ public class TrialLogic : MonoBehaviour
     }
 
     private static IEnumerator productionPhase()
-    /* For all a player's Blocks on the grid, trigger their produce ability. */
+    /* For all a player's blocks on the grid, trigger their produce ability. */
     {
         List<Vector2> productiveBlocks = getProductiveBlocks();
 
@@ -407,7 +388,7 @@ public class TrialLogic : MonoBehaviour
     }
 
     private static List<Vector2> getNextMassTargets()
-    /* Get a list of all squares that current Mass Blocks border, which are the squares it expands
+    /* Get a list of all squares that current mass blocks border, which are the squares it expands
         to or attacks if there are player blocks there. Return in standard order.
     
     :returns List<Vector2> nextTargets:
@@ -575,6 +556,35 @@ public class TrialLogic : MonoBehaviour
         }
 
         postTrialScreen.show();
+    }
+
+    /* TESTING */
+
+    private static Dictionary<string, CardInfo> fakeDeck()
+    /* Create a fake deck from every card, to let us test the trial, and cards, without making a
+        whole campaign.
+    */
+    {
+        Dictionary<string, CardInfo> fakeDeck = new Dictionary<string, CardInfo>();
+
+        List<string> cardNames = new List<string>();
+
+        // Take 1 of each type of card.
+        foreach (BlockType blockType in PlaceSingleBlockCard.cardNameToBlockType.Values)
+        {
+            cardNames.Add(PlaceSingleBlockCard.getSingleBlockCardName(blockType));
+        }
+        cardNames.Add(RepairBlockCard.repairBlockCardName);
+        cardNames.Add(WashFloorSquareCard.washFloorSquareCardName);
+
+        // Create the deck from the list of cards.
+        foreach (string cardName in cardNames)
+        {
+            string cardId = MiscHelpers.getRandomId();
+            fakeDeck[cardId] = new CardInfo(cardName, cardId);
+        }
+
+        return fakeDeck;
     }
 }
 

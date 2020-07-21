@@ -368,6 +368,7 @@ GameObject:
   - component: {fileID: 3323725150165007272}
   - component: {fileID: 7673524902771556478}
   - component: {fileID: 1958146513016800150}
+  - component: {fileID: 729907231907834780}
   m_Layer: 5
   m_Name: AboveCardText
   m_TagString: Untagged
@@ -436,3 +437,15 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: 
+--- !u!225 &729907231907834780
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9197446007106965543}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
