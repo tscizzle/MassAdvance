@@ -567,18 +567,8 @@ public class TrialLogic : MonoBehaviour
     {
         Dictionary<string, CardInfo> fakeDeck = new Dictionary<string, CardInfo>();
 
-        List<string> cardNames = new List<string>();
-
-        // Take 1 of each type of card.
-        foreach (BlockType blockType in PlaceSingleBlockCard.cardNameToBlockType.Values)
-        {
-            cardNames.Add(PlaceSingleBlockCard.getSingleBlockCardName(blockType));
-        }
-        cardNames.Add(RepairBlockCard.repairBlockCardName);
-        cardNames.Add(WashFloorSquareCard.washFloorSquareCardName);
-
-        // Create the deck from the list of cards.
-        foreach (string cardName in cardNames)
+        // Create a deck of 1 of each card.
+        foreach (string cardName in ShopLogic.cardNameToBaseCashValue.Keys)
         {
             string cardId = MiscHelpers.getRandomId();
             fakeDeck[cardId] = new CardInfo(cardName, cardId);

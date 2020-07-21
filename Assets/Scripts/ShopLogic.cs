@@ -116,12 +116,14 @@ public class ShopLogic : MonoBehaviour
 
     /* COLLECTIONS */
 
-    private static Dictionary<string, int> cardNameToBaseCashValue = new Dictionary<string, int>
+    public static Dictionary<string, int> cardNameToBaseCashValue = new Dictionary<string, int>
     {
         { PlaceSingleBlockCard.getSingleBlockCardName(BlockType.BLUE), 500 },
         { PlaceSingleBlockCard.getSingleBlockCardName(BlockType.YELLOW), 450 },
         { PlaceSingleBlockCard.getSingleBlockCardName(BlockType.RED), 350 },
         { RepairBlockCard.repairBlockCardName, 300 },
         { WashFloorSquareCard.washFloorSquareCardName, 300 },
+        { ArmageddonCard.armageddonCardName, 550 },
+        { PunchCard.punchCardName, 1000 }
     };
 }

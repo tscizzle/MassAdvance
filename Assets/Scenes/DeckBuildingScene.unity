@@ -1661,6 +1661,10 @@ MonoBehaviour:
     type: 3}
   washFloorSquareCardPrefab: {fileID: 1678579667819979147, guid: ee342f83d3c4212ed9932b0d376f2691,
     type: 3}
+  armageddonCardPrefab: {fileID: 7913111271137443818, guid: 62545cadea3fe396fbfad75276c9ccfe,
+    type: 3}
+  punchCardPrefab: {fileID: 8036332401685844875, guid: 6a6de6be3ddeede20b2ffa76eaef2ba2,
+    type: 3}
 --- !u!4 &2081584010
 Transform:
   m_ObjectHideFlags: 0
