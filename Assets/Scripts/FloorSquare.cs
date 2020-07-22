@@ -12,11 +12,11 @@ public class FloorSquare : MonoBehaviour, IPointerClickHandler
     private static float gridSquareMargin = 0.01f;
     private static Color floorColor = new Color(200/255f, 200/255f, 200/255f);
     private static Color stainedFloorColor = new Color(100/255f, 100/255f, 100/255f);
-    // So we can find FloorSquare objects from their grid indices.
     public static Dictionary<Vector2, FloorSquare> floorSquaresMap = new Dictionary<Vector2, FloorSquare>();
 
     // Parameters.
     public Vector2 gridIndices;
+    public bool isSacred;
     // State.
     public int numTurnsStained;
 
@@ -33,6 +33,9 @@ public class FloorSquare : MonoBehaviour, IPointerClickHandler
 
         // Stain text.
         setStainText();
+
+        // Red line for sacred squares.
+        setSacredLine();
     }
 
     /* PUBLIC API */
@@ -109,6 +112,13 @@ public class FloorSquare : MonoBehaviour, IPointerClickHandler
 
     /* HELPERS */
 
+    private void setColor()
+    /* Color this FloorSquare, based on if it is stained or not. */
+    {
+        Color newColor = isStained() ? stainedFloorColor : floorColor;
+        GetComponent<MeshRenderer>().material.SetColor("_Color", newColor);
+    }
+
     private void setStainText()
     /* Set the number that displays on this FloorSquare, for how many turns of stain is has left. */
     {
@@ -117,10 +127,11 @@ public class FloorSquare : MonoBehaviour, IPointerClickHandler
             : "";
     }
 
-    private void setColor()
-    /* Color this FloorSquare, based on if it is stained or not. */
+    private void setSacredLine()
+    /* For sacred squares (the player needs to stop the mass from reaching them), draw a red line. */
     {
-        Color newColor = isStained() ? stainedFloorColor : floorColor;
-        GetComponent<MeshRenderer>().material.SetColor("_Color", newColor);
+        float width = isSacred ? 0.1f : 0;
+        GetComponent<LineRenderer>().startWidth = width;
+        GetComponent<LineRenderer>().endWidth = width;
     }
 }

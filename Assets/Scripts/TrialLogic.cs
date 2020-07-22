@@ -276,7 +276,8 @@ public class TrialLogic : MonoBehaviour
             foreach (int yIdx in Enumerable.Range(0, numGridSquaresDeep))
             {
                 Vector2 gridIndices = new Vector2(xIdx, yIdx);
-                PrefabInstantiator.P.CreateFloorSquare(gridIndices);
+                bool isSacred = yIdx == 0;
+                PrefabInstantiator.P.CreateFloorSquare(gridIndices, isSacred: isSacred);
             }
         }
 

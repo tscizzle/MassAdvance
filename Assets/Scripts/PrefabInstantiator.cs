@@ -72,7 +72,7 @@ public class PrefabInstantiator : MonoBehaviour
         return cardObj;
     }
 
-    public GameObject CreateFloorSquare(Vector2 gridIndices, int numTurnsStained = 0)
+    public GameObject CreateFloorSquare(Vector2 gridIndices, bool isSacred = false)
     /* Create a FloorSquare.
 
     :param Vector2 gridIndices: Which square of the grid this object is ((0, 0) is the bottom-left).
@@ -85,7 +85,8 @@ public class PrefabInstantiator : MonoBehaviour
 
         FloorSquare floorSquare = floorSquareObj.GetComponent<FloorSquare>();
         floorSquare.gridIndices = gridIndices;
-        floorSquare.numTurnsStained = numTurnsStained;
+        floorSquare.isSacred = isSacred;
+        floorSquare.numTurnsStained = 0;
 
         FloorSquare.floorSquaresMap[gridIndices] = floorSquare;
 
