@@ -14,6 +14,7 @@ public class TrialLogic : MonoBehaviour
     private static float secondsBetweenActions_fast;
     private static float secondsBetweenActions_slow;
     public static float secondsBetweenActions;
+    public static bool isPauseModeOn;
     // Parameters (gameplay).
     public static int numGridSquaresWide;
     public static int numGridSquaresDeep;
@@ -24,6 +25,7 @@ public class TrialLogic : MonoBehaviour
     private static int startingIum;
     private static int startingHandSize;
     private static int startingUnstainedRows;
+    private static List<Vector2> startingMassSquares;
     // State.
     public static int currentIum;
     public static int turnNumber;
@@ -52,6 +54,11 @@ public class TrialLogic : MonoBehaviour
         startingIum = 4;
         startingHandSize = 4;
         startingUnstainedRows = 3;
+        startingMassSquares = new List<Vector2>
+        {
+            new Vector2((numGridSquaresWide / 2) - 1, numGridSquaresDeep - 1),
+            new Vector2(numGridSquaresWide / 2, numGridSquaresDeep - 1)
+        };
 
         // Initialize state.
         currentIum = startingIum;
@@ -147,16 +154,27 @@ public class TrialLogic : MonoBehaviour
         // TODO: unfreeze user input
     }
 
-    public static void speedUpGame()
-    /* Speeds up the game by lowering secondsBetweenActions */
+    public static void setRapidMode(bool turnOn)
+    /* Speed up of slow down the game, by adjusting secondsBetweenActions.
+    
+    :param bool turnOn: Use true to speed up the game, and false to slow it down.
+    */
     {
-        secondsBetweenActions = secondsBetweenActions_fast;
+        secondsBetweenActions = turnOn ? secondsBetweenActions_fast : secondsBetweenActions_slow;
     }
 
-    public static void slowDownGame()
-    /* Slows down the game by raising secondsBetweenActions */
+    public static void setPauseMode(bool turnOn)
+    /* Toggle on or off pause mode, which pauses the game at next pointer-display. Turning off pause
+        mode resumes the game, and to pause again pause mode would have to be turned back on.
+    
+    :param bool turnOn: Use true to turn on pause mode, and false to turn it off.
+    */
     {
-        secondsBetweenActions = secondsBetweenActions_slow;
+        isPauseModeOn = turnOn;
+        if (!isPauseModeOn)
+        {
+            // TODO: resume the game
+        }
     }
 
     public static void gainIum(int ium)
@@ -297,11 +315,6 @@ public class TrialLogic : MonoBehaviour
     private static IEnumerator placeStartingBlocks()
     /* Place the blocks that start out on the grid at the beginning of a round. */
     {
-        Vector2[] startingMassSquares =
-        {
-            new Vector2((numGridSquaresWide / 2) - 1, numGridSquaresDeep - 1),
-            new Vector2(numGridSquaresWide / 2, numGridSquaresDeep - 1),
-        };
         foreach (Vector2 gridIndices in startingMassSquares)
         {
             placeBlock(BlockType.MASS, gridIndices);
@@ -391,10 +404,13 @@ public class TrialLogic : MonoBehaviour
     /* Get a list of all squares that current mass blocks border, which are the squares it expands
         to or attacks if there are player blocks there. Return in standard order.
     
+    The exceptional case is if no mass blocks exist, place mass in the starting spots.
+    
     :returns List<Vector2> nextTargets:
     */
     {
         HashSet<Vector2> uniqueNextTargets = new HashSet<Vector2>();
+        bool foundAnyMass = false;
 
         foreach (int xIdx in Enumerable.Range(0, numGridSquaresWide))
         {
@@ -410,10 +426,17 @@ public class TrialLogic : MonoBehaviour
                 {
                     uniqueNextTargets.Add(gridIndices);
                 }
+
+                if (isSquareMass)
+                {
+                    foundAnyMass = true;
+                }
             }
         }
 
-        List<Vector2> nextTargets = standardOrder(uniqueNextTargets);
+        List<Vector2> nextTargets = foundAnyMass ? uniqueNextTargets.ToList() : startingMassSquares;
+        
+        nextTargets = standardOrder(nextTargets);
 
         return nextTargets;
     }
