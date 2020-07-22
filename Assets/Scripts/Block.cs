@@ -120,7 +120,8 @@ public class Block : MonoBehaviour, IPointerClickHandler
     {
         isBeingDestroyed = true;
 
-        // TODO: visually indicate that this block is queued to be destroyed
+        // Visually indicate the fact that this block is queued to be destroyed.
+        transform.Find("QueuedToBeDestroyedMark").gameObject.SetActive(true);
 
         EventLog.LogEvent($"Was queued to be destroyed at {gridIndices}.");
     }
