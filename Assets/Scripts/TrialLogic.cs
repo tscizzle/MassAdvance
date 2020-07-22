@@ -599,6 +599,8 @@ public class TrialLogic : MonoBehaviour
                     yield return Pointer.displayPointer(block.gridIndices);
                 }
             }
+
+            CampaignLogic.currentCash += CampaignLogic.cashRewardPerTrial;
         }
 
         PostTrialScreen postTrialScreen = GameObject.Find("PostTrialScreen").GetComponent<PostTrialScreen>();

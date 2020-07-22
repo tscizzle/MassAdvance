@@ -1,16 +1,22 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
-public class StartCampaignButton : MonoBehaviour
+public class StartTrialButton : MonoBehaviour
 {
+    void Start()
+    {
+        GetComponentInChildren<Text>().text = $"Start Trial {CampaignLogic.trialNumber + 1}";
+    }
+
     /* PUBLIC API */
 
-    public void clickStartCampaign()
+    public void clickStartTrial()
     /* Click handler for button that starts the campaign. */
     {
-        // TODO: take the packs in ShopLogic.packsAddedToCart and put the CardInfos into CampaignLogic.campaignDeck
+        // Put the purchased packs into the deck.
         foreach (string packId in ShopLogic.packsAddedToCart)
         {
             List<CardInfo> packCards = ShopLogic.packInventory[packId];
@@ -20,8 +26,11 @@ public class StartCampaignButton : MonoBehaviour
             }
         }
 
+        // Pay the money.
         CampaignLogic.currentCash -= ShopLogic.getExpensesInCart();
+        ShopLogic.clearCart();
 
+        // Start the trial.
         SceneManager.LoadScene("TrialScene");
     }
 }

@@ -7,15 +7,21 @@ using UnityEngine.UI;
 
 public class ShopLogic : MonoBehaviour
 {
-    public static Dictionary<string, List<CardInfo>> packInventory =
-        new Dictionary<string, List<CardInfo>>();
-    public static List<string> packsAddedToCart = new List<string>();
-    private static List<string> disposalsAddedToCart = new List<string>();
+    // Parameters.
     private static float maxDiscountRatio = 3;
     private static float discountDampener = 1/10f;
+    // State.
+    public static Dictionary<string, List<CardInfo>> packInventory;
+    public static List<string> packsAddedToCart;
+    private static List<string> disposalsAddedToCart;
     
     void Awake()
     {
+        // Initialize state.
+        packInventory = new Dictionary<string, List<CardInfo>>();
+        packsAddedToCart = new List<string>();
+        disposalsAddedToCart = new List<string>();
+
         populateShopInventory();
     }
 
@@ -70,6 +76,12 @@ public class ShopLogic : MonoBehaviour
     {
         int total = packsAddedToCart.Sum(packId => getBaseCashValueOfPack(packId));
         return total;
+    }
+
+    public static void clearCart()
+    /* Empty everything from the cart. */
+    {
+        packsAddedToCart = new List<string>();
     }
 
     /* HELPERS */

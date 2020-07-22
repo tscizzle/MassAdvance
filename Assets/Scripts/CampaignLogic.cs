@@ -10,6 +10,7 @@ public class CampaignLogic : MonoBehaviour
 
     // Parameters.
     private static int startingCash;
+    public static int cashRewardPerTrial;
     // State.
     public static int currentCash;
     public static Dictionary<string, CardInfo> campaignDeck;
@@ -19,6 +20,7 @@ public class CampaignLogic : MonoBehaviour
     {
         // Initialize parameters.
         startingCash = 10500;
+        cashRewardPerTrial = 3000;
 
         // Initialize state.
         currentCash = startingCash;
@@ -46,6 +48,6 @@ public class CampaignLogic : MonoBehaviour
         yield return new WaitForSeconds(2);
 
         // Open an actual scene of the game.
-        SceneManager.LoadScene("DeckBuildingScene");
+        SceneManager.LoadScene("ShopScene");
     }
 }
