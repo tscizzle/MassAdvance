@@ -15,7 +15,6 @@ public class TrialLogic : MonoBehaviour
     // Parameters (gameplay).
     public static int numGridSquaresWide;
     public static int numGridSquaresDeep;
-    public static int baseIumCostForBlock;
     public static int turnsToSurvive;
     private static int baseIumPerTurn;
     private static int baseDrawPerTurn;
@@ -44,9 +43,10 @@ public class TrialLogic : MonoBehaviour
 
     void Awake()
     {
-        initializeState();
-
         CampaignLogic.trialNumber += 1;
+
+        initializeParameters(CampaignLogic.trialNumber);
+        initializeState();
     }
 
     IEnumerator Start()
@@ -244,26 +244,57 @@ public class TrialLogic : MonoBehaviour
 
     /* HELPERS */
 
-    private static void initializeParameters()
-    /* Set parameters of the trial at the beginning of the game. */
+    private static void initializeParameters(int trialNumber = 0)
+    /* Set parameters of the trial at the beginning of the game.
+    
+    :param int trialNumber: (optional) which trial in the campaign is it
+    */
     {
         secondsBetweenActions_fast = 0.1f;
         secondsBetweenActions_slow = 0.6f;
         secondsBetweenActions = secondsBetweenActions_slow;
-        numGridSquaresWide = 6;
-        numGridSquaresDeep = 10;
-        baseIumCostForBlock = 2;
-        turnsToSurvive = 2;
-        baseIumPerTurn = 1;
-        baseDrawPerTurn = 1;
-        startingIum = 4;
-        startingHandSize = 4;
-        startingUnstainedRows = 3;
+        
+        // Widen the grid, by 1 per trial, starting at trial 12.
+        numGridSquaresWide = 6 + Mathf.Max(trialNumber - 11, 0);
+        
+        // Shorten the grid, by 1 per trial, 3 times, starting at trial 9.
+        numGridSquaresDeep = 10 - Mathf.Min(Mathf.Max(trialNumber - 8, 0), 3);
+        
+        turnsToSurvive = 20;
+
+        // Reduce the free ium per turn, starting at trial 5.
+        baseIumPerTurn = trialNumber >= 5 ? 1 : 2;
+
+        // Reduce the free draw per turn, starting at trial 4.
+        baseDrawPerTurn = trialNumber >= 4 ? 1 : 2;
+
+        // Reduce the starting ium, starting at trial 3.
+        startingIum = trialNumber >= 3 ? 2 : 3;
+
+        // Reduce the starting hand size, starting at trial 2.
+        startingHandSize = trialNumber >= 2 ? 2 : 3;
+
+        // Reduce the unstained rows, starting at trial 6.
+        startingUnstainedRows = trialNumber >= 6 ? 2 : 3;
+
+        // Increase the starting mass, by 1 per trial, 2 times, starting at trial 7. 
         startingMassSquares = new List<Vector2>
         {
             new Vector2((numGridSquaresWide / 2) - 1, numGridSquaresDeep - 1),
             new Vector2(numGridSquaresWide / 2, numGridSquaresDeep - 1)
         };
+        if (trialNumber >= 7)
+        {
+            startingMassSquares.Add(
+                new Vector2((numGridSquaresWide / 2) - 1, numGridSquaresDeep - 2)
+            );
+        }
+        if (trialNumber >= 8)
+        {
+            startingMassSquares.Add(
+                new Vector2((numGridSquaresWide / 2), numGridSquaresDeep - 2)
+            );
+        }
     }
 
     private static void initializeState()
