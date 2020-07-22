@@ -12,7 +12,8 @@ public class CampaignLogic : MonoBehaviour
     private static int startingCash;
     // State.
     public static int currentCash;
-    public static Dictionary<string, CardInfo> campaignDeck = new Dictionary<string, CardInfo>();
+    public static Dictionary<string, CardInfo> campaignDeck;
+    public static int trialNumber;
 
     static CampaignLogic()
     {
@@ -21,6 +22,8 @@ public class CampaignLogic : MonoBehaviour
 
         // Initialize state.
         currentCash = startingCash;
+        campaignDeck = new Dictionary<string, CardInfo>();
+        trialNumber = 0;
     }
 
     void Awake()

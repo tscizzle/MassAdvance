@@ -45,6 +45,8 @@ public class TrialLogic : MonoBehaviour
     void Awake()
     {
         initializeState();
+
+        CampaignLogic.trialNumber += 1;
     }
 
     IEnumerator Start()
