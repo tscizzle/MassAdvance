@@ -88,7 +88,7 @@ public class PrefabInstantiator : MonoBehaviour
         floorSquare.isSacred = isSacred;
         floorSquare.numTurnsStained = 0;
 
-        FloorSquare.floorSquaresMap[gridIndices] = floorSquare;
+        TrialLogic.floorSquaresMap[gridIndices] = floorSquare;
 
         return floorSquareObj;
     }

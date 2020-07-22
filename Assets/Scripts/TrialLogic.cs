@@ -6,10 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class TrialLogic : MonoBehaviour
-{
-    private static PostTrialScreen postTrialScreen;
-    private static GameObject handObj;
-    
+{   
     // Parameters (user-interaction).
     private static float secondsBetweenActions_fast;
     private static float secondsBetweenActions_slow;
@@ -29,48 +26,25 @@ public class TrialLogic : MonoBehaviour
     // State.
     public static int currentIum;
     public static int turnNumber;
-    public static Dictionary<Vector2, Block> placedBlocks = new Dictionary<Vector2, Block>();
-    public static Dictionary<string, CardInfo> trialDeck = new Dictionary<string, CardInfo>();
-    private static List<string> drawPile = new List<string>(); // cardIds
-    public static List<string> hand = new List<string>(); // cardIds
-    private static List<string> discardPile = new List<string>(); // cardIds
-    public static string selectedCardId = null;
-    public static bool isTrialWin = false;
-    public static bool isTrialLoss = false;
-    private static bool isTrialOver = false;
+    public static Dictionary<Vector2, FloorSquare> floorSquaresMap;
+    public static Dictionary<Vector2, Block> placedBlocks;
+    public static Dictionary<string, CardInfo> trialDeck;
+    private static List<string> drawPile;
+    public static List<string> hand;
+    private static List<string> discardPile;
+    public static string selectedCardId;
+    public static bool isTrialWin;
+    public static bool isTrialLoss;
+    private static bool isTrialOver;
 
     static TrialLogic()
     {
-        // Initialize parameters.
-        secondsBetweenActions_fast = 0.1f;
-        secondsBetweenActions_slow = 0.6f;
-        secondsBetweenActions = secondsBetweenActions_slow;
-        numGridSquaresWide = 6;
-        numGridSquaresDeep = 10;
-        baseIumCostForBlock = 2;
-        turnsToSurvive = 15;
-        baseIumPerTurn = 1;
-        baseDrawPerTurn = 1;
-        startingIum = 4;
-        startingHandSize = 4;
-        startingUnstainedRows = 3;
-        startingMassSquares = new List<Vector2>
-        {
-            new Vector2((numGridSquaresWide / 2) - 1, numGridSquaresDeep - 1),
-            new Vector2(numGridSquaresWide / 2, numGridSquaresDeep - 1)
-        };
-
-        // Initialize state.
-        currentIum = startingIum;
-        turnNumber = 0;
+        initializeParameters();
     }
 
     void Awake()
     {
-        GameObject postTrialScreenObj = GameObject.Find("PostTrialScreen");
-        postTrialScreen = postTrialScreenObj.GetComponent<PostTrialScreen>();
-
-        handObj = GameObject.Find("Hand");
+        initializeState();
     }
 
     IEnumerator Start()
@@ -216,8 +190,9 @@ public class TrialLogic : MonoBehaviour
         hand.Add(cardId);
 
         CardInfo cardInfo = trialDeck[cardId];
+        Transform handTransform = GameObject.Find("Hand").transform;
 
-        GameObject cardObj = PrefabInstantiator.P.CreateCard(cardInfo, handObj.transform);
+        GameObject cardObj = PrefabInstantiator.P.CreateCard(cardInfo, handTransform);
         
         Card card = cardObj.GetComponent<Card>();
         cardInfo.card = card;
@@ -267,6 +242,48 @@ public class TrialLogic : MonoBehaviour
 
     /* HELPERS */
 
+    private static void initializeParameters()
+    /* Set parameters of the trial at the beginning of the game. */
+    {
+        secondsBetweenActions_fast = 0.1f;
+        secondsBetweenActions_slow = 0.6f;
+        secondsBetweenActions = secondsBetweenActions_slow;
+        numGridSquaresWide = 6;
+        numGridSquaresDeep = 10;
+        baseIumCostForBlock = 2;
+        turnsToSurvive = 2;
+        baseIumPerTurn = 1;
+        baseDrawPerTurn = 1;
+        startingIum = 4;
+        startingHandSize = 4;
+        startingUnstainedRows = 3;
+        startingMassSquares = new List<Vector2>
+        {
+            new Vector2((numGridSquaresWide / 2) - 1, numGridSquaresDeep - 1),
+            new Vector2(numGridSquaresWide / 2, numGridSquaresDeep - 1)
+        };
+    }
+
+    private static void initializeState()
+    /* Set the initial values of all per-trial state.
+    
+    Used at the beginning of the game, as well as to reset this object for each new trial.
+    */
+    {
+        currentIum = startingIum;
+        turnNumber = 0;
+        floorSquaresMap = new Dictionary<Vector2, FloorSquare>();
+        placedBlocks = new Dictionary<Vector2, Block>();
+        trialDeck = new Dictionary<string, CardInfo>();
+        drawPile = new List<string>();
+        hand = new List<string>();
+        discardPile = new List<string>();
+        selectedCardId = null;
+        isTrialWin = false;
+        isTrialLoss = false;
+        isTrialOver = false;
+    }
+
     private static void initializeFloor()
     /* Create the grid of floor squares. */
     {
@@ -287,7 +304,7 @@ public class TrialLogic : MonoBehaviour
             foreach (int yIdx in Enumerable.Range(0, numGridSquaresDeep - startingUnstainedRows))
             {
                 Vector2 gridIndices = new Vector2(xIdx, yIdx);
-                FloorSquare floorSquare = FloorSquare.floorSquaresMap[gridIndices];
+                FloorSquare floorSquare = floorSquaresMap[gridIndices];
                 int stainTurns = numGridSquaresDeep - startingUnstainedRows - yIdx;
                 floorSquare.addStainTurns(stainTurns);
             }
@@ -336,7 +353,7 @@ public class TrialLogic : MonoBehaviour
         has passed.
     */
     {
-        foreach (FloorSquare floorSquare in FloorSquare.floorSquaresMap.Values)
+        foreach (FloorSquare floorSquare in floorSquaresMap.Values)
         {
             floorSquare.addStainTurns(-1);
         }
@@ -582,6 +599,7 @@ public class TrialLogic : MonoBehaviour
             }
         }
 
+        PostTrialScreen postTrialScreen = GameObject.Find("PostTrialScreen").GetComponent<PostTrialScreen>();
         postTrialScreen.show();
     }
 

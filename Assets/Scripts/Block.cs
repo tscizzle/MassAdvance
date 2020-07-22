@@ -135,7 +135,7 @@ public class Block : MonoBehaviour, IPointerClickHandler
             clearNeighboringMass();
         }
 
-        FloorSquare floorSquare = FloorSquare.floorSquaresMap[gridIndices];
+        FloorSquare floorSquare = TrialLogic.floorSquaresMap[gridIndices];
         floorSquare.addStainTurns(1);
         
         TrialLogic.placedBlocks.Remove(gridIndices);

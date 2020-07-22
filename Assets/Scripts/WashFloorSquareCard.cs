@@ -30,7 +30,7 @@ public class WashFloorSquareCard : Card
     public override void cardAction(Vector2 gridIndices)
     /* See cardAction on base class Card. */
     {
-        FloorSquare floorSquare = FloorSquare.floorSquaresMap[gridIndices];
+        FloorSquare floorSquare = TrialLogic.floorSquaresMap[gridIndices];
         floorSquare.addStainTurns(-1);
     }
 }

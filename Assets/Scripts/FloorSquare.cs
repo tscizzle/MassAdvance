@@ -12,7 +12,6 @@ public class FloorSquare : MonoBehaviour, IPointerClickHandler
     private static float gridSquareMargin = 0.01f;
     private static Color floorColor = new Color(200/255f, 200/255f, 200/255f);
     private static Color stainedFloorColor = new Color(100/255f, 100/255f, 100/255f);
-    public static Dictionary<Vector2, FloorSquare> floorSquaresMap = new Dictionary<Vector2, FloorSquare>();
 
     // Parameters.
     public Vector2 gridIndices;

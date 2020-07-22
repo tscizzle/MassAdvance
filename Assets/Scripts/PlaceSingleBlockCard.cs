@@ -43,7 +43,7 @@ public class PlaceSingleBlockCard : Card
     {
         int costToPlace = iumCost;
 
-        FloorSquare floorSquare = FloorSquare.floorSquaresMap[gridIndices];
+        FloorSquare floorSquare = TrialLogic.floorSquaresMap[gridIndices];
         if (floorSquare.isStained())
         {
             costToPlace *= 2;

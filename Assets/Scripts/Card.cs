@@ -33,7 +33,7 @@ public class Card : MonoBehaviour, IPointerClickHandler
     public string cardId;
     public string cardName;
     public bool isInTrial;
-    // Parameters to be set by each subclass for that type of Card.
+    // Parameters to be set by each subclass for that type of card.
     public int iumCost;
     public string displayName;
     public bool isConsumable;
