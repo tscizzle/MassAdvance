@@ -93,7 +93,7 @@ public class PrefabInstantiator : MonoBehaviour
         return floorSquareObj;
     }
 
-    public GameObject CreatePointer(Vector2 gridIndices)
+    public GameObject CreatePointer(Vector2 gridIndices, string text = null)
     /* Create a Pointer.
 
     :param Vector2 gridIndices: The square over which to point the pointer ((0, 0) is the
@@ -106,6 +106,9 @@ public class PrefabInstantiator : MonoBehaviour
         position.y = 1;
 
         GameObject pointerObj = Instantiate(pointerPrefab, position, Quaternion.identity);
+
+        Pointer pointer = pointerObj.GetComponent<Pointer>();
+        pointer.text = text;
 
         return pointerObj;
     }

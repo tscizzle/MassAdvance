@@ -397,7 +397,7 @@ public class TrialLogic : MonoBehaviour
         {
             Block block = placedBlocks[gridIndices];
             block.produce();
-            yield return Pointer.displayPointer(gridIndices);
+            yield return Pointer.displayPointer(gridIndices, "Produce");
         }
     }
 
@@ -472,18 +472,21 @@ public class TrialLogic : MonoBehaviour
         
         foreach (Vector2 gridIndices in nextTargets)
         {
+            string text;
             BlockType? blockType = getBlockTypeOfSquare(gridIndices);
             // If nothing is there, expand the mass into it.
             // Otherwise, attack the player block that's there.
             if (blockType == null)
             {
                 placeBlock(BlockType.MASS, gridIndices);
+                text = "Spread";
             } else
             {
                 Block block = placedBlocks[gridIndices];
                 block.attack();
+                text = "Attack";
             }
-            yield return Pointer.displayPointer(gridIndices);
+            yield return Pointer.displayPointer(gridIndices, text: text);
         }
     }
 
@@ -524,7 +527,7 @@ public class TrialLogic : MonoBehaviour
         {
             Block block = placedBlocks[gridIndices];
             block.destroy();
-            yield return Pointer.displayPointer(gridIndices);
+            yield return Pointer.displayPointer(gridIndices, "Destroy");
         }
     }
 
