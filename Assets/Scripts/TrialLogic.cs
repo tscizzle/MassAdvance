@@ -10,7 +10,6 @@ public class TrialLogic : MonoBehaviour
     private static float secondsBetweenActions_fast;
     private static float secondsBetweenActions_slow;
     public static float secondsBetweenActions;
-    public static bool isPauseModeOn;
     // Parameters (gameplay).
     public static int difficultyLevel;
     public static int numGridSquaresWide;
@@ -27,6 +26,8 @@ public class TrialLogic : MonoBehaviour
     public static int turnNumber;
     public static Dictionary<Vector2, FloorSquare> floorSquaresMap;
     public static Dictionary<Vector2, Block> placedBlocks;
+    public static Dictionary<Vector2, List<BlockCombo>> blockCombosKeyedByAnchor;
+    public static Dictionary<Block, List<BlockCombo>> blockCombosKeyedByBlock;
     public static Dictionary<string, CardInfo> trialDeck;
     private static List<string> drawPile;
     public static List<string> hand;
@@ -35,6 +36,7 @@ public class TrialLogic : MonoBehaviour
     public static bool isTrialWin;
     public static bool isTrialLoss;
     private static bool isTrialOver;
+    public static bool isPauseModeOn;
 
     static TrialLogic()
     {
@@ -111,11 +113,15 @@ public class TrialLogic : MonoBehaviour
 
         decrementStain();
 
+        findAndStoreBlockCombos();
+
         yield return productionPhase();
         
         yield return massSpreadingPhase();
 
         yield return destructionPhase();
+
+        clearBlockCombos();
 
         evaluateTrialEndConditions();
 
@@ -295,6 +301,7 @@ public class TrialLogic : MonoBehaviour
         isTrialWin = false;
         isTrialLoss = false;
         isTrialOver = false;
+        isPauseModeOn = false;
     }
 
     private static void initializeFloor()
@@ -372,6 +379,41 @@ public class TrialLogic : MonoBehaviour
         }
     }
 
+    private static void findAndStoreBlockCombos()
+    /* Search the grid for all block combos that exist this turn, and store them in a few ways for
+        easy lookup.
+    
+    Populate blockCombosKeyedByAnchor and blockCombosKeyedByBlock.
+    */
+    {
+        blockCombosKeyedByAnchor = new Dictionary<Vector2, List<BlockCombo>>();
+        blockCombosKeyedByBlock = new Dictionary<Block, List<BlockCombo>>();
+
+        foreach (int xIdx in Enumerable.Range(0, numGridSquaresWide))
+        {
+            foreach (int yIdx in Enumerable.Range(0, numGridSquaresDeep))
+            {
+                Vector2 gridIndices = new Vector2(xIdx, yIdx);
+                List<BlockCombo> combosAnchoredOnSquare = BlockCombo.combosAnchoredAt(gridIndices);
+                blockCombosKeyedByAnchor[gridIndices] = combosAnchoredOnSquare;
+
+                foreach (BlockCombo blockCombo in combosAnchoredOnSquare)
+                {
+                    foreach (Block block in blockCombo.blocks)
+                    {
+                        if (blockCombosKeyedByBlock.ContainsKey(block))
+                        {
+                            blockCombosKeyedByBlock[block].Add(blockCombo);
+                        } else
+                        {
+                            blockCombosKeyedByBlock[block] = new List<BlockCombo> { blockCombo };
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private static List<Block> getProductiveBlocks()
     /* Get a list of all blocks that have `produce` effects, in standard order.
     
@@ -400,22 +442,22 @@ public class TrialLogic : MonoBehaviour
         return productiveBlocks;
     }
 
-    private static List<ProductiveCombo> getProductiveCombos()
+    private static List<BlockCombo> getProductiveCombos()
     /* Get a list of all productive combos, in standard order.
     
     :returns List<Vector2> productiveCombos:
     */
     {
-        List<ProductiveCombo> productiveCombos = new List<ProductiveCombo>();
+        List<BlockCombo> productiveCombos = new List<BlockCombo>();
 
-        foreach (int xIdx in Enumerable.Range(0, numGridSquaresWide))
+        foreach (List<BlockCombo> blockCombos in blockCombosKeyedByAnchor.Values)
         {
-            foreach (int yIdx in Enumerable.Range(0, numGridSquaresDeep))
+            foreach (BlockCombo blockCombo in blockCombos)
             {
-                Vector2 gridIndices = new Vector2(xIdx, yIdx);
-                List<ProductiveCombo> combosAnchoredOnSquare =
-                    ProductiveCombo.combosAnchoredOnSquare(gridIndices);
-                productiveCombos.AddRange(combosAnchoredOnSquare);
+                if (BlockCombo.isProductive(blockCombo.blockComboType))
+                {
+                    productiveCombos.Add(blockCombo);
+                }
             }
         }
 
@@ -425,7 +467,7 @@ public class TrialLogic : MonoBehaviour
     }
 
     private static IEnumerator productionPhase()
-    /* For all a player's blocks on the grid, trigger their produce ability. */
+    /* For all a player's blocks and block combos on the grid, trigger their produce ability. */
     {
         // Produce for individual blocks.
         List<Block> productiveBlocks = getProductiveBlocks();
@@ -436,8 +478,8 @@ public class TrialLogic : MonoBehaviour
         }
 
         // Produce for block combos.
-        List<ProductiveCombo> productiveCombos = getProductiveCombos();
-        foreach (ProductiveCombo productiveCombo in productiveCombos)
+        List<BlockCombo> productiveCombos = getProductiveCombos();
+        foreach (BlockCombo productiveCombo in productiveCombos)
         {
             productiveCombo.produce();
             Vector2 gridIndices = productiveCombo.getAnchorSquare();
@@ -570,9 +612,31 @@ public class TrialLogic : MonoBehaviour
 
         foreach (Block block in blocksToBeDestroyed)
         {
+            // Destroy the block, triggering any on destroy effects of that block.
+            Vector2 gridIndices = block.gridIndices;
             block.destroy();
-            yield return Pointer.displayPointer(block.gridIndices, "Destroy");
+            yield return Pointer.displayPointer(gridIndices, "Destroy");
+            
+            // Execute any on destroy effects of block combos that involved that block.
+            if (blockCombosKeyedByBlock.ContainsKey(block))
+            {
+                List<BlockCombo> blockCombos = blockCombosKeyedByBlock[block];
+                foreach (BlockCombo blockCombo in blockCombos)
+                {
+                    if (BlockCombo.hasDestroyEffect(blockCombo.blockComboType))
+                    {
+                        blockCombo.onBlockDestroy();
+                        yield return Pointer.displayPointer(gridIndices, "Combo Destroy");
+                    }
+                }
+            }
         }
+    }
+
+    private static void clearBlockCombos()
+    /* Since combos are evaluated anew each turn, unregister the combos we identified this turn. */
+    {
+        blockCombosKeyedByAnchor.Clear();
     }
 
     private static void evaluateTrialEndConditions()
@@ -624,7 +688,7 @@ public class TrialLogic : MonoBehaviour
                 if (block.blockType == BlockType.MASS)
                 {
                     block.destroy();
-                    yield return Pointer.displayPointer(block.gridIndices);
+                    yield return Pointer.displayPointer(gridIndices);
                 }
             }
 
@@ -656,9 +720,9 @@ public class TrialLogic : MonoBehaviour
         string cardId2 = MiscHelpers.getRandomId();
         fakeDeck[cardId2] = new CardInfo(PlaceSingleBlockCard.getSingleBlockCardName(BlockType.BLUE), cardId2);
         string cardId3 = MiscHelpers.getRandomId();
-        fakeDeck[cardId3] = new CardInfo(PlaceSingleBlockCard.getSingleBlockCardName(BlockType.BLUE), cardId3);
+        fakeDeck[cardId3] = new CardInfo(PlaceSingleBlockCard.getSingleBlockCardName(BlockType.RED), cardId3);
         string cardId4 = MiscHelpers.getRandomId();
-        fakeDeck[cardId4] = new CardInfo(PlaceSingleBlockCard.getSingleBlockCardName(BlockType.BLUE), cardId4);
+        fakeDeck[cardId4] = new CardInfo(PlaceSingleBlockCard.getSingleBlockCardName(BlockType.RED), cardId4);
 
         return fakeDeck;
     }

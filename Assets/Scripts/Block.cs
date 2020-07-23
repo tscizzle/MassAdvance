@@ -132,7 +132,7 @@ public class Block : MonoBehaviour, IPointerClickHandler
         // If this Block has any onDestroy effects, run them.
         if (blockType == BlockType.RED)
         {
-            clearNeighboringMass();
+            destroyNeighboringMass();
         }
 
         FloorSquare floorSquare = TrialLogic.floorSquaresMap[gridIndices];
@@ -156,9 +156,20 @@ public class Block : MonoBehaviour, IPointerClickHandler
         return blockType == BlockType.BLUE || blockType == BlockType.YELLOW;
     }
 
+    public static bool hasDestroyEffect(BlockType? blockType)
+    /* Return whether or not this block type has a destroy effect.
+    
+    :param BlockType? blockType:
+    
+    :returns bool:
+    */
+    {
+        return blockType == BlockType.RED;
+    }
+
     /* HELPERS */
 
-    private void clearNeighboringMass()
+    private void destroyNeighboringMass()
     /* Remove mass Blocks that neighbor this Block. */
     {
         Vector2[] neighbors = MiscHelpers.getNeighbors(gridIndices);
