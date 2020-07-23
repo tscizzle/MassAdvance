@@ -145,6 +145,17 @@ public class Block : MonoBehaviour, IPointerClickHandler
         Destroy(gameObject);
     }
 
+    public static bool isProductive(BlockType? blockType)
+    /* Return whether or not this block type has a produce effect.
+    
+    :param BlockType? blockType:
+    
+    :returns bool:
+    */
+    {
+        return blockType == BlockType.BLUE || blockType == BlockType.YELLOW;
+    }
+
     /* HELPERS */
 
     private void clearNeighboringMass()

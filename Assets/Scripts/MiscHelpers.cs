@@ -51,4 +51,29 @@ public class MiscHelpers : MonoBehaviour
         
         return neighbors;
     }
+
+    public static List<T> standardOrder<T>(IEnumerable<T> itemList, Func<T, Vector2> converter)
+    /* Often our game actions occur to a list of blocks, and instead of doing it in a random order,
+        we use a standardized ordering of starting at the top-left, going down the column, then
+        repeating for columns left to right.
+    
+    :params List<Vector2> gridIndicesList: List of floor square positions in the grid.
+
+    :returns List<Vector2> sortedGridIndicesList: Same floor square positions but sorted as
+        described above.
+    */
+    {
+        List<T> sortedGridIndicesList = itemList
+            .OrderBy(el => converter(el).x)
+            .ThenByDescending(el => converter(el).y)
+            .ToList();
+        
+        return sortedGridIndicesList;
+    }
+
+    public static T identity<T>(T inp)
+    /* Basic converter to be used in standardOrder. Returns the same thing it receives as input. */
+    {
+        return inp;
+    }
 }

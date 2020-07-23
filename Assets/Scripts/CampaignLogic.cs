@@ -20,7 +20,7 @@ public class CampaignLogic : MonoBehaviour
     {
         // Initialize parameters.
         startingCash = 10500;
-        cashRewardPerTrial = 3000;
+        cashRewardPerTrial = 5000;
 
         // Initialize state.
         currentCash = startingCash;

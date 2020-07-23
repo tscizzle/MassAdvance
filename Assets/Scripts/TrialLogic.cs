@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class TrialLogic : MonoBehaviour
 {   
@@ -13,6 +12,7 @@ public class TrialLogic : MonoBehaviour
     public static float secondsBetweenActions;
     public static bool isPauseModeOn;
     // Parameters (gameplay).
+    public static int difficultyLevel;
     public static int numGridSquaresWide;
     public static int numGridSquaresDeep;
     public static int turnsToSurvive;
@@ -147,10 +147,6 @@ public class TrialLogic : MonoBehaviour
     */
     {
         isPauseModeOn = turnOn;
-        if (!isPauseModeOn)
-        {
-            // TODO: resume the game
-        }
     }
 
     public static void gainIum(int ium)
@@ -253,47 +249,31 @@ public class TrialLogic : MonoBehaviour
         secondsBetweenActions_fast = 0.1f;
         secondsBetweenActions_slow = 0.6f;
         secondsBetweenActions = secondsBetweenActions_slow;
-        
-        // Widen the grid, by 1 per trial, starting at trial 12.
-        numGridSquaresWide = 6 + Mathf.Max(trialNumber - 11, 0);
-        
-        // Shorten the grid, by 1 per trial, 3 times, starting at trial 9.
-        numGridSquaresDeep = 10 - Mathf.Min(Mathf.Max(trialNumber - 8, 0), 3);
-        
-        turnsToSurvive = 20;
-
-        // Reduce the free ium per turn, starting at trial 5.
-        baseIumPerTurn = trialNumber >= 5 ? 1 : 2;
-
-        // Reduce the free draw per turn, starting at trial 4.
-        baseDrawPerTurn = trialNumber >= 4 ? 1 : 2;
-
-        // Reduce the starting ium, starting at trial 3.
-        startingIum = trialNumber >= 3 ? 2 : 3;
-
-        // Reduce the starting hand size, starting at trial 2.
-        startingHandSize = trialNumber >= 2 ? 2 : 3;
-
-        // Reduce the unstained rows, starting at trial 6.
-        startingUnstainedRows = trialNumber >= 6 ? 2 : 3;
-
-        // Increase the starting mass, by 1 per trial, 2 times, starting at trial 7. 
+        numGridSquaresWide = 6;
+        numGridSquaresDeep = 10;
+        turnsToSurvive = 14;
+        baseIumPerTurn = 2;
+        baseDrawPerTurn = 1;
+        startingIum = 3;
+        startingHandSize = 4;
+        startingUnstainedRows = 4;
         startingMassSquares = new List<Vector2>
         {
             new Vector2((numGridSquaresWide / 2) - 1, numGridSquaresDeep - 1),
             new Vector2(numGridSquaresWide / 2, numGridSquaresDeep - 1)
         };
-        if (trialNumber >= 7)
+
+        if (trialNumber >= 2)
         {
-            startingMassSquares.Add(
-                new Vector2((numGridSquaresWide / 2) - 1, numGridSquaresDeep - 2)
-            );
+            turnsToSurvive = 16;
+            startingMassSquares.Add(new Vector2(0, numGridSquaresDeep - 1));
+            startingMassSquares.Add(new Vector2(numGridSquaresWide - 1, numGridSquaresDeep - 1));
         }
-        if (trialNumber >= 8)
+        if (trialNumber >= 3)
         {
-            startingMassSquares.Add(
-                new Vector2((numGridSquaresWide / 2), numGridSquaresDeep - 2)
-            );
+            turnsToSurvive = 20;
+            startingMassSquares.Add(new Vector2(0, numGridSquaresDeep - 3));
+            startingMassSquares.Add(new Vector2(numGridSquaresWide - 1, numGridSquaresDeep - 3));
         }
     }
 
@@ -392,32 +372,13 @@ public class TrialLogic : MonoBehaviour
         }
     }
 
-    private static List<Vector2> standardOrder(IEnumerable<Vector2> gridIndicesList)
-    /* Often our game actions occur to a list of blocks, and instead of doing it in a random order,
-        we use a standardized ordering of starting at the top-left, going down the column, then
-        repeating for columns left to right.
+    private static List<Block> getProductiveBlocks()
+    /* Get a list of all blocks that have `produce` effects, in standard order.
     
-    :params List<Vector2> gridIndicesList: List of floor square positions in the grid.
-
-    :returns List<Vector2> sortedGridIndicesList: Same floor square positions but sorted as
-        described above.
+    :returns List<Block> productiveBlocks:
     */
     {
-        List<Vector2> sortedGridIndicesList = gridIndicesList
-            .OrderBy(el => el.x)
-            .ThenByDescending(el => el.y)
-            .ToList();
-        
-        return sortedGridIndicesList;
-    }
-
-    private static List<Vector2> getProductiveBlocks()
-    /* Get a list of all squares that have player blocks with `produce` effects, in standard order.
-    
-    :returns List<Vector2> productiveBlocks:
-    */
-    {
-        List<Vector2> productiveBlocks = new List<Vector2>();
+        List<Block> productiveBlocks = new List<Block>();
 
         foreach (int xIdx in Enumerable.Range(0, numGridSquaresWide))
         {
@@ -426,28 +387,61 @@ public class TrialLogic : MonoBehaviour
                 Vector2 gridIndices = new Vector2(xIdx, yIdx);
                 BlockType? blockType = getBlockTypeOfSquare(gridIndices);
 
-                if (blockType == BlockType.BLUE || blockType == BlockType.YELLOW)
+                if (Block.isProductive(blockType))
                 {
-                    productiveBlocks.Add(gridIndices);
+                    Block block = placedBlocks[gridIndices];
+                    productiveBlocks.Add(block);
                 }
             }
         }
 
-        productiveBlocks = standardOrder(productiveBlocks);
+        productiveBlocks = MiscHelpers.standardOrder(productiveBlocks, b => b.gridIndices);
 
         return productiveBlocks;
+    }
+
+    private static List<ProductiveCombo> getProductiveCombos()
+    /* Get a list of all productive combos, in standard order.
+    
+    :returns List<Vector2> productiveCombos:
+    */
+    {
+        List<ProductiveCombo> productiveCombos = new List<ProductiveCombo>();
+
+        foreach (int xIdx in Enumerable.Range(0, numGridSquaresWide))
+        {
+            foreach (int yIdx in Enumerable.Range(0, numGridSquaresDeep))
+            {
+                Vector2 gridIndices = new Vector2(xIdx, yIdx);
+                List<ProductiveCombo> combosAnchoredOnSquare =
+                    ProductiveCombo.combosAnchoredOnSquare(gridIndices);
+                productiveCombos.AddRange(combosAnchoredOnSquare);
+            }
+        }
+
+        productiveCombos = MiscHelpers.standardOrder(productiveCombos, pc => pc.getAnchorSquare());
+
+        return productiveCombos;
     }
 
     private static IEnumerator productionPhase()
     /* For all a player's blocks on the grid, trigger their produce ability. */
     {
-        List<Vector2> productiveBlocks = getProductiveBlocks();
-
-        foreach (Vector2 gridIndices in productiveBlocks)
+        // Produce for individual blocks.
+        List<Block> productiveBlocks = getProductiveBlocks();
+        foreach (Block block in productiveBlocks)
         {
-            Block block = placedBlocks[gridIndices];
             block.produce();
-            yield return Pointer.displayPointer(gridIndices, "Produce");
+            yield return Pointer.displayPointer(block.gridIndices, "Produce");
+        }
+
+        // Produce for block combos.
+        List<ProductiveCombo> productiveCombos = getProductiveCombos();
+        foreach (ProductiveCombo productiveCombo in productiveCombos)
+        {
+            productiveCombo.produce();
+            Vector2 gridIndices = productiveCombo.getAnchorSquare();
+            yield return Pointer.displayPointer(gridIndices, "Combo Produce");
         }
     }
 
@@ -487,7 +481,7 @@ public class TrialLogic : MonoBehaviour
 
         List<Vector2> nextTargets = foundAnyMass ? uniqueNextTargets.ToList() : startingMassSquares;
         
-        nextTargets = standardOrder(nextTargets);
+        nextTargets = MiscHelpers.standardOrder(nextTargets, MiscHelpers.identity);
 
         return nextTargets;
     }
@@ -540,15 +534,15 @@ public class TrialLogic : MonoBehaviour
         }
     }
 
-    private static List<Vector2> getBlocksQueuedToBeDestroyed()
-    /* Get a list of all squares that have player Blocks that are about to be destroyed.
+    private static List<Block> getBlocksQueuedToBeDestroyed()
+    /* Get a list of all Blocks that are about to be destroyed.
     
     The result is ordered from top-left and going down, so column by column from the left.
     
-    :returns List<Vector2> blocksToBeDestroyed:
+    :returns List<Block> blocksToBeDestroyed:
     */
     {
-        List<Vector2> blocksToBeDestroyed = new List<Vector2>();
+        List<Block> blocksToBeDestroyed = new List<Block>();
 
         foreach (int xIdx in Enumerable.Range(0, numGridSquaresWide))
         {
@@ -558,12 +552,13 @@ public class TrialLogic : MonoBehaviour
                 bool isBlockExists = placedBlocks.ContainsKey(gridIndices);
                 if (isBlockExists && placedBlocks[gridIndices].isBeingDestroyed)
                 {
-                    blocksToBeDestroyed.Add(gridIndices);
+                    Block block = placedBlocks[gridIndices];
+                    blocksToBeDestroyed.Add(block);
                 }
             }
         }
 
-        blocksToBeDestroyed = standardOrder(blocksToBeDestroyed);
+        blocksToBeDestroyed = MiscHelpers.standardOrder(blocksToBeDestroyed, b => b.gridIndices);
 
         return blocksToBeDestroyed;
     }
@@ -571,13 +566,12 @@ public class TrialLogic : MonoBehaviour
     private static IEnumerator destructionPhase()
     /* Destroy all the player blocks that were queued up to be destroyed during mass-spreading. */
     {
-        List<Vector2> blocksToBeDestroyed = getBlocksQueuedToBeDestroyed();
+        List<Block> blocksToBeDestroyed = getBlocksQueuedToBeDestroyed();
 
-        foreach (Vector2 gridIndices in blocksToBeDestroyed)
+        foreach (Block block in blocksToBeDestroyed)
         {
-            Block block = placedBlocks[gridIndices];
             block.destroy();
-            yield return Pointer.displayPointer(gridIndices, "Destroy");
+            yield return Pointer.displayPointer(block.gridIndices, "Destroy");
         }
     }
 
@@ -620,7 +614,10 @@ public class TrialLogic : MonoBehaviour
     {
         if (isTrialWin)
         {
-            List<Vector2> gridIndicesList = standardOrder(placedBlocks.Keys.ToList());
+            List<Vector2> gridIndicesList = MiscHelpers.standardOrder(
+                placedBlocks.Keys,
+                MiscHelpers.identity
+            );
             foreach (Vector2 gridIndices in gridIndicesList)
             {
                 Block block = placedBlocks[gridIndices];
@@ -654,20 +651,15 @@ public class TrialLogic : MonoBehaviour
             fakeDeck[cardId] = new CardInfo(cardName, cardId);
         }
 
+        string cardId1 = MiscHelpers.getRandomId();
+        fakeDeck[cardId1] = new CardInfo(PlaceSingleBlockCard.getSingleBlockCardName(BlockType.BLUE), cardId1);
+        string cardId2 = MiscHelpers.getRandomId();
+        fakeDeck[cardId2] = new CardInfo(PlaceSingleBlockCard.getSingleBlockCardName(BlockType.BLUE), cardId2);
+        string cardId3 = MiscHelpers.getRandomId();
+        fakeDeck[cardId3] = new CardInfo(PlaceSingleBlockCard.getSingleBlockCardName(BlockType.BLUE), cardId3);
+        string cardId4 = MiscHelpers.getRandomId();
+        fakeDeck[cardId4] = new CardInfo(PlaceSingleBlockCard.getSingleBlockCardName(BlockType.BLUE), cardId4);
+
         return fakeDeck;
     }
 }
-
-public struct CardInfo
-{
-    public CardInfo(string cardName_arg, string cardId_arg)
-    {
-        cardName = cardName_arg;
-        cardId = cardId_arg;
-        card = null;
-    }
-
-    public string cardName { get; }
-    public string cardId { get; }
-    public Card card;
-};
