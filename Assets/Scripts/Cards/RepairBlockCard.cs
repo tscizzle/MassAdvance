@@ -2,35 +2,36 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WashFloorSquareCard : Card
+public class RepairBlockCard : Card
 {
-    public static string washFloorSquareCardName = "wash_floor_square";
+    public static string repairBlockCardName = "repair_block";
 
     /* SATISFYING CARD'S API */
 
     public override void setCardParams()
     /* See setCardParams on base class Card. */
     {
-        iumCost = 0;
-        displayName = "Wash";
+        iumCost = 1;
+        displayName = "Repair";
+        description = "Remove damage from block.";
         isConsumable = false;
     }
 
     public override bool getIsAbleToPlay(Vector2 gridIndices)
-    /* Return true if there is no block in the targeted square.
+    /* Return true if there is a player's Block in the targeted square.
     
     See getIsAbleToPlay on base class Card.
     */
     {
         BlockType? blockType = TrialLogic.getBlockTypeOfSquare(gridIndices);
-        bool isEmpty = blockType == null;
-        return isEmpty;
+        bool playerBlockIsThere = blockType != null && blockType != BlockType.MASS;
+        return playerBlockIsThere;
     }
 
     public override void cardAction(Vector2 gridIndices)
     /* See cardAction on base class Card. */
     {
-        FloorSquare floorSquare = TrialLogic.floorSquaresMap[gridIndices];
-        floorSquare.addStainTurns(-1);
+        Block block = TrialLogic.placedBlocks[gridIndices];
+        block.repair();
     }
 }

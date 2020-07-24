@@ -10,6 +10,7 @@ public class Card : MonoBehaviour, IPointerClickHandler
     private static Color cardTextColor = new Color(80/255, 80/255, 80/255);
     private static int iumCostFontSize = 14;
     private static int displayNameFontSize = 8;
+    private static int descriptionFontSize = 8;
     private static float cardHeight;
     private static float cardWidth;
     private static float highlightedCardSizeMultiplier;
@@ -21,14 +22,14 @@ public class Card : MonoBehaviour, IPointerClickHandler
     private static float movementMinSpeed;
     private static float growthSpeed;
     private static float rotationSpeed;
-
+    // Hierarchy references.
     public GameObject backgroundObj;
     public GameObject iconObj;
     private GameObject iumCostObj;
     private GameObject displayNameObj;
+    private GameObject descriptionObj;
     private GameObject handObj;
     private Canvas canvas;
-
     // Parameters.
     public string cardId;
     public string cardName;
@@ -36,6 +37,7 @@ public class Card : MonoBehaviour, IPointerClickHandler
     // Parameters to be set by each subclass for that type of card.
     public int iumCost;
     public string displayName;
+    public string description;
     public bool isConsumable;
 
     void Awake()
@@ -44,6 +46,7 @@ public class Card : MonoBehaviour, IPointerClickHandler
         iconObj = transform.Find("Icon").gameObject;
         iumCostObj = transform.Find("IumCostText").gameObject;
         displayNameObj = transform.Find("NameText").gameObject;
+        descriptionObj = transform.Find("DescriptionText").gameObject;
         handObj = GameObject.Find("Hand");
         canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
 
@@ -64,12 +67,15 @@ public class Card : MonoBehaviour, IPointerClickHandler
     {
         iumCostObj.GetComponent<Text>().color = cardTextColor;
         displayNameObj.GetComponent<Text>().color = cardTextColor;
+        descriptionObj.GetComponent<Text>().color = cardTextColor;
 
         iumCostObj.GetComponent<Text>().fontSize = iumCostFontSize;
         displayNameObj.GetComponent<Text>().fontSize = displayNameFontSize;
+        descriptionObj.GetComponent<Text>().fontSize = descriptionFontSize;
 
         iumCostObj.GetComponent<Text>().text = iumCost.ToString();
         displayNameObj.GetComponent<Text>().text = displayName;
+        descriptionObj.GetComponent<Text>().text = description;
 
         setCardSize(1);
     }
@@ -267,6 +273,8 @@ public class Card : MonoBehaviour, IPointerClickHandler
         Vector2 iconSize = backgroundSize * 0.67f;
         iconSize.x = iconSize.y; // Make the icon a square.
         iconObj.GetComponent<RectTransform>().sizeDelta = iconSize;
+
+        descriptionObj.GetComponent<RectTransform>().sizeDelta = iconSize;
     }
 
     private void growTowardSizeMultiplier()

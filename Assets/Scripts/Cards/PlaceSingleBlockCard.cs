@@ -15,10 +15,10 @@ public class PlaceSingleBlockCard : Card
     {
         base.Start();
 
-        Color backgroundColor = cardNameToBackgroundColor[cardName];
+        Color backgroundColor = blockTypeToBackgroundColor[blockType];
         backgroundObj.GetComponent<Image>().color = backgroundColor;
         
-        Color iconColor = cardNameToIconColor[cardName];
+        Color iconColor = blockTypeToIconColor[blockType];
         iconObj.GetComponent<Image>().color = iconColor;
     }
 
@@ -27,16 +27,17 @@ public class PlaceSingleBlockCard : Card
     public override void setCardParams()
     /* See setCardParams on base class Card. */
     {
-        // Standard params.
-        iumCost = 2;
-        displayName = cardNameToDisplayName[cardName];
-        isConsumable = true;
         // Params unique to this subclass.
         blockType = cardNameToBlockType[cardName];
+        // Standard params.
+        iumCost = 2;
+        displayName = blockTypeToDisplayName[blockType];
+        description = blockTypeToDescription[blockType];
+        isConsumable = true;
     }
 
     public override int getCostToPlay(Vector2 gridIndices)
-    /* Use this Card's normal cost, except double it if the targeted square is stained.
+    /* Use this card's normal cost, except double it if the targeted square is stained.
     
     See getCostToPlay on base class Card.
     */
@@ -53,7 +54,7 @@ public class PlaceSingleBlockCard : Card
     }
 
     public override bool getIsAbleToPlay(Vector2 gridIndices)
-    /* Return true as long as there is no Block already in the targeted square.
+    /* Return true as long as there is no block already in the targeted square.
     
     See getIsAbleToPlay on base class Card.
     */
@@ -64,7 +65,7 @@ public class PlaceSingleBlockCard : Card
     }
 
     public override void cardAction(Vector2 gridIndices)
-    /* Simply place a single Block in the targeted square.
+    /* Simply place a single block in the targeted square.
     
     See cardAction on base class Card.
     */
@@ -85,30 +86,58 @@ public class PlaceSingleBlockCard : Card
         return $"single_block_{blockType}";
     }
 
+    public static bool isCardNameThisCard(string cardName)
+    /* Whether or not the provided card name is this type of card.
+    
+    :param string cardName:
+
+    :param bool:
+    */
+    {
+        return cardNamesForThisCard.Contains(cardName);
+    }
+
+    public static Dictionary<BlockType, Color> blockTypeToIconColor = new Dictionary<BlockType, Color>
+    {
+        { BlockType.BLUE, Block.blueColor },
+        { BlockType.YELLOW, Block.yellowColor },
+        { BlockType.RED, Block.redColor },
+    };
+    
+    public static Dictionary<BlockType, Color> blockTypeToBackgroundColor = new Dictionary<BlockType, Color>
+    {
+        { BlockType.BLUE, blueCardColor },
+        { BlockType.YELLOW, yellowCardColor },
+        { BlockType.RED, redCardColor },
+    };
+
     /* COLLECTIONS */
 
-    public static Dictionary<string, BlockType> cardNameToBlockType = new Dictionary<string, BlockType>
+    private static List<string> cardNamesForThisCard = new List<string>
+    {
+        getSingleBlockCardName(BlockType.BLUE),
+        getSingleBlockCardName(BlockType.YELLOW),
+        getSingleBlockCardName(BlockType.RED),
+    };
+
+    private static Dictionary<string, BlockType> cardNameToBlockType = new Dictionary<string, BlockType>
     {
         { getSingleBlockCardName(BlockType.BLUE), BlockType.BLUE },
         { getSingleBlockCardName(BlockType.YELLOW), BlockType.YELLOW },
         { getSingleBlockCardName(BlockType.RED), BlockType.RED },
     };
-    private static Dictionary<string, Color> cardNameToIconColor = new Dictionary<string, Color>
+    
+    private static Dictionary<BlockType, string> blockTypeToDisplayName = new Dictionary<BlockType, string>
     {
-        { getSingleBlockCardName(BlockType.BLUE), Block.blueColor },
-        { getSingleBlockCardName(BlockType.YELLOW), Block.yellowColor },
-        { getSingleBlockCardName(BlockType.RED), Block.redColor },
+        { BlockType.BLUE, "Mini Blue" },
+        { BlockType.YELLOW, "Mini Yellow" },
+        { BlockType.RED, "Mini Red" },
     };
-    private static Dictionary<string, Color> cardNameToBackgroundColor = new Dictionary<string, Color>
+    
+    private static Dictionary<BlockType, string> blockTypeToDescription = new Dictionary<BlockType, string>
     {
-        { getSingleBlockCardName(BlockType.BLUE), blueCardColor },
-        { getSingleBlockCardName(BlockType.YELLOW), yellowCardColor },
-        { getSingleBlockCardName(BlockType.RED), redCardColor },
-    };
-    private static Dictionary<string, string> cardNameToDisplayName = new Dictionary<string, string>
-    {
-        { getSingleBlockCardName(BlockType.BLUE), "Mini Blue" },
-        { getSingleBlockCardName(BlockType.YELLOW), "Mini Yellow" },
-        { getSingleBlockCardName(BlockType.RED), "Mini Red" },
+        { BlockType.BLUE, "Place 1 blue block." },
+        { BlockType.YELLOW, "Place 1 yellow block." },
+        { BlockType.RED, "Place 1 red block." },
     };
 }

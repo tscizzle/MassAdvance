@@ -14,6 +14,7 @@ public class PunchCard : Card
     {
         iumCost = 8;
         displayName = "Punch";
+        description = "Destroy all blocks in 3x3 area.";
         isConsumable = false;
     }
 

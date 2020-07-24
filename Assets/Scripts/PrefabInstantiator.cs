@@ -12,6 +12,7 @@ public class PrefabInstantiator : MonoBehaviour
     public GameObject floorSquarePrefab;
     public GameObject packDisplayPrefab;
     public GameObject placeSingleBlockCardPrefab;
+    public GameObject placeThreePieceCardPrefab;
     public GameObject repairBlockCardPrefab;
     public GameObject washFloorSquareCardPrefab;
     public GameObject armageddonCardPrefab;
@@ -28,7 +29,7 @@ public class PrefabInstantiator : MonoBehaviour
     public GameObject CreateBlock(BlockType blockType, Vector2 gridIndices)
     /* Create a Block.
 
-    :param string blockType: One of [ "mass", "blue", "yellow", "red" ]
+    :param BlockType blockType: One of [ "mass", "blue", "yellow", "red" ]
     :param Vector2 gridIndices: The square in which to put the block ((0, 0) is the bottom-left).
     
     :returns GameObject blockObj:
@@ -48,7 +49,8 @@ public class PrefabInstantiator : MonoBehaviour
     public GameObject CreateCard(CardInfo cardInfo, Transform parent, bool isInTrial = true)
     /* Create a Card.
 
-    :param string cardInfo:
+    :param CardInfo cardInfo:
+    :param Transform parent:
     :param bool isInTrial:
 
     :returns GameObject cardObj:
@@ -154,9 +156,12 @@ public class PrefabInstantiator : MonoBehaviour
         } else if (cardName == PunchCard.punchCardName)
         {
             return punchCardPrefab;
-        } else if (PlaceSingleBlockCard.cardNameToBlockType.ContainsKey(cardName))
+        } else if (PlaceSingleBlockCard.isCardNameThisCard(cardName))
         {
             return placeSingleBlockCardPrefab;
+        } else if (PlaceThreePieceCard.isCardNameThisCard(cardName))
+        {
+            return placeThreePieceCardPrefab;
         } else
         {
             // Shouldn't ever get here. It would mean we have a card without an associated prefab.
