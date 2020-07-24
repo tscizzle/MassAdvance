@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class PlaceThreePieceCard : Card
 {
     public BlockType blockType;
+    public bool isFlipped;
 
     public override void Start()
     {
@@ -16,6 +17,16 @@ public class PlaceThreePieceCard : Card
         
         Color iconColor = PlaceSingleBlockCard.blockTypeToIconColor[blockType];
         iconObj.GetComponent<Image>().color = iconColor;
+
+        // Flip the icon.
+        if (isFlipped)
+        {
+            Vector3 currentScale = iconObj.transform.localScale;
+            Vector3 newScale = new Vector3(-currentScale.x, currentScale.y, currentScale.z);
+            iconObj.transform.localScale = newScale;
+            Vector2 currentPivot = iconObj.GetComponent<RectTransform>().pivot;
+            iconObj.GetComponent<RectTransform>().pivot = new Vector2(1, currentPivot.y);
+        }
     }
 
     /* SATISFYING CARD'S API */
@@ -25,9 +36,10 @@ public class PlaceThreePieceCard : Card
     {
         // Params unique to this subclass.
         blockType = cardNameToBlockType[cardName];
+        isFlipped = cardNameToIsFlipped[cardName];
         // Standard params.
         iumCost = 5;
-        displayName = blockTypeToDisplayName[blockType];
+        displayName = getDisplayName();
         description = blockTypeToDescription[blockType];
         isConsumable = true;
     }
@@ -93,7 +105,7 @@ public class PlaceThreePieceCard : Card
 
     /* PUBLIC API */
 
-    public static string getThreePieceCardName(BlockType blockType)
+    public static string getThreePieceCardName(BlockType blockType, bool isFlipped = false)
     /* Given a BlockType, give the cardName of the card that places a three-piece of that type.
     
     :param BlockType blockType:
@@ -101,7 +113,12 @@ public class PlaceThreePieceCard : Card
     :returns string cardName:
     */
     {
-        return $"three_piece_{blockType}";
+        string name = $"three_piece_{blockType}";
+        if (isFlipped)
+        {
+            name += "_flipped";
+        }
+        return name;
     }
 
     public static bool isCardNameThisCard(string cardName)
@@ -118,19 +135,42 @@ public class PlaceThreePieceCard : Card
     /* HELPERS */
 
     private List<Vector2> getSquaresToPlaceOn(Vector2 gridIndices)
-    /* Given an anchor position, get the squares this card would place blocks on.
+    /* Given an anchor position, get the squares this card would place blocks on (the L shape).
     
     :param Vector2 gridIndices: Position this group of blocks is anchored at, the "top-left" square.
     
     :returns List<Vector2>: List of squares where this card would place blocks.
     */
     {
-        return new List<Vector2>
-        {
+        float thirdSquareX = isFlipped ? gridIndices.x : gridIndices.x + 1;
+        return new List<Vector2> {
             gridIndices,
             new Vector2(gridIndices.x + 1, gridIndices.y),
-            new Vector2(gridIndices.x + 1, gridIndices.y - 1)
+            new Vector2(thirdSquareX, gridIndices.y - 1),
         };
+    }
+
+    private string getDisplayName()
+    /* Get the display name for this card, based on the color and if it's flipped. */
+    {
+        string name = "";
+        switch (blockType)
+        {
+            case BlockType.BLUE:
+                name = "3-Piece Blue";
+                break;
+            case BlockType.YELLOW:
+                name = "3-Piece Yellow";
+                break;
+            case BlockType.RED:
+                name = "3-Piece Red";
+                break;
+        }
+        if (isFlipped)
+        {
+            name += " (Flip)";
+        }
+        return name;
     }
 
     /* COLLECTIONS */
@@ -140,6 +180,9 @@ public class PlaceThreePieceCard : Card
         getThreePieceCardName(BlockType.BLUE),
         getThreePieceCardName(BlockType.YELLOW),
         getThreePieceCardName(BlockType.RED),
+        getThreePieceCardName(BlockType.BLUE, isFlipped: true),
+        getThreePieceCardName(BlockType.YELLOW, isFlipped: true),
+        getThreePieceCardName(BlockType.RED, isFlipped: true),
     };
 
     private static Dictionary<string, BlockType> cardNameToBlockType = new Dictionary<string, BlockType>
@@ -147,13 +190,19 @@ public class PlaceThreePieceCard : Card
         { getThreePieceCardName(BlockType.BLUE), BlockType.BLUE },
         { getThreePieceCardName(BlockType.YELLOW), BlockType.YELLOW },
         { getThreePieceCardName(BlockType.RED), BlockType.RED },
+        { getThreePieceCardName(BlockType.BLUE, isFlipped: true), BlockType.BLUE },
+        { getThreePieceCardName(BlockType.YELLOW, isFlipped: true), BlockType.YELLOW },
+        { getThreePieceCardName(BlockType.RED, isFlipped: true), BlockType.RED },
     };
-    
-    private static Dictionary<BlockType, string> blockTypeToDisplayName = new Dictionary<BlockType, string>
+
+    private static Dictionary<string, bool> cardNameToIsFlipped = new Dictionary<string, bool>
     {
-        { BlockType.BLUE, "3-Piece Blue" },
-        { BlockType.YELLOW, "3-Piece Yellow" },
-        { BlockType.RED, "3-Piece Red" },
+        { getThreePieceCardName(BlockType.BLUE), false },
+        { getThreePieceCardName(BlockType.YELLOW), false },
+        { getThreePieceCardName(BlockType.RED), false },
+        { getThreePieceCardName(BlockType.BLUE, isFlipped: true), true },
+        { getThreePieceCardName(BlockType.YELLOW, isFlipped: true), true },
+        { getThreePieceCardName(BlockType.RED, isFlipped: true), true },
     };
     
     private static Dictionary<BlockType, string> blockTypeToDescription = new Dictionary<BlockType, string>
