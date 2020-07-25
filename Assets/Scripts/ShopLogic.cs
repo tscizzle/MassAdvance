@@ -10,15 +10,22 @@ public class ShopLogic : MonoBehaviour
     // Parameters.
     private static float maxDiscountRatio = 3;
     private static float discountDampener = 1/10f;
+    private static int giantPackSize = 20;
+    private static int bigPackSize = 15;
+    private static int mediumPackSize = 10;
+    private static int smallPackSize = 5;
+    private static int numUniquesInVarietyPack = 5;
+    private static int numUniquesInSpecialistPack = 2;
+    private static int numSingleCardPacks = 6;
     // State.
-    public static Dictionary<string, List<CardInfo>> packInventory;
+    public static Dictionary<string, Pack> packInventory;
     public static List<string> packsAddedToCart;
     private static List<string> disposalsAddedToCart;
     
     void Awake()
     {
         // Initialize state.
-        packInventory = new Dictionary<string, List<CardInfo>>();
+        packInventory = new Dictionary<string, Pack>();
         packsAddedToCart = new List<string>();
         disposalsAddedToCart = new List<string>();
 
@@ -41,7 +48,8 @@ public class ShopLogic : MonoBehaviour
     :returns int value: The value of the specified pack, before randomization or anything.
     */
     {
-        List<CardInfo> packCards = packInventory[packId];
+        Pack pack = packInventory[packId];
+        List<CardInfo> packCards = pack.cardList;
         int fullValue = packCards.Sum(cardInfo => cardNameToBaseCashValue[cardInfo.cardName]);
         int packSize = packCards.Count;
         
@@ -93,21 +101,163 @@ public class ShopLogic : MonoBehaviour
 
         string[] cardNameOptions = cardNameToBaseCashValue.Keys.ToArray();
 
-        // Create packs of various sizes, including singletons.
-        int[] packSizes = { 30, 30, 20, 20, 10, 10, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
-        foreach (int packSize in packSizes)
+        // Giant variety pack.
+        List<CardInfo> cardsInGiantVariety = new List<CardInfo>();
+        int numRepeatsInGiantVariety = giantPackSize / numUniquesInVarietyPack;
+        foreach (int _0 in Enumerable.Range(0, numUniquesInVarietyPack))
         {
-            List<CardInfo> packCards = new List<CardInfo>();
-            foreach (int _ in Enumerable.Range(0, packSize))
+            string cardName = MiscHelpers.getRandomChoice(cardNameOptions, rand);
+            foreach (int _1 in Enumerable.Range(0, numRepeatsInGiantVariety))
             {
                 string cardId = MiscHelpers.getRandomId();
-                string cardName = MiscHelpers.getRandomChoice(cardNameOptions, rand);
                 CardInfo cardInfo = new CardInfo(cardName, cardId);
-                packCards.Add(cardInfo);
+                cardsInGiantVariety.Add(cardInfo);
             }
+        }
+        string giantVarietyPackId = MiscHelpers.getRandomId();
+        Pack giantVarietyPack = new Pack(giantVarietyPackId, "Giant Variety", cardsInGiantVariety);
+        packInventory[giantVarietyPackId] = giantVarietyPack;
 
+        // Big variety pack.
+        List<CardInfo> cardsInBigVariety = new List<CardInfo>();
+        int numRepeatsInBigVariety = bigPackSize / numUniquesInVarietyPack;
+        foreach (int _0 in Enumerable.Range(0, numUniquesInVarietyPack))
+        {
+            string cardName = MiscHelpers.getRandomChoice(cardNameOptions, rand);
+            foreach (int _1 in Enumerable.Range(0, numRepeatsInBigVariety))
+            {
+                string cardId = MiscHelpers.getRandomId();
+                CardInfo cardInfo = new CardInfo(cardName, cardId);
+                cardsInBigVariety.Add(cardInfo);
+            }
+        }
+        string bigVarietyPackId = MiscHelpers.getRandomId();
+        Pack bigVarietyPack = new Pack(bigVarietyPackId, "Big Variety", cardsInBigVariety);
+        packInventory[bigVarietyPackId] = bigVarietyPack;
+
+        // Medium variety pack.
+        List<CardInfo> cardsInMediumVariety = new List<CardInfo>();
+        int numRepeatsInMediumVariety = mediumPackSize / numUniquesInVarietyPack;
+        foreach (int _0 in Enumerable.Range(0, numUniquesInVarietyPack))
+        {
+            string cardName = MiscHelpers.getRandomChoice(cardNameOptions, rand);
+            foreach (int _1 in Enumerable.Range(0, numRepeatsInMediumVariety))
+            {
+                string cardId = MiscHelpers.getRandomId();
+                CardInfo cardInfo = new CardInfo(cardName, cardId);
+                cardsInMediumVariety.Add(cardInfo);
+            }
+        }
+        string mediumVarietyPackId = MiscHelpers.getRandomId();
+        Pack mediumVarietyPack = new Pack(
+            mediumVarietyPackId, "Medium Variety", cardsInMediumVariety
+        );
+        packInventory[mediumVarietyPackId] = mediumVarietyPack;
+
+        // Small variety pack.
+        List<CardInfo> cardsInSmallVariety = new List<CardInfo>();
+        int numRepeatsInSmallVariety = smallPackSize / numUniquesInVarietyPack;
+        foreach (int _0 in Enumerable.Range(0, numUniquesInVarietyPack))
+        {
+            string cardName = MiscHelpers.getRandomChoice(cardNameOptions, rand);
+            foreach (int _1 in Enumerable.Range(0, numRepeatsInSmallVariety))
+            {
+                string cardId = MiscHelpers.getRandomId();
+                CardInfo cardInfo = new CardInfo(cardName, cardId);
+                cardsInSmallVariety.Add(cardInfo);
+            }
+        }
+        string smallVarietyPackId = MiscHelpers.getRandomId();
+        Pack smallVarietyPack = new Pack(smallVarietyPackId, "Small Variety", cardsInSmallVariety);
+        packInventory[smallVarietyPackId] = smallVarietyPack;
+
+        // Giant specialist pack.
+        List<CardInfo> cardsInGiantSpecialist = new List<CardInfo>();
+        int numRepeatsInGiantSpecialty = giantPackSize / numUniquesInSpecialistPack;
+        foreach (int _0 in Enumerable.Range(0, numUniquesInSpecialistPack))
+        {
+            string cardName = MiscHelpers.getRandomChoice(cardNameOptions, rand);
+            foreach (int _1 in Enumerable.Range(0, numRepeatsInGiantSpecialty))
+            {
+                string cardId = MiscHelpers.getRandomId();
+                CardInfo cardInfo = new CardInfo(cardName, cardId);
+                cardsInGiantSpecialist.Add(cardInfo);
+            }
+        }
+        string giantSpecialistPackId = MiscHelpers.getRandomId();
+        Pack giantSpecialistPack = new Pack(
+            giantSpecialistPackId, "Giant Specialist", cardsInGiantSpecialist
+        );
+        packInventory[giantSpecialistPackId] = giantSpecialistPack;
+
+        // Big specialist pack.
+        List<CardInfo> cardsInBigSpecialist = new List<CardInfo>();
+        int numRepeatsInBigSpecialty = bigPackSize / numUniquesInSpecialistPack;
+        foreach (int _0 in Enumerable.Range(0, numUniquesInSpecialistPack))
+        {
+            string cardName = MiscHelpers.getRandomChoice(cardNameOptions, rand);
+            foreach (int _1 in Enumerable.Range(0, numRepeatsInBigSpecialty))
+            {
+                string cardId = MiscHelpers.getRandomId();
+                CardInfo cardInfo = new CardInfo(cardName, cardId);
+                cardsInBigSpecialist.Add(cardInfo);
+            }
+        }
+        string bigSpecialistPackId = MiscHelpers.getRandomId();
+        Pack bigSpecialistPack = new Pack(
+            bigSpecialistPackId, "Big Specialist", cardsInBigSpecialist
+        );
+        packInventory[bigSpecialistPackId] = bigSpecialistPack;
+
+        // Medium specialist pack.
+        List<CardInfo> cardsInMediumSpecialist = new List<CardInfo>();
+        int numRepeatsInMediumSpecialty = mediumPackSize / numUniquesInSpecialistPack;
+        foreach (int _0 in Enumerable.Range(0, numUniquesInSpecialistPack))
+        {
+            string cardName = MiscHelpers.getRandomChoice(cardNameOptions, rand);
+            foreach (int _1 in Enumerable.Range(0, numRepeatsInMediumSpecialty))
+            {
+                string cardId = MiscHelpers.getRandomId();
+                CardInfo cardInfo = new CardInfo(cardName, cardId);
+                cardsInMediumSpecialist.Add(cardInfo);
+            }
+        }
+        string mediumSpecialistPackId = MiscHelpers.getRandomId();
+        Pack mediumSpecialistPack = new Pack(
+            mediumSpecialistPackId, "Medium Specialist", cardsInMediumSpecialist
+        );
+        packInventory[mediumSpecialistPackId] = mediumSpecialistPack;
+
+        // Small specialist pack.
+        List<CardInfo> cardsInSmallSpecialist = new List<CardInfo>();
+        int numRepeatsInSmallSpecialty = smallPackSize / numUniquesInSpecialistPack;
+        foreach (int _0 in Enumerable.Range(0, numUniquesInSpecialistPack))
+        {
+            string cardName = MiscHelpers.getRandomChoice(cardNameOptions, rand);
+            foreach (int _1 in Enumerable.Range(0, numRepeatsInSmallSpecialty))
+            {
+                string cardId = MiscHelpers.getRandomId();
+                CardInfo cardInfo = new CardInfo(cardName, cardId);
+                cardsInSmallSpecialist.Add(cardInfo);
+            }
+        }
+        string smallSpecialistPackId = MiscHelpers.getRandomId();
+        Pack smallSpecialistPack = new Pack(
+            smallSpecialistPackId, "Small Specialist", cardsInSmallSpecialist
+        );
+        packInventory[smallSpecialistPackId] = smallSpecialistPack;
+
+        // Single-card packs.
+        foreach (int idx in Enumerable.Range(0, numSingleCardPacks))
+        {
+            string cardName = MiscHelpers.getRandomChoice(cardNameOptions, rand);
+            string cardId = MiscHelpers.getRandomId();
+            CardInfo cardInfo = new CardInfo(cardName, cardId);
             string packId = MiscHelpers.getRandomId();
-            packInventory[packId] = packCards;
+            Pack pack = new Pack(
+                packId, $"Single-card Pack {idx}", new List<CardInfo> { cardInfo }
+            );
+            packInventory[packId] = pack;
         }
     }
 

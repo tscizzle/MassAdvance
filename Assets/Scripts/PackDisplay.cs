@@ -6,16 +6,18 @@ using UnityEngine.UI;
 
 public class PackDisplay : MonoBehaviour
 {
-    private GameObject priceTextObj;
+    private GameObject labelTextObj;
 
     public string packId;
 
     void Start()
     {
-        priceTextObj = transform.Find("PriceText").gameObject;
+        labelTextObj = transform.Find("LabelText").gameObject;
 
         // Count each type of Card.
-        List<CardInfo> packCards = ShopLogic.packInventory[packId];
+        Pack pack = ShopLogic.packInventory[packId];
+        string packName = pack.packName;
+        List<CardInfo> packCards = pack.cardList;
         Dictionary<string, int> cardNameCounts = new Dictionary<string, int>();
         foreach (CardInfo cardInfo in packCards)
         {
@@ -46,7 +48,7 @@ public class PackDisplay : MonoBehaviour
 
         // Display the price of this pack.
         int price = ShopLogic.getBaseCashValueOfPack(packId);
-        priceTextObj.GetComponent<Text>().text = $"Price: {price}";
+        labelTextObj.GetComponent<Text>().text = $"{packName} - Price: {price}";
     }
 
     /* PUBLIC API */
@@ -60,7 +62,7 @@ public class PackDisplay : MonoBehaviour
         if (ShopLogic.packsAddedToCart.Contains(packId))
         {
             ShopLogic.packsAddedToCart.Remove(packId);
-            priceTextObj.GetComponent<Text>().fontStyle = FontStyle.Normal;
+            labelTextObj.GetComponent<Text>().fontStyle = FontStyle.Normal;
         } else
         {
             int availableCash = CampaignLogic.currentCash - ShopLogic.getExpensesInCart();
@@ -68,7 +70,7 @@ public class PackDisplay : MonoBehaviour
             if (availableCash >= packPrice)
             {
                 ShopLogic.packsAddedToCart.Add(packId);
-                priceTextObj.GetComponent<Text>().fontStyle = FontStyle.Bold;
+                labelTextObj.GetComponent<Text>().fontStyle = FontStyle.Bold;
             }
         }
     }

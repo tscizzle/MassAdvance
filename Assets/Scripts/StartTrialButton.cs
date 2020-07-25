@@ -19,7 +19,8 @@ public class StartTrialButton : MonoBehaviour
         // Put the purchased packs into the deck.
         foreach (string packId in ShopLogic.packsAddedToCart)
         {
-            List<CardInfo> packCards = ShopLogic.packInventory[packId];
+            Pack pack = ShopLogic.packInventory[packId];
+            List<CardInfo> packCards = pack.cardList;
             foreach (CardInfo cardInfo in packCards)
             {
                 CampaignLogic.campaignDeck[cardInfo.cardId] = cardInfo;
