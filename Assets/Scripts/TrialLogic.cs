@@ -21,7 +21,7 @@ public class TrialLogic : MonoBehaviour
     private static int startingHandSize;
     private static int startingUnstainedRows;
     private static List<Vector2> startingMassSquares;
-    // State.
+    // State (gameplay).
     public static int currentIum;
     public static int turnNumber;
     public static Dictionary<Vector2, FloorSquare> floorSquaresMap;
@@ -32,13 +32,15 @@ public class TrialLogic : MonoBehaviour
     private static List<string> drawPile;
     public static List<string> hand;
     private static List<string> discardPile;
-    public static string selectedCardId;
-    public static Vector2? mouseDownGridIndices;
-    public static Vector2? mouseUpGridIndices;
     public static bool isTrialWin;
     public static bool isTrialLoss;
     private static bool isTrialOver;
+    // State (user-interaction)
+    public static string selectedCardId;
+    public static Vector2? mouseDownGridIndices;
+    public static Vector2? mouseUpGridIndices;
     public static bool isPauseModeOn;
+    public static bool isGameplayUserInputsFrozen;
 
     static TrialLogic()
     {
@@ -55,7 +57,7 @@ public class TrialLogic : MonoBehaviour
 
     IEnumerator Start()
     {
-        // TODO: freeze user input
+        setGameplayUserInputsFrozen(true);
 
         initializeFloor();
 
@@ -70,7 +72,7 @@ public class TrialLogic : MonoBehaviour
 
         startTurn();
 
-        // TODO: unfreeze user input
+        setGameplayUserInputsFrozen(false);
     }
 
     /* PUBLIC API */
@@ -109,7 +111,7 @@ public class TrialLogic : MonoBehaviour
         trigger the enemy's turn, etc.
     */
     {
-        // TODO: freeze user input
+        setGameplayUserInputsFrozen(true);
 
         TrialLogic.selectedCardId = null;
 
@@ -135,7 +137,7 @@ public class TrialLogic : MonoBehaviour
             startTurn();
         }
 
-        // TODO: unfreeze user input
+        setGameplayUserInputsFrozen(false);
     }
 
     public static void setRapidMode(bool turnOn)
@@ -155,6 +157,16 @@ public class TrialLogic : MonoBehaviour
     */
     {
         isPauseModeOn = turnOn;
+    }
+
+    public static void setGameplayUserInputsFrozen(bool freeze)
+    /* Toggle on or off the freezing of gameplay user inputs. For example, while the between-turn
+        phases are happening, don't allow placing blocks, or ending turn again.
+    
+    :param bool freeze: true to freeze user input, false to unfreeze it.
+    */
+    {
+        isGameplayUserInputsFrozen = freeze;
     }
 
     public static void gainIum(int ium)
@@ -291,6 +303,7 @@ public class TrialLogic : MonoBehaviour
     Used at the beginning of the game, as well as to reset this object for each new trial.
     */
     {
+        // Gameplay.
         currentIum = startingIum;
         turnNumber = 0;
         floorSquaresMap = new Dictionary<Vector2, FloorSquare>();
@@ -299,11 +312,15 @@ public class TrialLogic : MonoBehaviour
         drawPile = new List<string>();
         hand = new List<string>();
         discardPile = new List<string>();
-        selectedCardId = null;
         isTrialWin = false;
         isTrialLoss = false;
         isTrialOver = false;
+        // User-interaction.
+        selectedCardId = null;
+        mouseDownGridIndices = null;
+        mouseUpGridIndices = null;
         isPauseModeOn = false;
+        isGameplayUserInputsFrozen = false;
     }
 
     private static void initializeFloor()

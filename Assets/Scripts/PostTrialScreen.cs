@@ -22,7 +22,7 @@ public class PostTrialScreen : MonoBehaviour
             postTrialText.text = "The Mass advanced.";
         } else if (TrialLogic.isTrialWin)
         {
-            postTrialText.text = "You stopped the Mass from advancing.";
+            postTrialText.text = $"You stopped the Mass from advancing.\n+ {CampaignLogic.cashRewardPerTrial} cash";
         } else
         {
             postTrialText.text = null;

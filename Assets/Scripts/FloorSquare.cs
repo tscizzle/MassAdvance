@@ -39,12 +39,22 @@ public class FloorSquare : MonoBehaviour
 
     void OnMouseDown()
     {
+        if (TrialLogic.isGameplayUserInputsFrozen)
+        {
+            return;
+        }
+        
         // Store which square was clicked down on.
         TrialLogic.mouseDownGridIndices = gridIndices;
     }
 
     void OnMouseUp()
     {
+        if (TrialLogic.isGameplayUserInputsFrozen)
+        {
+            return;
+        }
+        
         // Store which square was clicked up on.
         TrialLogic.mouseUpGridIndices = null;
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);

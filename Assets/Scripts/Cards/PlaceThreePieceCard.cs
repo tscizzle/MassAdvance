@@ -38,7 +38,7 @@ public class PlaceThreePieceCard : Card
         blockType = cardNameToBlockType[cardName];
         isFlipped = cardNameToIsFlipped[cardName];
         // Standard params.
-        iumCost = 5;
+        iumCost = 6;
         displayName = getDisplayName();
         description = blockTypeToDescription[blockType];
         isConsumable = true;

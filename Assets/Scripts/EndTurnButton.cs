@@ -9,6 +9,11 @@ public class EndTurnButton : MonoBehaviour
     public void clickEndTurn()
     /* Click handler for button that ends the turn. */
     {
+        if (TrialLogic.isGameplayUserInputsFrozen)
+        {
+            return;
+        }
+        
         StartCoroutine(TrialLogic.endTurn());
     }
 }
