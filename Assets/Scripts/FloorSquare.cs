@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using TMPro;
 
-public class FloorSquare : MonoBehaviour, IPointerClickHandler
+public class FloorSquare : MonoBehaviour
 {
     private static float gridSquareSize = 1; // in Unity units
     private static float gridSquareMargin = 0.01f;
@@ -37,22 +37,43 @@ public class FloorSquare : MonoBehaviour, IPointerClickHandler
         setSacredLine();
     }
 
-    /* PUBLIC API */
-
-    public void OnPointerClick(PointerEventData eventData)
-    /* Override this function of IPointerClickHandler. Triggers when this FloorSquare is clicked.
-    
-    :param PointerEventData eventData: This interface is defined by Unity.
-    */
+    void OnMouseDown()
     {
+        // Store which square was clicked down on.
+        TrialLogic.mouseDownGridIndices = gridIndices;
+    }
+
+    void OnMouseUp()
+    {
+        // Store which square was clicked up on.
+        TrialLogic.mouseUpGridIndices = null;
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit))
+        {
+            FloorSquare floorSquare = hit.transform.gameObject.GetComponent<FloorSquare>();
+            Block block = hit.transform.gameObject.GetComponent<Block>();
+            if (floorSquare != null)
+            {
+                TrialLogic.mouseUpGridIndices = floorSquare.gridIndices;
+            } else if (block != null)
+            {
+                TrialLogic.mouseUpGridIndices = block.gridIndices;
+            }
+        }
+
         if (String.IsNullOrEmpty(TrialLogic.selectedCardId))
         {
             return;
         }
-        
         Card selectedCard = TrialLogic.trialDeck[TrialLogic.selectedCardId].card;
-        selectedCard.playCard(gridIndices);
+        selectedCard.playCard();
+
+        TrialLogic.mouseDownGridIndices = null;
+        TrialLogic.mouseUpGridIndices = null;
     }
+
+    /* PUBLIC API */
 
     public void addStainTurns(int numTurns)
     /* Add more turns of stain to this FloorSquare.

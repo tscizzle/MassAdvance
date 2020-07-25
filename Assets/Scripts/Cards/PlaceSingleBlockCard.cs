@@ -36,7 +36,7 @@ public class PlaceSingleBlockCard : Card
         isConsumable = true;
     }
 
-    public override int getCostToPlay(Vector2 gridIndices)
+    public override int getCostToPlay()
     /* Use this card's normal cost, except double it if the targeted square is stained.
     
     See getCostToPlay on base class Card.
@@ -44,6 +44,7 @@ public class PlaceSingleBlockCard : Card
     {
         int costToPlace = iumCost;
 
+        Vector2 gridIndices = (Vector2)TrialLogic.mouseDownGridIndices;
         FloorSquare floorSquare = TrialLogic.floorSquaresMap[gridIndices];
         if (floorSquare.isStained())
         {
@@ -53,23 +54,31 @@ public class PlaceSingleBlockCard : Card
         return costToPlace;
     }
 
-    public override bool getIsAbleToPlay(Vector2 gridIndices)
+    public override bool getIsAbleToPlay()
     /* Return true as long as there is no block already in the targeted square.
     
     See getIsAbleToPlay on base class Card.
     */
     {
+        // Make sure the mouse down and up were on the same square.
+        Vector2 gridIndices = (Vector2)TrialLogic.mouseDownGridIndices;
+        if (TrialLogic.mouseUpGridIndices != gridIndices)
+        {
+            return false;
+        }
+
         BlockType? blockTypeThere = TrialLogic.getBlockTypeOfSquare(gridIndices);
         bool nothingIsThere = blockTypeThere == null;
         return nothingIsThere;
     }
 
-    public override void cardAction(Vector2 gridIndices)
+    public override void cardAction()
     /* Simply place a single block in the targeted square.
     
     See cardAction on base class Card.
     */
     {
+        Vector2 gridIndices = (Vector2)TrialLogic.mouseDownGridIndices;
         TrialLogic.placeBlock(blockType, gridIndices);
     }
 

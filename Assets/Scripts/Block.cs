@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class Block : MonoBehaviour, IPointerClickHandler
+public class Block : MonoBehaviour
 {
     public Material regularMaterial;
     public Material damagedMaterial;
@@ -36,27 +36,43 @@ public class Block : MonoBehaviour, IPointerClickHandler
         regularMaterial = GetComponent<Renderer>().material;
     }
 
-    void Update()
+    void OnMouseDown()
     {
-        
+        // Store which square was clicked down on.
+        TrialLogic.mouseDownGridIndices = gridIndices;
     }
 
-    /* PUBLIC API */
-
-    public void OnPointerClick(PointerEventData eventData)
-    /* Override this function of IPointerClickHandler. Triggers when this Block is clicked.
-    
-    :param PointerEventData eventData: This interface is defined by Unity.
-    */
+    void OnMouseUp()
     {
+        // Store which square was clicked up on.
+        TrialLogic.mouseUpGridIndices = null;
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit))
+        {
+            FloorSquare floorSquare = hit.transform.gameObject.GetComponent<FloorSquare>();
+            Block block = hit.transform.gameObject.GetComponent<Block>();
+            if (floorSquare != null)
+            {
+                TrialLogic.mouseUpGridIndices = floorSquare.gridIndices;
+            } else if (block != null)
+            {
+                TrialLogic.mouseUpGridIndices = block.gridIndices;
+            }
+        }
+
         if (String.IsNullOrEmpty(TrialLogic.selectedCardId))
         {
             return;
         }
-        
         Card selectedCard = TrialLogic.trialDeck[TrialLogic.selectedCardId].card;
-        selectedCard.playCard(gridIndices);
+        selectedCard.playCard();
+
+        TrialLogic.mouseDownGridIndices = null;
+        TrialLogic.mouseUpGridIndices = null;
     }
+
+    /* PUBLIC API */
 
     public void produce()
     /* Depending on the blockType, perform any production effects. */

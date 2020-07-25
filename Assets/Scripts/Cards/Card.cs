@@ -106,23 +106,28 @@ public class Card : MonoBehaviour, IPointerClickHandler
         TrialLogic.selectedCardId = TrialLogic.selectedCardId == cardId ? null : cardId;
     }
 
-    public void playCard(Vector2 gridIndices)
+    public void playCard()
     /* Check that there is enough ium to play this Card, perform this Card's Action, then discard it
         and unset the selected Card.
-    
-    :param Vector2 gridIndices: Square on the grid this Card is being applied to.
     */
     {
-        int costToPlay = getCostToPlay(gridIndices);
-        bool canAffordToPlay = TrialLogic.currentIum >= costToPlay;
-        bool isAbleToPlay = getIsAbleToPlay(gridIndices);
-        if (canAffordToPlay && isAbleToPlay)
+        bool isAbleToPlay = getIsAbleToPlay();
+        if (!isAbleToPlay)
         {
-            TrialLogic.gainIum(-costToPlay);
-            cardAction(gridIndices);
-            TrialLogic.discardCard(cardId);
-            TrialLogic.selectedCardId = null;
+            return;
         }
+        
+        int costToPlay = getCostToPlay();
+        bool canAffordToPlay = TrialLogic.currentIum >= costToPlay;
+        if (!canAffordToPlay)
+        {
+            return;
+        }
+
+        TrialLogic.gainIum(-costToPlay);
+        cardAction();
+        TrialLogic.discardCard(cardId);
+        TrialLogic.selectedCardId = null;
     }
 
     /* INTERFACE FOR SUBCLASSES TO OVERRIDE */
@@ -139,18 +144,16 @@ public class Card : MonoBehaviour, IPointerClickHandler
         
     }
 
-    public virtual int getCostToPlay(Vector2 gridIndices)
+    public virtual int getCostToPlay()
     /* Calculates the ium cost to play this Card at a particular square currently.
     
     May be overridden in each subclass.
-
-    :param Vector2 gridIndices: Square on the grid this Card is being applied to.
     */
     {
         return iumCost;
     }
 
-    public virtual bool getIsAbleToPlay(Vector2 gridIndices)
+    public virtual bool getIsAbleToPlay()
     /* Checks if this Card can be played at a particular square.
     
     May be overridden in each subclass.
@@ -163,12 +166,10 @@ public class Card : MonoBehaviour, IPointerClickHandler
         return false;
     }
 
-    public virtual void cardAction(Vector2 gridIndices)
+    public virtual void cardAction()
     /* Performs whatever action this Card is for.
     
     May be overridden in each subclass.
-
-    :param Vector2 gridIndices: Square on the grid this Card's is being applied to.
     */
     {
         

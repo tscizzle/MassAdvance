@@ -33,6 +33,8 @@ public class TrialLogic : MonoBehaviour
     public static List<string> hand;
     private static List<string> discardPile;
     public static string selectedCardId;
+    public static Vector2? mouseDownGridIndices;
+    public static Vector2? mouseUpGridIndices;
     public static bool isTrialWin;
     public static bool isTrialLoss;
     private static bool isTrialOver;

@@ -44,16 +44,19 @@ public class PlaceThreePieceCard : Card
         isConsumable = true;
     }
 
-    public override int getCostToPlay(Vector2 gridIndices)
+    public override int getCostToPlay()
     /* Use this card's normal cost, except double it if any of the squares it will be on are
         stained.
     
     See getCostToPlay on base class Card.
     */
     {
+        Vector2 mouseDownSquare = (Vector2)TrialLogic.mouseDownGridIndices;
+        Vector2 mouseUpSquare = (Vector2)TrialLogic.mouseUpGridIndices;
+
         int costToPlace = iumCost;
 
-        foreach (Vector2 square in getSquaresToPlaceOn(gridIndices))
+        foreach (Vector2 square in getSquaresToPlaceOn(mouseDownSquare, mouseUpSquare))
         {
             if (TrialLogic.floorSquaresMap.ContainsKey(square))
             {
@@ -69,15 +72,32 @@ public class PlaceThreePieceCard : Card
         return costToPlace;
     }
 
-    public override bool getIsAbleToPlay(Vector2 gridIndices)
+    public override bool getIsAbleToPlay()
     /* Return true as long as there is no block already in the squares the blocks would be placed.
     
     See getIsAbleToPlay on base class Card.
     */
     {
+        // Make sure mouse up was on the grid at all.
+        if (TrialLogic.mouseUpGridIndices == null)
+        {
+            return false;
+        }
+        // Make sure the mouse up was 1 away from the mouse down.
+        bool isValidInstruction = (
+            (Vector2)TrialLogic.mouseDownGridIndices - (Vector2)TrialLogic.mouseUpGridIndices
+        ).magnitude == 1;
+        if (!isValidInstruction)
+        {
+            return false;
+        }
+        
+        Vector2 mouseDownSquare = (Vector2)TrialLogic.mouseDownGridIndices;
+        Vector2 mouseUpSquare = (Vector2)TrialLogic.mouseUpGridIndices;
+
         bool allSquaresAvailable = true;
         
-        foreach (Vector2 square in getSquaresToPlaceOn(gridIndices))
+        foreach (Vector2 square in getSquaresToPlaceOn(mouseDownSquare, mouseUpSquare))
         {
             bool isBlockInTheWay = TrialLogic.getBlockTypeOfSquare(square) != null;
             bool isOutOfBounds = !TrialLogic.floorSquaresMap.ContainsKey(square);
@@ -91,13 +111,15 @@ public class PlaceThreePieceCard : Card
         return allSquaresAvailable;
     }
 
-    public override void cardAction(Vector2 gridIndices)
-    /* Place blocks in a 3-cube shape of the number "7".
+    public override void cardAction()
+    /* Place blocks in a 3-cube shape of the number "7" or letter "L".
     
     See cardAction on base class Card.
     */
     {
-        foreach (Vector2 square in getSquaresToPlaceOn(gridIndices))
+        Vector2 mouseDownSquare = (Vector2)TrialLogic.mouseDownGridIndices;
+        Vector2 mouseUpSquare = (Vector2)TrialLogic.mouseUpGridIndices;
+        foreach (Vector2 square in getSquaresToPlaceOn(mouseDownSquare, mouseUpSquare))
         {
             TrialLogic.placeBlock(blockType, square);
         }
@@ -134,20 +156,49 @@ public class PlaceThreePieceCard : Card
 
     /* HELPERS */
 
-    private List<Vector2> getSquaresToPlaceOn(Vector2 gridIndices)
-    /* Given an anchor position, get the squares this card would place blocks on (the L shape).
+    private List<Vector2> getSquaresToPlaceOn(Vector2 mouseDownSquare, Vector2 mouseUpSquare)
+    /* Given where the mouse clicked down and up, get the squares this card would place blocks on.
     
-    :param Vector2 gridIndices: Position this group of blocks is anchored at, the "top-left" square.
+    :param Vector2 mouseDownSquare: Before rotating this shape, take the top-left block. This arg
+        is the grid square to put that block on.
+    :param Vector2 mouseUpSquare: Before rotating this shape, take the top-right block. This arg is
+        the grid square to put that block on.
     
     :returns List<Vector2>: List of squares where this card would place blocks.
     */
     {
-        float thirdSquareX = isFlipped ? gridIndices.x : gridIndices.x + 1;
-        return new List<Vector2> {
-            gridIndices,
-            new Vector2(gridIndices.x + 1, gridIndices.y),
-            new Vector2(thirdSquareX, gridIndices.y - 1),
-        };
+        // 2 of the blocks to place are always where the mouse went down and where it went up.
+        List<Vector2> squares = new List<Vector2> { mouseDownSquare, mouseUpSquare };
+
+        // Add the 3rd square based on isFlipped as well as which direction the mouse up is from the
+        // mouse down.
+        float thirdSquareX = -1;
+        float thirdSquareY = -1;
+        // If mouse up is to the right of mouse down.
+        if (mouseUpSquare.x == mouseDownSquare.x + 1)
+        {
+            thirdSquareX = isFlipped ? mouseDownSquare.x : mouseUpSquare.x;
+            thirdSquareY = mouseDownSquare.y - 1;
+        // If mouse up is to the left of mouse down.
+        } else if (mouseUpSquare.x == mouseDownSquare.x - 1)
+        {
+            thirdSquareX = isFlipped ? mouseDownSquare.x : mouseUpSquare.x;
+            thirdSquareY = mouseDownSquare.y + 1;
+        // If mouse up is below mouse down.
+        } else if (mouseUpSquare.y == mouseDownSquare.y - 1)
+        {
+            thirdSquareX = mouseDownSquare.x - 1;
+            thirdSquareY = isFlipped ? mouseDownSquare.y : mouseUpSquare.y;
+        // If mouse up is above mouse down.
+        } else if (mouseUpSquare.y == mouseDownSquare.y + 1)
+        {
+            thirdSquareX = mouseDownSquare.x + 1;
+            thirdSquareY = isFlipped ? mouseDownSquare.y : mouseUpSquare.y;
+        }
+
+        squares.Add(new Vector2(thirdSquareX, thirdSquareY));
+
+        return squares;
     }
 
     private string getDisplayName()

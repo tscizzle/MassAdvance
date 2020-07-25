@@ -18,18 +18,27 @@ public class PunchCard : Card
         isConsumable = false;
     }
 
-    public override bool getIsAbleToPlay(Vector2 gridIndices)
+    public override bool getIsAbleToPlay()
     /* Punch can be played anywhere.
     
     See getIsAbleToPlay on base class Card.
     */
     {
+        // Make sure the mouse down and up were on the same square.
+        Vector2 gridIndices = (Vector2)TrialLogic.mouseDownGridIndices;
+        if (TrialLogic.mouseUpGridIndices != gridIndices)
+        {
+            return false;
+        }
+
         return true;
     }
 
-    public override void cardAction(Vector2 gridIndices)
+    public override void cardAction()
     /* See cardAction on base class Card. */
     {
+        Vector2 gridIndices = (Vector2)TrialLogic.mouseDownGridIndices;
+
         int centerX = (int)gridIndices.x;
         int centerY = (int)gridIndices.y;
         foreach (int xIdx in Enumerable.Range(centerX - 1, 3))
