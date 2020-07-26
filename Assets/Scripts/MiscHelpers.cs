@@ -30,6 +30,32 @@ public class MiscHelpers : MonoBehaviour
         return randElement;
     }
 
+    public static T getWeightedChoice<T>(Dictionary<T, float> frequencies, System.Random rand)
+    /* Get a random element from a collection.
+    
+    :param Dictionary<T, float> frequencies: Each candidate choice is mapped to a relative weight.
+        Proportionally larger weights grant proportionally higher probability of being chosen.
+    :param System.Random rand: So if we call this many times, we don't keep making a new Random().
+
+    :returns T randElement:
+    */
+    {
+        float weightsTotal = frequencies.Values.Sum();
+        float randTarget = (float)(rand.NextDouble() * weightsTotal);
+        float weightsSoFar = 0;
+        foreach (KeyValuePair<T, float> kvp in frequencies)
+        {
+            float candidateWeight = kvp.Value;
+            weightsSoFar += candidateWeight;
+            if (weightsSoFar > randTarget)
+            {
+                T candidate = kvp.Key;
+                return candidate;
+            }
+        }
+        return frequencies.First().Key;
+    }
+
     public static Vector2[] getNeighbors(Vector2 gridIndices)
     /* Get neighboring squares (no diagonals).
     

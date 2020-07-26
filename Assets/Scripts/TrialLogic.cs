@@ -21,6 +21,7 @@ public class TrialLogic : MonoBehaviour
     private static int startingHandSize;
     private static int startingUnstainedRows;
     private static List<Vector2> startingMassSquares;
+    private static List<MassSpecial> activeMassSpecials;
     // State (gameplay).
     public static int currentIum;
     public static int turnNumber;
@@ -125,8 +126,6 @@ public class TrialLogic : MonoBehaviour
         yield return productionPhase();
         
         yield return massSpreadingPhase();
-
-        yield return destructionPhase();
 
         clearBlockCombos();
 
@@ -275,7 +274,7 @@ public class TrialLogic : MonoBehaviour
         numGridSquaresWide = 6;
         numGridSquaresDeep = 10;
         turnsToSurvive = 14;
-        baseIumPerTurn = 2;
+        baseIumPerTurn = 3;
         baseDrawPerTurn = 1;
         startingIum = 3;
         startingHandSize = 4;
@@ -285,18 +284,25 @@ public class TrialLogic : MonoBehaviour
             new Vector2((numGridSquaresWide / 2) - 1, numGridSquaresDeep - 1),
             new Vector2(numGridSquaresWide / 2, numGridSquaresDeep - 1)
         };
+        activeMassSpecials = new List<MassSpecial>();
 
         if (trialNumber >= 2)
         {
             turnsToSurvive = 16;
+            
             startingMassSquares.Add(new Vector2(0, numGridSquaresDeep - 1));
             startingMassSquares.Add(new Vector2(numGridSquaresWide - 1, numGridSquaresDeep - 1));
+            
+            activeMassSpecials.Add(MassSpecial.EXTRA_START_CORNER);
         }
         if (trialNumber >= 3)
         {
             turnsToSurvive = 20;
+            
             startingMassSquares.Add(new Vector2(0, numGridSquaresDeep - 3));
             startingMassSquares.Add(new Vector2(numGridSquaresWide - 1, numGridSquaresDeep - 3));
+
+            activeMassSpecials.Add(MassSpecial.EXTRA_SPREAD_PHASE);
         }
     }
 
@@ -510,6 +516,27 @@ public class TrialLogic : MonoBehaviour
         }
     }
 
+    private static bool isNeighboredByMass(Vector2 gridIndices)
+    /* Return whether or not any neighbors (no diagonals, no self) are mass.
+    
+    :param Vector2 gridIndices: Position of square whose neighbors we are checking.
+
+    :returns bool:
+    */
+    {
+        bool didFindMass = false;
+        Vector2[] neighbors = MiscHelpers.getNeighbors(gridIndices);
+        foreach (Vector2 neighbor in neighbors)
+        {
+            if (getBlockTypeOfSquare(neighbor) == BlockType.MASS)
+            {
+                didFindMass = true;
+            }
+        }
+
+        return didFindMass;
+    }
+
     private static List<Vector2> getNextMassTargets()
     /* Get a list of all squares that current mass blocks border, which are the squares it expands
         to or attacks if there are player blocks there. Return in standard order.
@@ -551,54 +578,6 @@ public class TrialLogic : MonoBehaviour
         return nextTargets;
     }
 
-    private static bool isNeighboredByMass(Vector2 gridIndices)
-    /* Return whether or not any neighbors (no diagonals, no self) are mass.
-    
-    :param Vector2 gridIndices: Position of square whose neighbors we are checking.
-
-    :returns bool:
-    */
-    {
-        bool didFindMass = false;
-        Vector2[] neighbors = MiscHelpers.getNeighbors(gridIndices);
-        foreach (Vector2 neighbor in neighbors)
-        {
-            if (getBlockTypeOfSquare(neighbor) == BlockType.MASS)
-            {
-                didFindMass = true;
-            }
-        }
-
-        return didFindMass;
-    }
-
-    private static IEnumerator massSpreadingPhase()
-    /* Play the enemy's turn, where the mass spreads to empty squares and attacks the player's
-        blocks.
-    */
-    {
-        List<Vector2> nextTargets = getNextMassTargets();
-        
-        foreach (Vector2 gridIndices in nextTargets)
-        {
-            string text;
-            BlockType? blockType = getBlockTypeOfSquare(gridIndices);
-            // If nothing is there, expand the mass into it.
-            // Otherwise, attack the player block that's there.
-            if (blockType == null)
-            {
-                placeBlock(BlockType.MASS, gridIndices);
-                text = "Spread";
-            } else
-            {
-                Block block = placedBlocks[gridIndices];
-                block.attack();
-                text = "Attack";
-            }
-            yield return Pointer.displayPointer(gridIndices, text: text);
-        }
-    }
-
     private static List<Block> getBlocksQueuedToBeDestroyed()
     /* Get a list of all Blocks that are about to be destroyed.
     
@@ -628,7 +607,7 @@ public class TrialLogic : MonoBehaviour
         return blocksToBeDestroyed;
     }
 
-    private static IEnumerator destructionPhase()
+    private static IEnumerator destroyQueuedBlocks()
     /* Destroy all the player blocks that were queued up to be destroyed during mass-spreading. */
     {
         List<Block> blocksToBeDestroyed = getBlocksQueuedToBeDestroyed();
@@ -653,6 +632,40 @@ public class TrialLogic : MonoBehaviour
                     }
                 }
             }
+        }
+    }
+
+    private static IEnumerator massSpreadingPhase()
+    /* Play the enemy's turn, where the mass spreads to empty squares and attacks the player's
+        blocks.
+    */
+    {
+        int numSpreads = activeMassSpecials.Contains(MassSpecial.EXTRA_SPREAD_PHASE) ? 2 : 1;
+
+        foreach (int _ in Enumerable.Range(0, numSpreads))
+        {
+            List<Vector2> nextTargets = getNextMassTargets();
+            
+            foreach (Vector2 gridIndices in nextTargets)
+            {
+                string text;
+                BlockType? blockType = getBlockTypeOfSquare(gridIndices);
+                // If nothing is there, expand the mass into it.
+                // Otherwise, attack the player block that's there.
+                if (blockType == null)
+                {
+                    placeBlock(BlockType.MASS, gridIndices);
+                    text = "Spread";
+                } else
+                {
+                    Block block = placedBlocks[gridIndices];
+                    block.attack();
+                    text = "Attack";
+                }
+                yield return Pointer.displayPointer(gridIndices, text: text);
+            }
+
+            yield return destroyQueuedBlocks();
         }
     }
 
@@ -749,4 +762,10 @@ public class TrialLogic : MonoBehaviour
 
         return fakeDeck;
     }
+}
+
+public enum MassSpecial
+{
+    EXTRA_START_CORNER,
+    EXTRA_SPREAD_PHASE,
 }

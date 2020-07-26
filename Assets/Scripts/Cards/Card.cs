@@ -7,6 +7,7 @@ using UnityEngine.EventSystems;
 
 public class Card : MonoBehaviour, IPointerClickHandler
 {
+    // Class-wide parameters.
     private static Color cardTextColor = new Color(80/255, 80/255, 80/255);
     private static int iumCostFontSize = 14;
     private static int displayNameFontSize = 8;
@@ -14,6 +15,7 @@ public class Card : MonoBehaviour, IPointerClickHandler
     private static float cardHeight;
     private static float cardWidth;
     private static float highlightedCardSizeMultiplier;
+    private static float shopCardSizeMultiplier;
     private static float cardAreaBottomBound;
     private static float cardAreaTopBound;
     private static float cardAreaRightBound;
@@ -30,11 +32,11 @@ public class Card : MonoBehaviour, IPointerClickHandler
     private GameObject descriptionObj;
     private GameObject handObj;
     private Canvas canvas;
-    // Parameters.
+    // Card-specific parameters.
     public string cardId;
     public string cardName;
     public bool isInTrial;
-    // Parameters to be set by each subclass for that type of card.
+    // Card-specific parameters to be set by each subclass for that type of card.
     public int iumCost;
     public string displayName;
     public string description;
@@ -51,8 +53,9 @@ public class Card : MonoBehaviour, IPointerClickHandler
         canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
 
         cardHeight = 70;
-        cardWidth = 100;
+        cardWidth = 110;
         highlightedCardSizeMultiplier = 1.3f;
+        shopCardSizeMultiplier = 1.5f;
         cardAreaBottomBound = Screen.height * 0.05f;
         cardAreaTopBound = Screen.height * 0.7f;
         cardAreaRightBound = cardWidth * canvas.scaleFactor;
@@ -77,7 +80,13 @@ public class Card : MonoBehaviour, IPointerClickHandler
         displayNameObj.GetComponent<Text>().text = displayName;
         descriptionObj.GetComponent<Text>().text = description;
 
-        setCardSize(1);
+        if (isInTrial)
+        {
+            setCardSize(1);
+        } else
+        {
+            setCardSize(shopCardSizeMultiplier);
+        }
     }
 
     void Update()
@@ -276,6 +285,10 @@ public class Card : MonoBehaviour, IPointerClickHandler
         iconObj.GetComponent<RectTransform>().sizeDelta = iconSize;
 
         descriptionObj.GetComponent<RectTransform>().sizeDelta = iconSize;
+
+        iumCostObj.GetComponent<Text>().fontSize = (int)(iumCostFontSize * multiplier);
+        displayNameObj.GetComponent<Text>().fontSize = (int)(displayNameFontSize * multiplier);
+        descriptionObj.GetComponent<Text>().fontSize = (int)(descriptionFontSize * multiplier);
     }
 
     private void growTowardSizeMultiplier()

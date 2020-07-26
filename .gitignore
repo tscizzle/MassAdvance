@@ -60,3 +60,11 @@ crashlytics-build.properties
 
 # Visual Studio something directory
 .vscode/
+
+### END OF COPIED ONE
+
+### NOW MY OWN STUFF
+
+# potential names for my built folder that I share with people
+Build.zip
+MassAdvance.zip

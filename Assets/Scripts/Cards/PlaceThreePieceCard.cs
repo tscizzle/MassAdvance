@@ -35,7 +35,7 @@ public class PlaceThreePieceCard : Card
         blockType = cardNameToBlockType[cardName];
         isFlipped = cardNameToIsFlipped[cardName];
         // Standard params.
-        iumCost = 6;
+        iumCost = blockTypeToIumCost[blockType];
         displayName = getDisplayName();
         description = blockTypeToDescription[blockType];
         isConsumable = true;
@@ -251,6 +251,13 @@ public class PlaceThreePieceCard : Card
         { getThreePieceCardName(BlockType.BLUE, isFlipped: true), true },
         { getThreePieceCardName(BlockType.YELLOW, isFlipped: true), true },
         { getThreePieceCardName(BlockType.RED, isFlipped: true), true },
+    };
+    
+    private static Dictionary<BlockType, int> blockTypeToIumCost = new Dictionary<BlockType, int>
+    {
+        { BlockType.BLUE, 5 },
+        { BlockType.YELLOW, 6 },
+        { BlockType.RED, 4 },
     };
     
     private static Dictionary<BlockType, string> blockTypeToDescription = new Dictionary<BlockType, string>

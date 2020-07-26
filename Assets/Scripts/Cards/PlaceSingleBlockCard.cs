@@ -27,7 +27,7 @@ public class PlaceSingleBlockCard : Card
         // Params unique to this subclass.
         blockType = cardNameToBlockType[cardName];
         // Standard params.
-        iumCost = 2;
+        iumCost = blockTypeToIumCost[blockType];
         displayName = blockTypeToDisplayName[blockType];
         description = blockTypeToDescription[blockType];
         isConsumable = true;
@@ -131,6 +131,13 @@ public class PlaceSingleBlockCard : Card
         { getSingleBlockCardName(BlockType.BLUE), BlockType.BLUE },
         { getSingleBlockCardName(BlockType.YELLOW), BlockType.YELLOW },
         { getSingleBlockCardName(BlockType.RED), BlockType.RED },
+    };
+    
+    private static Dictionary<BlockType, int> blockTypeToIumCost = new Dictionary<BlockType, int>
+    {
+        { BlockType.BLUE, 2 },
+        { BlockType.YELLOW, 3 },
+        { BlockType.RED, 1 },
     };
     
     private static Dictionary<BlockType, string> blockTypeToDisplayName = new Dictionary<BlockType, string>
