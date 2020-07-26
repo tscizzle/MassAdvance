@@ -18,7 +18,7 @@ public class RepairBlockCard : Card
     }
 
     public override bool getIsAbleToPlay()
-    /* Return true if there is a player's Block in the targeted square.
+    /* Return true if there is a player's block in the targeted square.
     
     See getIsAbleToPlay on base class Card.
     */

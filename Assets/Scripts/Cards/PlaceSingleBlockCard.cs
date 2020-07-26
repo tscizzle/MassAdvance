@@ -14,9 +14,6 @@ public class PlaceSingleBlockCard : Card
     public override void Start()
     {
         base.Start();
-
-        Color backgroundColor = blockTypeToBackgroundColor[blockType];
-        backgroundObj.GetComponent<Image>().color = backgroundColor;
         
         Color iconColor = blockTypeToIconColor[blockType];
         iconObj.GetComponent<Image>().color = iconColor;

@@ -12,9 +12,6 @@ public class PlaceThreePieceCard : Card
     {
         base.Start();
 
-        Color backgroundColor = PlaceSingleBlockCard.blockTypeToBackgroundColor[blockType];
-        backgroundObj.GetComponent<Image>().color = backgroundColor;
-        
         Color iconColor = PlaceSingleBlockCard.blockTypeToIconColor[blockType];
         iconObj.GetComponent<Image>().color = iconColor;
 
