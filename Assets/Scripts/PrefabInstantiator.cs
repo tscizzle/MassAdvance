@@ -19,6 +19,7 @@ public class PrefabInstantiator : MonoBehaviour
     public GameObject armageddonCardPrefab;
     public GameObject punchCardPrefab;
     public GameObject catapultCardPrefab;
+    public GameObject machineGunCardPrefab;
 
     void Awake()
     {
@@ -162,6 +163,9 @@ public class PrefabInstantiator : MonoBehaviour
         } else if (cardName == CatapultCard.catapultCardName)
         {
             return catapultCardPrefab;
+        } else if (cardName == MachineGunCard.machineGunCardName)
+        {
+            return machineGunCardPrefab;
         } else if (PlaceSingleBlockCard.isCardNameThisCard(cardName))
         {
             return placeSingleBlockCardPrefab;

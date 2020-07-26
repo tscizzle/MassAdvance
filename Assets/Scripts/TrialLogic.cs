@@ -749,7 +749,7 @@ public class TrialLogic : MonoBehaviour
         {
             string cardId = MiscHelpers.getRandomId();
             // fakeDeck[cardId] = new CardInfo(cardName, cardId);
-            fakeDeck[cardId] = new CardInfo("catapult", cardId);
+            fakeDeck[cardId] = new CardInfo("machine_gun", cardId);
         }
 
         return fakeDeck;

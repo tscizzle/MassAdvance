@@ -1046,6 +1046,8 @@ MonoBehaviour:
     type: 3}
   catapultCardPrefab: {fileID: 2083147070679297678, guid: 9670aa430306d541393e9d2e79c036c2,
     type: 3}
+  machineGunCardPrefab: {fileID: 3151726573354023590, guid: 3c1a23517ed130a8195041a66e4bbdbc,
+    type: 3}
 --- !u!4 &1431573956
 Transform:
   m_ObjectHideFlags: 0
