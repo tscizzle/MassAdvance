@@ -1667,6 +1667,8 @@ MonoBehaviour:
     type: 3}
   punchCardPrefab: {fileID: 8036332401685844875, guid: 6a6de6be3ddeede20b2ffa76eaef2ba2,
     type: 3}
+  catapultCardPrefab: {fileID: 2083147070679297678, guid: 9670aa430306d541393e9d2e79c036c2,
+    type: 3}
 --- !u!4 &2081584010
 Transform:
   m_ObjectHideFlags: 0

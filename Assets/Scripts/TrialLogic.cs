@@ -748,17 +748,9 @@ public class TrialLogic : MonoBehaviour
         foreach (string cardName in ShopLogic.cardNameToBaseCashValue.Keys)
         {
             string cardId = MiscHelpers.getRandomId();
-            fakeDeck[cardId] = new CardInfo(cardName, cardId);
+            // fakeDeck[cardId] = new CardInfo(cardName, cardId);
+            fakeDeck[cardId] = new CardInfo("catapult", cardId);
         }
-
-        string cardId1 = MiscHelpers.getRandomId();
-        fakeDeck[cardId1] = new CardInfo(PlaceThreePieceCard.getThreePieceCardName(BlockType.BLUE, isFlipped: true), cardId1);
-        string cardId2 = MiscHelpers.getRandomId();
-        fakeDeck[cardId2] = new CardInfo(PlaceThreePieceCard.getThreePieceCardName(BlockType.BLUE), cardId2);
-        string cardId3 = MiscHelpers.getRandomId();
-        fakeDeck[cardId3] = new CardInfo(PlaceThreePieceCard.getThreePieceCardName(BlockType.RED, isFlipped: true), cardId3);
-        string cardId4 = MiscHelpers.getRandomId();
-        fakeDeck[cardId4] = new CardInfo(PlaceThreePieceCard.getThreePieceCardName(BlockType.RED), cardId4);
 
         return fakeDeck;
     }

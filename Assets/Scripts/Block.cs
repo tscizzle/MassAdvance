@@ -171,6 +171,26 @@ public class Block : MonoBehaviour
         Destroy(gameObject);
     }
 
+    public void shift(Vector2 newGridIndices)
+    /* Move this block to a new square.
+    
+    :param Vector2 newGridIndices:
+    */
+    {
+        // Reposition this block visually.
+        Vector3 currentPosition = transform.position;
+        Vector3 newPosition = FloorSquare.getGridSquareCenter(newGridIndices);
+        newPosition.y = currentPosition.y;
+        transform.position = newPosition;
+
+        // Update the trial's knowledge of this block's placement.
+        TrialLogic.placedBlocks[newGridIndices] = TrialLogic.placedBlocks[gridIndices];
+        TrialLogic.placedBlocks.Remove(gridIndices);
+
+        // Reset this block's stored grid indices.
+        gridIndices = newGridIndices;
+    }
+
     public static bool isProductive(BlockType? blockType)
     /* Return whether or not this block type has a produce effect.
     

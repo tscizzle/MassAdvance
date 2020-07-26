@@ -18,6 +18,7 @@ public class PrefabInstantiator : MonoBehaviour
     public GameObject washFloorSquareCardPrefab;
     public GameObject armageddonCardPrefab;
     public GameObject punchCardPrefab;
+    public GameObject catapultCardPrefab;
 
     void Awake()
     {
@@ -158,6 +159,9 @@ public class PrefabInstantiator : MonoBehaviour
         } else if (cardName == PunchCard.punchCardName)
         {
             return punchCardPrefab;
+        } else if (cardName == CatapultCard.catapultCardName)
+        {
+            return catapultCardPrefab;
         } else if (PlaceSingleBlockCard.isCardNameThisCard(cardName))
         {
             return placeSingleBlockCardPrefab;

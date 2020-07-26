@@ -13,7 +13,7 @@ public class WashFloorSquareCard : Card
     {
         iumCost = 0;
         displayName = "Wash";
-        description = "Remove 1 turn of stain.";
+        description = "Remove a square's stain.";
         isConsumable = false;
     }
 
@@ -40,6 +40,6 @@ public class WashFloorSquareCard : Card
     {
         Vector2 gridIndices = (Vector2)TrialLogic.mouseDownGridIndices;
         FloorSquare floorSquare = TrialLogic.floorSquaresMap[gridIndices];
-        floorSquare.addStainTurns(-1);
+        floorSquare.addStainTurns(-floorSquare.numTurnsStained);
     }
 }

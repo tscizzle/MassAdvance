@@ -301,7 +301,8 @@ public class ShopLogic : MonoBehaviour
         { RepairBlockCard.repairBlockCardName, 300 },
         { WashFloorSquareCard.washFloorSquareCardName, 300 },
         { ArmageddonCard.armageddonCardName, 550 },
-        { PunchCard.punchCardName, 1000 }
+        { PunchCard.punchCardName, 1000 },
+        { CatapultCard.catapultCardName, 400 },
     };
 
     public static Dictionary<string, float> cardNameToFrequency = new Dictionary<string, float>
@@ -318,6 +319,7 @@ public class ShopLogic : MonoBehaviour
         { RepairBlockCard.repairBlockCardName, 1 },
         { WashFloorSquareCard.washFloorSquareCardName, 1 },
         { ArmageddonCard.armageddonCardName, 1 },
-        { PunchCard.punchCardName, 1 }
+        { PunchCard.punchCardName, 1 },
+        { CatapultCard.catapultCardName, 1 },
     };
 }
