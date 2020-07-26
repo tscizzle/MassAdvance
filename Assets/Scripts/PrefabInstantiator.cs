@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class PrefabInstantiator : MonoBehaviour
 {
-    // Global var that even a prefab can reference. Will be assigned our 1 instance of MiscHelpers.
+    // Global var that even a prefab can reference. Will be assigned our 1 instance of
+    // PrefabInstantiator.
     public static PrefabInstantiator P;
 
     public GameObject blockPrefab;
@@ -20,7 +21,8 @@ public class PrefabInstantiator : MonoBehaviour
 
     void Awake()
     {
-        // Since there should only be 1 PrefabInstantiator instance, assign this instance to a global var.
+        // Since there should only be 1 PrefabInstantiator instance, assign this instance to a
+        // global var.
         P = this;
     }
 

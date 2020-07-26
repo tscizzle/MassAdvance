@@ -36,6 +36,7 @@ public class TrialLogic : MonoBehaviour
     public static bool isTrialLoss;
     private static bool isTrialOver;
     // State (user-interaction)
+    public static bool isSetupFinished;
     public static string selectedCardId;
     public static Vector2? mouseDownGridIndices;
     public static Vector2? mouseUpGridIndices;
@@ -73,6 +74,8 @@ public class TrialLogic : MonoBehaviour
         startTurn();
 
         setGameplayUserInputsFrozen(false);
+
+        isSetupFinished = true;
     }
 
     /* PUBLIC API */
@@ -316,6 +319,7 @@ public class TrialLogic : MonoBehaviour
         isTrialLoss = false;
         isTrialOver = false;
         // User-interaction.
+        isSetupFinished = false;
         selectedCardId = null;
         mouseDownGridIndices = null;
         mouseUpGridIndices = null;
