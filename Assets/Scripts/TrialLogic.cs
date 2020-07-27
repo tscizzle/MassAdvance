@@ -125,6 +125,8 @@ public class TrialLogic : MonoBehaviour
 
         TrialLogic.selectedCardId = null;
 
+        currentIum = 0;
+
         discardHand();
 
         decrementStain();
@@ -290,7 +292,7 @@ public class TrialLogic : MonoBehaviour
         numGridSquaresDeep = 8;
         turnsToSurvive = 10;
         startingIum = 3;
-        baseIumPerTurn = 3;
+        baseIumPerTurn = 5;
         startingHandSize = 5;
         baseDrawPerTurn = 4;
         maxHandSize = 15;
@@ -706,6 +708,7 @@ public class TrialLogic : MonoBehaviour
     /* Since combos are evaluated anew each turn, unregister the combos we identified this turn. */
     {
         blockCombosKeyedByAnchor.Clear();
+        blockCombosKeyedByBlock.Clear();
     }
 
     private static void setNumSpreads()
