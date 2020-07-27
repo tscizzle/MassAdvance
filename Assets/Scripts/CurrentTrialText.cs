@@ -8,5 +8,10 @@ public class CurrentTrialText : MonoBehaviour
     void Update()
     {
         GetComponent<Text>().text = $"Trial {CampaignLogic.trialNumber}";
+        
+        if (TrialLogic.isTrialWin)
+        {
+            transform.parent.GetComponent<Image>().color = CurrentTurnText.winningColor;
+        }
     }
 }

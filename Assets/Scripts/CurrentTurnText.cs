@@ -13,8 +13,7 @@ public class CurrentTurnText : MonoBehaviour
         
         if (TrialLogic.isTrialWin)
         {
-            Transform background = transform.parent;
-            background.GetComponent<Image>().color = winningColor;
+            transform.parent.GetComponent<Image>().color = winningColor;
         }
     }
 }

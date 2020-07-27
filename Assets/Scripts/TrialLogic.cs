@@ -15,12 +15,14 @@ public class TrialLogic : MonoBehaviour
     public static int numGridSquaresWide;
     public static int numGridSquaresDeep;
     public static int turnsToSurvive;
-    private static int baseIumPerTurn;
+    public static int baseIumPerTurn;
     private static int baseDrawPerTurn;
     private static int startingIum;
     private static int startingHandSize;
     private static int startingUnstainedRows;
     private static List<Vector2> startingMassSquares;
+    private static int startingNumSpreads;
+    private static int numTurnsPerNumSpreadIncrease;
     private static List<MassSpecial> activeMassSpecials;
     // State (gameplay).
     public static int currentIum;
@@ -33,6 +35,7 @@ public class TrialLogic : MonoBehaviour
     private static List<string> drawPile;
     public static List<string> hand;
     private static List<string> discardPile;
+    public static int currentNumSpreads;
     public static bool isTrialWin;
     public static bool isTrialLoss;
     private static bool isTrialOver;
@@ -128,6 +131,8 @@ public class TrialLogic : MonoBehaviour
         yield return massSpreadingPhase();
 
         clearBlockCombos();
+
+        setNumSpreads();
 
         evaluateTrialEndConditions();
 
@@ -284,6 +289,8 @@ public class TrialLogic : MonoBehaviour
             new Vector2((numGridSquaresWide / 2) - 1, numGridSquaresDeep - 1),
             new Vector2(numGridSquaresWide / 2, numGridSquaresDeep - 1)
         };
+        startingNumSpreads = 1;
+        numTurnsPerNumSpreadIncrease = 5;
         activeMassSpecials = new List<MassSpecial>();
 
         if (trialNumber >= 2)
@@ -292,8 +299,6 @@ public class TrialLogic : MonoBehaviour
             
             startingMassSquares.Add(new Vector2(0, numGridSquaresDeep - 1));
             startingMassSquares.Add(new Vector2(numGridSquaresWide - 1, numGridSquaresDeep - 1));
-            
-            activeMassSpecials.Add(MassSpecial.EXTRA_START_CORNER);
         }
         if (trialNumber >= 3)
         {
@@ -301,8 +306,6 @@ public class TrialLogic : MonoBehaviour
             
             startingMassSquares.Add(new Vector2(0, numGridSquaresDeep - 3));
             startingMassSquares.Add(new Vector2(numGridSquaresWide - 1, numGridSquaresDeep - 3));
-
-            activeMassSpecials.Add(MassSpecial.EXTRA_SPREAD_PHASE);
         }
     }
 
@@ -321,6 +324,7 @@ public class TrialLogic : MonoBehaviour
         drawPile = new List<string>();
         hand = new List<string>();
         discardPile = new List<string>();
+        currentNumSpreads = startingNumSpreads;
         isTrialWin = false;
         isTrialLoss = false;
         isTrialOver = false;
@@ -627,7 +631,7 @@ public class TrialLogic : MonoBehaviour
                 {
                     if (BlockCombo.hasDestroyEffect(blockCombo.blockComboType))
                     {
-                        blockCombo.onBlockDestroy();
+                        blockCombo.onBlockDestroy(block);
                         yield return Pointer.displayPointer(gridIndices, "Combo Destroy");
                     }
                 }
@@ -640,9 +644,7 @@ public class TrialLogic : MonoBehaviour
         blocks.
     */
     {
-        int numSpreads = activeMassSpecials.Contains(MassSpecial.EXTRA_SPREAD_PHASE) ? 2 : 1;
-
-        foreach (int _ in Enumerable.Range(0, numSpreads))
+        foreach (int _ in Enumerable.Range(0, currentNumSpreads))
         {
             List<Vector2> nextTargets = getNextMassTargets();
             
@@ -673,6 +675,15 @@ public class TrialLogic : MonoBehaviour
     /* Since combos are evaluated anew each turn, unregister the combos we identified this turn. */
     {
         blockCombosKeyedByAnchor.Clear();
+    }
+
+    private static void setNumSpreads()
+    /* Based on how many turns have passed, set the number of mass spreadings that should happen
+        next turn.
+    */
+    {
+        int additionalSpreads = (int)Mathf.Floor(turnNumber / numTurnsPerNumSpreadIncrease);
+        currentNumSpreads = startingNumSpreads + additionalSpreads;
     }
 
     private static void evaluateTrialEndConditions()
@@ -758,6 +769,5 @@ public class TrialLogic : MonoBehaviour
 
 public enum MassSpecial
 {
-    EXTRA_START_CORNER,
-    EXTRA_SPREAD_PHASE,
+    // TODO: list some mass specials here
 }

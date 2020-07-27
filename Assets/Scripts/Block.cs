@@ -191,6 +191,21 @@ public class Block : MonoBehaviour
         gridIndices = newGridIndices;
     }
 
+    public void destroyNeighboringMass()
+    /* Remove mass Blocks that neighbor this Block. */
+    {
+        Vector2[] neighbors = MiscHelpers.getNeighbors(gridIndices);
+        foreach (Vector2 neighborIndices in neighbors)
+        {
+            BlockType? neighborBlockType = TrialLogic.getBlockTypeOfSquare(neighborIndices);
+            if (neighborBlockType == BlockType.MASS)
+            {
+                Block neighborBlock = TrialLogic.placedBlocks[neighborIndices];
+                neighborBlock.destroy();
+            }
+        }
+    }
+
     public static bool isProductive(BlockType? blockType)
     /* Return whether or not this block type has a produce effect.
     
@@ -214,21 +229,6 @@ public class Block : MonoBehaviour
     }
 
     /* HELPERS */
-
-    private void destroyNeighboringMass()
-    /* Remove mass Blocks that neighbor this Block. */
-    {
-        Vector2[] neighbors = MiscHelpers.getNeighbors(gridIndices);
-        foreach (Vector2 neighborIndices in neighbors)
-        {
-            BlockType? neighborBlockType = TrialLogic.getBlockTypeOfSquare(neighborIndices);
-            if (neighborBlockType == BlockType.MASS)
-            {
-                Block neighborBlock = TrialLogic.placedBlocks[neighborIndices];
-                neighborBlock.destroy();
-            }
-        }
-    }
 
     /* COLLECTIONS */
     

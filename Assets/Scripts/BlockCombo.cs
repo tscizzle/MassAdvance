@@ -37,15 +37,20 @@ public class BlockCombo
         }
     }
 
-    public void onBlockDestroy()
-    /* Run this destroy function if any block in this combo gets destroyed. */
+    public void onBlockDestroy(Block block)
+    /* Run this destroy function if any block in this combo gets destroyed.
+    
+    :param Block block: Block that was destroyed to trigger this block combo action.
+    */
     {
         if (blockComboType == BlockComboType.CHECKER_BLUE_RED)
         {
             TrialLogic.gainIum(1);
+            block.destroyNeighboringMass();
         } else if (blockComboType == BlockComboType.CHECKER_YELLOW_RED)
         {
             TrialLogic.drawCard();
+            block.destroyNeighboringMass();
         }
     }
 
