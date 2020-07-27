@@ -38,7 +38,7 @@ public class PlaceThreePieceCard : Card
         iumCost = blockTypeToIumCost[blockType];
         displayName = getDisplayName();
         description = blockTypeToDescription[blockType];
-        isConsumable = true;
+        isConsumable = false;
     }
 
     public override int getCostToPlay()

@@ -13,8 +13,8 @@ public class IumizerCard : Card
     {
         iumCost = 0;
         displayName = "Iumizer";
-        description = "Gain 4 ium.";
-        isConsumable = false;
+        description = "Gain 3 ium.";
+        isConsumable = true;
     }
 
     public override bool getIsAbleToPlay()
@@ -29,6 +29,6 @@ public class IumizerCard : Card
     public override void cardAction()
     /* See cardAction on base class Card. */
     {
-        TrialLogic.gainIum(4);
+        TrialLogic.gainIum(3);
     }
 }

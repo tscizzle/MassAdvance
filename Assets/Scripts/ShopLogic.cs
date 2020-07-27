@@ -10,13 +10,13 @@ public class ShopLogic : MonoBehaviour
     // Parameters.
     private static float maxDiscountRatio = 3;
     private static float discountDampener = 1/10f;
-    private static int giantPackSize = 20;
-    private static int bigPackSize = 15;
-    private static int mediumPackSize = 10;
-    private static int smallPackSize = 5;
+    private static int giantPackSize = 15;
+    private static int bigPackSize = 10;
+    private static int mediumPackSize = 5;
+    private static int smallPackSize = 2;
     private static int numUniquesInVarietyPack = 5;
     private static int numUniquesInSpecialistPack = 2;
-    private static int numSingleCardPacks = 25;
+    private static int numSingleCardPacks = 10;
     private static int numIumizersInIumizerPack = 5;
     // State.
     public static Dictionary<string, Pack> packInventory;
@@ -241,24 +241,6 @@ public class ShopLogic : MonoBehaviour
         packInventory[smallSpecialistPackId] = smallSpecialistPack;
         packOrder.Add(smallSpecialistPackId);
 
-        // Small variety pack.
-        List<CardInfo> cardsInSmallVariety = new List<CardInfo>();
-        int numRepeatsInSmallVariety = smallPackSize / numUniquesInVarietyPack;
-        foreach (int _0 in Enumerable.Range(0, numUniquesInVarietyPack))
-        {
-            string cardName = MiscHelpers.getWeightedChoice(cardNameToFrequency, rand);
-            foreach (int _1 in Enumerable.Range(0, numRepeatsInSmallVariety))
-            {
-                string cardId = MiscHelpers.getRandomId();
-                CardInfo cardInfo = new CardInfo(cardName, cardId);
-                cardsInSmallVariety.Add(cardInfo);
-            }
-        }
-        string smallVarietyPackId = MiscHelpers.getRandomId();
-        Pack smallVarietyPack = new Pack(smallVarietyPackId, "Small Variety", cardsInSmallVariety);
-        packInventory[smallVarietyPackId] = smallVarietyPack;
-        packOrder.Add(smallVarietyPackId);
-
         // Iumizer pack.
         List<CardInfo> cardsInIumizer = new List<CardInfo>();
         foreach (int _ in Enumerable.Range(0, numIumizersInIumizerPack))
@@ -310,12 +292,12 @@ public class ShopLogic : MonoBehaviour
         { PlaceSingleBlockCard.getSingleBlockCardName(BlockType.BLUE), 500 },
         { PlaceSingleBlockCard.getSingleBlockCardName(BlockType.YELLOW), 450 },
         { PlaceSingleBlockCard.getSingleBlockCardName(BlockType.RED), 350 },
-        { PlaceThreePieceCard.getThreePieceCardName(BlockType.BLUE), 1000 },
-        { PlaceThreePieceCard.getThreePieceCardName(BlockType.YELLOW), 900 },
-        { PlaceThreePieceCard.getThreePieceCardName(BlockType.RED), 700 },
-        { PlaceThreePieceCard.getThreePieceCardName(BlockType.BLUE, isFlipped: true), 1000 },
-        { PlaceThreePieceCard.getThreePieceCardName(BlockType.YELLOW, isFlipped: true), 900 },
-        { PlaceThreePieceCard.getThreePieceCardName(BlockType.RED, isFlipped: true), 700 },
+        { PlaceThreePieceCard.getThreePieceCardName(BlockType.BLUE), 500 },
+        { PlaceThreePieceCard.getThreePieceCardName(BlockType.YELLOW), 450 },
+        { PlaceThreePieceCard.getThreePieceCardName(BlockType.RED), 350 },
+        { PlaceThreePieceCard.getThreePieceCardName(BlockType.BLUE, isFlipped: true), 500 },
+        { PlaceThreePieceCard.getThreePieceCardName(BlockType.YELLOW, isFlipped: true), 450 },
+        { PlaceThreePieceCard.getThreePieceCardName(BlockType.RED, isFlipped: true), 350 },
         { RepairBlockCard.repairBlockCardName, 300 },
         { WashFloorSquareCard.washFloorSquareCardName, 300 },
         { ArmageddonCard.armageddonCardName, 550 },

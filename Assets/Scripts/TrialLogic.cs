@@ -15,12 +15,15 @@ public class TrialLogic : MonoBehaviour
     public static int numGridSquaresWide;
     public static int numGridSquaresDeep;
     public static int turnsToSurvive;
-    public static int baseIumPerTurn;
-    private static int baseDrawPerTurn;
     private static int startingIum;
+    public static int baseIumPerTurn;
     private static int startingHandSize;
+    private static int baseDrawPerTurn;
+    private static int maxHandSize;
     private static int startingUnstainedRows;
     private static List<Vector2> startingMassSquares;
+    private static List<Vector2> startingBlueSquares;
+    private static List<Vector2> startingYellowSquares;
     private static int startingNumSpreads;
     private static int numTurnsPerNumSpreadIncrease;
     private static List<MassSpecial> activeMassSpecials;
@@ -122,6 +125,8 @@ public class TrialLogic : MonoBehaviour
 
         TrialLogic.selectedCardId = null;
 
+        discardHand();
+
         decrementStain();
 
         findAndStoreBlockCombos();
@@ -196,17 +201,22 @@ public class TrialLogic : MonoBehaviour
     public static void drawCard()
     /* Pick up a card from the draw pile and put it into the current hand. */
     {
+        // If hand full, don't draw.
+        if (hand.Count >= maxHandSize)
+        {
+            return;
+        }
+
+        // If draw pile empty, shuffle dicard pile into draw pile.
         if (drawPile.Count == 0)
         {
             drawPile = discardPile.OrderBy(_ => UnityEngine.Random.value).ToList();
             discardPile.Clear();
-
-            EventLog.LogEvent($"Replenished draw pile from discard pile.");
         }
 
+        // If draw pile still empty, don't draw.
         if (drawPile.Count == 0)
         {
-            EventLog.LogEvent($"Attempted to draw, but draw pile was empty.");
             return;
         }
 
@@ -277,35 +287,42 @@ public class TrialLogic : MonoBehaviour
         secondsBetweenActions_slow = 0.6f;
         secondsBetweenActions = secondsBetweenActions_slow;
         numGridSquaresWide = 6;
-        numGridSquaresDeep = 10;
-        turnsToSurvive = 14;
-        baseIumPerTurn = 3;
-        baseDrawPerTurn = 1;
+        numGridSquaresDeep = 8;
+        turnsToSurvive = 10;
         startingIum = 3;
-        startingHandSize = 4;
+        baseIumPerTurn = 3;
+        startingHandSize = 5;
+        baseDrawPerTurn = 4;
+        maxHandSize = 15;
         startingUnstainedRows = 4;
         startingMassSquares = new List<Vector2>
         {
-            new Vector2((numGridSquaresWide / 2) - 1, numGridSquaresDeep - 1),
-            new Vector2(numGridSquaresWide / 2, numGridSquaresDeep - 1)
+            new Vector2(0, numGridSquaresDeep - 1),
+            new Vector2(numGridSquaresWide - 1, numGridSquaresDeep - 1)
+        };
+        startingBlueSquares = new List<Vector2>
+        {
+            new Vector2(0, numGridSquaresDeep - 3)
+        };
+        startingYellowSquares = new List<Vector2>
+        {
+            new Vector2(numGridSquaresWide - 1, numGridSquaresDeep - 3)
         };
         startingNumSpreads = 1;
-        numTurnsPerNumSpreadIncrease = 5;
+        numTurnsPerNumSpreadIncrease = 3;
         activeMassSpecials = new List<MassSpecial>();
 
         if (trialNumber >= 2)
         {
-            turnsToSurvive = 16;
-            
-            startingMassSquares.Add(new Vector2(0, numGridSquaresDeep - 1));
-            startingMassSquares.Add(new Vector2(numGridSquaresWide - 1, numGridSquaresDeep - 1));
+            turnsToSurvive = 12;
+
+            startingMassSquares.Add(new Vector2(0, numGridSquaresDeep - 2));
+            startingMassSquares.Add(new Vector2(numGridSquaresWide - 1, numGridSquaresDeep - 2));
         }
+
         if (trialNumber >= 3)
         {
-            turnsToSurvive = 20;
-            
-            startingMassSquares.Add(new Vector2(0, numGridSquaresDeep - 3));
-            startingMassSquares.Add(new Vector2(numGridSquaresWide - 1, numGridSquaresDeep - 3));
+            turnsToSurvive = 16;
         }
     }
 
@@ -392,13 +409,27 @@ public class TrialLogic : MonoBehaviour
             yield return Pointer.displayPointer(gridIndices);
         }
 
-        Vector2 startingBlueSquare = new Vector2(0, numGridSquaresDeep - 2);
-        placeBlock(BlockType.BLUE, startingBlueSquare);
-        yield return Pointer.displayPointer(startingBlueSquare);
+        foreach (Vector2 gridIndices in startingBlueSquares)
+        {
+            placeBlock(BlockType.BLUE, gridIndices);
+            yield return Pointer.displayPointer(gridIndices);
+        }
 
-        Vector2 startingYellowSquare = new Vector2(numGridSquaresWide - 1, numGridSquaresDeep - 2);
-        placeBlock(BlockType.YELLOW, startingYellowSquare);
-        yield return Pointer.displayPointer(startingYellowSquare);
+        foreach (Vector2 gridIndices in startingYellowSquares)
+        {
+            placeBlock(BlockType.YELLOW, gridIndices);
+            yield return Pointer.displayPointer(gridIndices);
+        }
+    }
+
+    private static void discardHand()
+    /* Move all cards in hand to the discard pile. */
+    {
+        List<string> cardsToDiscard = new List<string>(hand);
+        foreach (string cardId in cardsToDiscard)
+        {
+            discardCard(cardId);
+        }
     }
 
     private static void decrementStain()
