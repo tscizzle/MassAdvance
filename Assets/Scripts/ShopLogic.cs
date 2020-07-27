@@ -16,7 +16,8 @@ public class ShopLogic : MonoBehaviour
     private static int smallPackSize = 5;
     private static int numUniquesInVarietyPack = 5;
     private static int numUniquesInSpecialistPack = 2;
-    private static int numSingleCardPacks = 20;
+    private static int numSingleCardPacks = 25;
+    private static int numIumizersInIumizerPack = 5;
     // State.
     public static Dictionary<string, Pack> packInventory;
     public static List<string> packOrder;
@@ -101,12 +102,15 @@ public class ShopLogic : MonoBehaviour
     {
         System.Random rand = new System.Random();
 
+        Dictionary<string, float> cardNameToFrequency_specialist =
+            new Dictionary<string, float>(cardNameToFrequency);
+
         // Giant specialist pack.
         List<CardInfo> cardsInGiantSpecialist = new List<CardInfo>();
         int numRepeatsInGiantSpecialty = giantPackSize / numUniquesInSpecialistPack;
         foreach (int _0 in Enumerable.Range(0, numUniquesInSpecialistPack))
         {
-            string cardName = MiscHelpers.getWeightedChoice(cardNameToFrequency, rand);
+            string cardName = MiscHelpers.getWeightedChoice(cardNameToFrequency_specialist, rand);
             foreach (int _1 in Enumerable.Range(0, numRepeatsInGiantSpecialty))
             {
                 string cardId = MiscHelpers.getRandomId();
@@ -144,7 +148,7 @@ public class ShopLogic : MonoBehaviour
         int numRepeatsInBigSpecialty = bigPackSize / numUniquesInSpecialistPack;
         foreach (int _0 in Enumerable.Range(0, numUniquesInSpecialistPack))
         {
-            string cardName = MiscHelpers.getWeightedChoice(cardNameToFrequency, rand);
+            string cardName = MiscHelpers.getWeightedChoice(cardNameToFrequency_specialist, rand);
             foreach (int _1 in Enumerable.Range(0, numRepeatsInBigSpecialty))
             {
                 string cardId = MiscHelpers.getRandomId();
@@ -182,7 +186,7 @@ public class ShopLogic : MonoBehaviour
         int numRepeatsInMediumSpecialty = mediumPackSize / numUniquesInSpecialistPack;
         foreach (int _0 in Enumerable.Range(0, numUniquesInSpecialistPack))
         {
-            string cardName = MiscHelpers.getWeightedChoice(cardNameToFrequency, rand);
+            string cardName = MiscHelpers.getWeightedChoice(cardNameToFrequency_specialist, rand);
             foreach (int _1 in Enumerable.Range(0, numRepeatsInMediumSpecialty))
             {
                 string cardId = MiscHelpers.getRandomId();
@@ -222,7 +226,7 @@ public class ShopLogic : MonoBehaviour
         int numRepeatsInSmallSpecialty = smallPackSize / numUniquesInSpecialistPack;
         foreach (int _0 in Enumerable.Range(0, numUniquesInSpecialistPack))
         {
-            string cardName = MiscHelpers.getWeightedChoice(cardNameToFrequency, rand);
+            string cardName = MiscHelpers.getWeightedChoice(cardNameToFrequency_specialist, rand);
             foreach (int _1 in Enumerable.Range(0, numRepeatsInSmallSpecialty))
             {
                 string cardId = MiscHelpers.getRandomId();
@@ -254,6 +258,20 @@ public class ShopLogic : MonoBehaviour
         Pack smallVarietyPack = new Pack(smallVarietyPackId, "Small Variety", cardsInSmallVariety);
         packInventory[smallVarietyPackId] = smallVarietyPack;
         packOrder.Add(smallVarietyPackId);
+
+        // Iumizer pack.
+        List<CardInfo> cardsInIumizer = new List<CardInfo>();
+        foreach (int _ in Enumerable.Range(0, numIumizersInIumizerPack))
+        {
+            string cardName = IumizerCard.iumizerCardName;
+            string cardId = MiscHelpers.getRandomId();
+            CardInfo cardInfo = new CardInfo(cardName, cardId);
+            cardsInIumizer.Add(cardInfo);
+        }
+        string iumizerPackId = MiscHelpers.getRandomId();
+        Pack iumizerPack = new Pack(iumizerPackId, "Iumizer Pack", cardsInIumizer);
+        packInventory[iumizerPackId] = iumizerPack;
+        packOrder.Add(iumizerPackId);
 
         // Single-card packs.
         foreach (int idx in Enumerable.Range(0, numSingleCardPacks))
@@ -301,25 +319,31 @@ public class ShopLogic : MonoBehaviour
         { RepairBlockCard.repairBlockCardName, 300 },
         { WashFloorSquareCard.washFloorSquareCardName, 300 },
         { ArmageddonCard.armageddonCardName, 550 },
+        { MachineGunCard.machineGunCardName, 700 },
+        { BodySlamCard.bodySlamCardName, 750 },
         { PunchCard.punchCardName, 1000 },
         { CatapultCard.catapultCardName, 400 },
+        { IumizerCard.iumizerCardName, 500 },
     };
 
     public static Dictionary<string, float> cardNameToFrequency = new Dictionary<string, float>
     {
         { PlaceSingleBlockCard.getSingleBlockCardName(BlockType.BLUE), 1 },
-        { PlaceSingleBlockCard.getSingleBlockCardName(BlockType.YELLOW), 1 },
+        { PlaceSingleBlockCard.getSingleBlockCardName(BlockType.YELLOW), 0.7f },
         { PlaceSingleBlockCard.getSingleBlockCardName(BlockType.RED), 1 },
         { PlaceThreePieceCard.getThreePieceCardName(BlockType.BLUE), 0.5f },
-        { PlaceThreePieceCard.getThreePieceCardName(BlockType.YELLOW), 0.5f },
+        { PlaceThreePieceCard.getThreePieceCardName(BlockType.YELLOW), 0.35f },
         { PlaceThreePieceCard.getThreePieceCardName(BlockType.RED), 0.5f },
         { PlaceThreePieceCard.getThreePieceCardName(BlockType.BLUE, isFlipped: true), 0.5f },
-        { PlaceThreePieceCard.getThreePieceCardName(BlockType.YELLOW, isFlipped: true), 0.5f },
+        { PlaceThreePieceCard.getThreePieceCardName(BlockType.YELLOW, isFlipped: true), 0.35f },
         { PlaceThreePieceCard.getThreePieceCardName(BlockType.RED, isFlipped: true), 0.5f },
-        { RepairBlockCard.repairBlockCardName, 1 },
-        { WashFloorSquareCard.washFloorSquareCardName, 1 },
+        { RepairBlockCard.repairBlockCardName, 0.7f },
+        { WashFloorSquareCard.washFloorSquareCardName, 0.7f },
         { ArmageddonCard.armageddonCardName, 1 },
+        { MachineGunCard.machineGunCardName, 1 },
+        { BodySlamCard.bodySlamCardName, 1 },
         { PunchCard.punchCardName, 1 },
-        { CatapultCard.catapultCardName, 1 },
+        { CatapultCard.catapultCardName, 0.7f },
+        { IumizerCard.iumizerCardName, 3 },
     };
 }

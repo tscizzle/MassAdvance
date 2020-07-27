@@ -1671,6 +1671,10 @@ MonoBehaviour:
     type: 3}
   machineGunCardPrefab: {fileID: 3151726573354023590, guid: 3c1a23517ed130a8195041a66e4bbdbc,
     type: 3}
+  bodySlamCardPrefab: {fileID: 7278113880712745426, guid: 773575c3ef0c75a398af38ee37c521d0,
+    type: 3}
+  iumizerCardPrefab: {fileID: 2480228479891813544, guid: 649ce644efc4941dc8140faaeec43df1,
+    type: 3}
 --- !u!4 &2081584010
 Transform:
   m_ObjectHideFlags: 0

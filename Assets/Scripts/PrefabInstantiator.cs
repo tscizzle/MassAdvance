@@ -20,6 +20,8 @@ public class PrefabInstantiator : MonoBehaviour
     public GameObject punchCardPrefab;
     public GameObject catapultCardPrefab;
     public GameObject machineGunCardPrefab;
+    public GameObject bodySlamCardPrefab;
+    public GameObject iumizerCardPrefab;
 
     void Awake()
     {
@@ -166,6 +168,12 @@ public class PrefabInstantiator : MonoBehaviour
         } else if (cardName == MachineGunCard.machineGunCardName)
         {
             return machineGunCardPrefab;
+        } else if (cardName == BodySlamCard.bodySlamCardName)
+        {
+            return bodySlamCardPrefab;
+        } else if (cardName == IumizerCard.iumizerCardName)
+        {
+            return iumizerCardPrefab;
         } else if (PlaceSingleBlockCard.isCardNameThisCard(cardName))
         {
             return placeSingleBlockCardPrefab;
